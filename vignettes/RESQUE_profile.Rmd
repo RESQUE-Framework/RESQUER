@@ -36,7 +36,7 @@ library(tibble)
 
 ```{r}
 
-#applicant <- read_RESQUE(system.file("extdata", "resque_Felix2.json", package="RESQUER"))
+applicant <- read_RESQUE(system.file("extdata", "resque_Felix2.json", package="RESQUER"))
 
 # Split the research outputs into types, reduce to suitable submissions
 pubs <- applicant$indicators %>% filter(type == "Publication", P_Suitable == "Yes")
@@ -397,14 +397,14 @@ radar_dat <- tibble(
 #radar_applicant$indicators$rel_score <- c(0.15, 0.8, 0.6, 0.25, 0.42)
 
 #Some exemplary radar dats:
-radar_dat <- data.frame(
-  dimension = c("Open Data", "Open Materials", "Preregistration", "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
-  max_points = rep(10, 5),
-  rel_score=c(0.5, 0.3, 0.1, 0.6, 0.2),
-  xstart = 0:4,
-  xend = 1:5,
-  xmid=0:4 + 0.5
-)
+# radar_dat <- data.frame(
+#   dimension = c("Open Data", "Open Materials", "Preregistration", "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
+#   max_points = rep(10, 5),
+#   rel_score=c(0.5, 0.3, 0.1, 0.6, 0.2),
+#   xstart = 0:4,
+#   xend = 1:5,
+#   xmid=0:4 + 0.5
+# )
 
 
 max_points <- sum(radar_dat$max_points)
