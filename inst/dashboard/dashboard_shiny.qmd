@@ -46,8 +46,8 @@ library(gt)
 library(purrr)
 library(OAmetrics)
 
-
 # TODO: Read all files in folder; let users select the folder via dialog box
+  json_folder <- system.file("extdata/demo_profiles", package="RESQUER")
   
   json_files <- list.files(json_folder, pattern="*.json", full.names=TRUE)
   
@@ -510,7 +510,7 @@ value_box(
 #| context: server
 
 output$HI_text <- function(){
-  paste0("From ", applicant()$BIP_n_papers, " papers of ", applicant()$meta$FullName, " that could be retrieved in the BIP! database, ", applicant()$BIP_n_papers_top10, ifelse(applicant()$BIP_n_papers_top10 == 1, " was ", " were "), "in the top 10% popularity class of all papers or better.")
+  paste0("From ", applicant()$BIP_n_papers, " papers that could be retrieved in the BIP! database, ", applicant()$BIP_n_papers_top10, ifelse(applicant()$BIP_n_papers_top10 == 1, " was ", " were "), "in the top 10% popularity class of all papers or better.")
 }
 ```
 
