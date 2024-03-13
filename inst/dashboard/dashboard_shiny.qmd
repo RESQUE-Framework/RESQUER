@@ -11,7 +11,6 @@ format:
 server: shiny
 ---
 
-<!-- See https://spencerschien.info/post/r_for_nonprofits/quarto_template/ -->
 
 ```{r setup}
 #| context: setup
@@ -45,9 +44,14 @@ library(DT)
 library(gt)
 library(purrr)
 library(OAmetrics)
+```
 
-# TODO: Read all files in folder; let users select the folder via dialog box
-  json_folder <- system.file("extdata/demo_profiles", package="RESQUER")
+
+```{r load_new_data}
+#| context: server
+
+get_applicant_list <- function(json_folder) {
+  #json_folder <- system.file("extdata/demo_profiles", package="RESQUER")
   #json_folder <- "/Users/felix/Documents/Gitlab/resque-ratings/json"
   
   json_files <- list.files(json_folder, pattern="*.json", full.names=TRUE)
@@ -75,12 +79,14 @@ library(OAmetrics)
   names(applicant_ID) <- applicant_ID
 
   
-  #applicant <- function(x=2) applicant_list[[x]]
+  # applicant <- function(x=2) applicant_list[[x]]
+  # applicant <- applicant_list[[2]]
   
   x <- sapply(applicant_list, "[", "meta")
   fullmeta <- bind_rows(x)
   
-  RRS_overall_score <- sapply(applicant_list, "[", "RRS") |> sapply("[", "overall_score") |> unlist()
+  # TODO: delete?
+  #RRS_overall_score <- sapply(applicant_list, "[", "RRS") |> sapply("[", "overall_score") |> unlist()
   
   # create overview table (this is the static version; overview_tab2() is reactive and gets updated)
   overview_tab <- data.frame(
@@ -91,13 +97,24 @@ library(OAmetrics)
     "RRS" = RRS_overall_score |> round(2),
     "RRS_Chart" = 1:nrow(fullmeta) # add the candidate index to the table (this is replaced by the mini plot)
   )
+  
+  return(list(
+    applicant_list = applicant_list,
+    applicant_position = applicant_position,
+    applicant_ID = applicant_ID,
+    overview_tab = overview_tab
+  ))
+}
+
 ```
 
-<!-- How to include in package: See https://spencerschien.info/post/r_for_nonprofits/quarto_template/ -->
+
+
 
 # {.toolbar}
 
 ```{r}
+actionButton("loadFiles", "Open ...")
 checkboxInput(inputId="all_anonymous", "Make anonymous", value = TRUE)
 
 if (length(applicant_list) <= 8) {
@@ -107,7 +124,10 @@ if (length(applicant_list) <= 8) {
 }  
 ```
 
-```{r}
+
+
+
+```{r general_reactivity}
 #| context: server
 
   if (any(version_mismatch)) {
@@ -142,13 +162,48 @@ overview_tab2 <- reactive({
 })
 
 observeEvent(input$all_anonymous, {
- if (input$all_anonymous == TRUE) {
-  updateRadioButtons(inputId = "applicant_name", label='Applicant ID: ', choices = applicant_ID, inline=TRUE) 
- } else {
-   updateRadioButtons(inputId = "applicant_name", label='Name of applicant: ', choices = applicant_position, inline=TRUE)
- }
-
+   if (input$all_anonymous == TRUE) {
+    updateRadioButtons(inputId = "applicant_name", label='Applicant ID: ', choices = applicant_ID, inline=TRUE) 
+   } else {
+     updateRadioButtons(inputId = "applicant_name", label='Name of applicant: ', choices = applicant_position, inline=TRUE)
+   }
 })
+
+
+# Show modal when "Open ..." button is clicked
+observeEvent(input$loadFiles, {
+    showModal(modalDialog(
+      "This is an important message!",
+      title = "Important message",
+      footer = tagList(
+          actionButton("loadFiles", "Load local JSON files"),
+          actionButton("loadDemo", "Demo data")
+        )
+    ))
+  })
+
+observeEvent(input$loadFiles, {
+    print("loading local json files ...")
+    
+    # fileInput("loadFiles2", "Choose JSON files", multiple=TRUE, accept=".json")
+    # file <- input$file1
+    # ext <- tools::file_ext(file$datapath)
+    # req(file)
+    # validate(need(ext == "json", "Please select only json files."))
+    # 
+    # print(file)
+    # print(ext)
+    # content <- read_json(file, simplifyVector = TRUE)
+    # print(content)
+})
+  
+observeEvent(input$loadFiles, {
+  print("loading demo files ...")
+  DAT <- reactive({get_applicant_list(system.file("extdata/demo_profiles", package="RESQUER"))})
+  print(str(DAT()))
+})
+
+system.file("extdata/demo_profiles", package="RESQUER")
 ```
 
 
@@ -304,7 +359,20 @@ tableOutput('Type_of_method_tab')
 :::
 
 
-### Row Journal List {height=55%}
+### Row Co-author network / Internationality {height=25%}
+::: {.card title="Co-author network / Internationality"}
+```{r network_text}
+#| context: server
+output$network_text <- function(){applicant()$network$result_string}
+```
+```{r network_text_output}
+textOutput('network_text')
+```
+:::
+
+
+
+### Row Journal List {height=30%}
 ::: {.card title="Journals where the author published"}
 ::: {style="font-size: 80%;"}
 <!-- TODO: Add infobox: According to [CoARA Commitment 3](https://coara.eu/agreement/the-commitments/), research outputs should neither be assessed based on the journal where it was published, nor on metrics relating to the publication venue: -->

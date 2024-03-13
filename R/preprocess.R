@@ -209,5 +209,15 @@ preprocess <- function(applicant) {
 
   applicant$RRS <- compute_RRS(applicant)
 
+
+  #----------------------------------------------------------------
+  # Get network metrics
+  #----------------------------------------------------------------
+
+  # get OA author id
+  author.id <- oa_fetch(entity = "authors", identifier=applicant$meta$ORCID)$id
+
+  applicant$network <- get_network(author.id = author.id, works=applicant$all_papers, min_edges = 1, verbose=FALSE)
+
   return(applicant)
 }

@@ -7,6 +7,7 @@ Install the development versions from GitHub with:
 
 ```
 install.packages("remotes")
+install.packages("quarto")
 remotes::install_github("nicebread/OAmetrics")
 remotes::install_github("nicebread/RESQUER")
 ```
