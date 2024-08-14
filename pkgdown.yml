@@ -1,11 +1,10 @@
 pandoc: 3.1.11
-pkgdown: 2.0.7
+pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
-  RESQUE_profile: RESQUE_profile.html
   Radarchart_interpretation: Radarchart_interpretation.html
-last_built: 2024-03-12T09:32Z
+  RESQUE_profile: RESQUE_profile.html
+last_built: 2024-08-14T07:36Z
 urls:
   reference: https://nicebread.github.io/RESQUER/reference
   article: https://nicebread.github.io/RESQUER/articles
-
