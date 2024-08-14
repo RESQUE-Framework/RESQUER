@@ -6,3 +6,4 @@ _test
 ^docs$
 ^pkgdown$
 ^\.github$
+.code-workspace

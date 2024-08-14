@@ -19,6 +19,6 @@ Returns a list with the following elements:
 \itemize{
 \item scores: a list of scores for each research output
 \item scored_research_outputs: the number of research outputs that were scored
-\item overall_score: the average score of all scored research outputs
+\item overall_score: the average score of all scored research outputs. Each output is weighted equally.
 }
 }
