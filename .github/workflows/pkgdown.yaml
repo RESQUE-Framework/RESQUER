@@ -30,6 +30,12 @@ jobs:
         with:
           use-public-rspm: true
 
+      - name: Install dependencies
+        run: |
+          install.packages("remotes")
+          remotes::install_github("nicebread/OAmetrics")
+          remotes::install_deps(dependencies = TRUE)
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.
