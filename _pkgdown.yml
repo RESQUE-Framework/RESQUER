@@ -1,4 +1,11 @@
-url: https://nicebread.github.io/RESQUER/
+url: https://resque-framework.github.io/RESQUER/
 template:
   bootstrap: 5
 
+repo:
+  url:
+    source: https://github.com/RESQUE-Framework/RESQUER
+
+navbar:
+  structure:
+    right: [github]
