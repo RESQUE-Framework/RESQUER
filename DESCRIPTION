@@ -1,6 +1,6 @@
 Package: RESQUER
 Title: Enrich, analyse and visualize data from the RESQUE rating scheme
-Version: 0.1.2
+Version: 0.2
 Authors@R: 
     person("Felix D.", "Schönbrodt", , "felix.schoenbrodt@psy.lmu.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-8282-3910"))
@@ -13,6 +13,7 @@ Imports:
   purrr,
   stringr,
   dplyr,
+  plyr,
   tidyr,
   ggplot2,
   plotly,
@@ -22,6 +23,7 @@ Imports:
   scales,
   tibble,
   lubridate,
+  janitor,
   OAmetrics (>= 0.3.1)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1

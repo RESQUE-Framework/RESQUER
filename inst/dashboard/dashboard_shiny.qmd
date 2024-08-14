@@ -76,6 +76,7 @@ library(OAmetrics)
 
   
   #applicant <- function(x=2) applicant_list[[x]]
+  #applicant <- applicant_list[[1]]
   
   x <- sapply(applicant_list, "[", "meta")
   fullmeta <- bind_rows(x)
@@ -450,16 +451,7 @@ tableOutput("credit_inv_table")
 # TODO: Keep standard order
 output$credit_barchart <- renderPlot({
   dat <- applicant()$credit
-  p <- ggplot(dat, aes(x = Role, fill = Degree)) +
-      geom_bar(stat = "count") +
-      coord_flip() +
-      scale_fill_manual(values = rev(c("grey90", "indianred1", "khaki2", "green3", "green4")), breaks = rev(c("not applicable", "NoRole", "Support", "Equal", "Lead"))) +
-      theme_minimal() + xlab("") + ylab("# of publications") + 
-      theme(axis.text.y = element_text(size = 14)) + 
-      # force whole integers on x-axis
-      scale_y_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))
-  
-  p
+  credit_barchart(dat, ordered=FALSE)
 })
 ```
 ```{r credit_barchart_plot, out.width="100%", fig.width = 8, fig.height = 5}

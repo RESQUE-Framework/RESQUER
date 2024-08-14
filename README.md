@@ -10,7 +10,7 @@ Install the development versions from GitHub with:
 ```
 install.packages("remotes")
 remotes::install_github("nicebread/OAmetrics", auth_token=NULL)
-remotes::install_github("RESQUE-Framework/RESQUER")
+remotes::install_github("RESQUE-Framework/RESQUER", auth_token=NULL)
 ```
 
 For the interactive dashboard, you need [Quarto](https://quarto.org/docs/get-started/) installed on your system.
