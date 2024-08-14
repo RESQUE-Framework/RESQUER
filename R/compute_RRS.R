@@ -8,6 +8,7 @@
 #' @import dplyr
 #' @import stringr
 #' @import tibble
+#' @importFrom janitor clean_names
 #'
 #' @export
 compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
@@ -31,16 +32,40 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   table(scores_all$category, useNA="always")
   scores_all[is.na(scores_all$category), ]
 
-  # = mean of the mean scores (with equal weighting of each research output)
-  RRS_by_paper <- scores_all %>%
+  # each row is one publication; show overall RRS and raw points
+  RRS_by_paper_overall <- scores_all %>%
     group_by(output) %>%
     summarise(
       scores = sum(value),
       max_points = sum(max),
       rel_score = scores/max_points
-    )
+    ) %>% 
+    arrange(output)
 
-  mean(RRS_by_paper$rel_score)
+  RRS_by_paper_overall$doi <- normalize_dois(applicant$pubs$doi[RRS_by_paper_overall$output])
+  RRS_by_paper_overall <- RRS_by_paper_overall %>% relocate(doi) %>% select(-output)
+
+  # each row is one publication; show sector scores
+  RRS_by_paper_sector <- scores_all %>%
+    group_by(output, category) %>%
+    summarise(
+      scores = sum(value),
+      max_points = sum(max),
+      rel_score = scores/max_points
+    ) %>% 
+    ungroup() %>% 
+    select(-max_points, -scores) %>%
+    pivot_wider(names_from=category, values_from=rel_score) %>%
+    arrange(output)
+
+  RRS_by_paper_sector$doi <- normalize_dois(applicant$pubs$doi[RRS_by_paper_sector$output])
+  RRS_by_paper_sector <- RRS_by_paper_sector %>% relocate(doi) %>% select(-output)
+
+  # merge the sector and the overall scores
+  RRS_by_paper <- full_join(RRS_by_paper_overall %>% select(doi, RRS_overall = rel_score), RRS_by_paper_sector, by="doi") %>% janitor::clean_names()
+
+  colnames(RRS_by_paper)[2] <- "RRS_overall"
+  colnames(RRS_by_paper)[3:ncol(RRS_by_paper)] <- paste0("RRS_", colnames(RRS_by_paper)[3:ncol(RRS_by_paper)])
 
   RRS_by_category <- scores_all %>%
     group_by(category) %>%
@@ -53,10 +78,12 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
 
 
   # overall rigor score as in webform:
-  sum(RRS_by_paper$scores)/sum(RRS_by_paper$max_points)
+  # (this code does not work anymore, as the raw scores and max_points 
+  # are not present in this data frame any more)
+  #sum(RRS_by_paper$scores)/sum(RRS_by_paper$max_points)
 
   # overall score averaged across papers (each paper gets same weight)
-  overall_score <- mean(RRS_by_paper$rel_score)
+  overall_score <- mean(RRS_by_paper$RRS_overall)
 
   n_categories_present <- nrow(RRS_by_category)
 
@@ -83,12 +110,15 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   }
 
 
+applicant$indicators$Year[applicant$indicators$P_Suitable == "Yes"] |> as.numeric()
+
   return(list(
     overall_score = overall_score,
     paper_scores = RRS_by_paper,
     n_papers = nrow(RRS_by_paper),
     sector_scores = RRS_by_category,
-    radar_dat = radar_dat
+    radar_dat = radar_dat,
+    publication_years = applicant$indicators$Year[applicant$indicators$P_Suitable == "Yes"] |> as.numeric()
   ))
 }
 

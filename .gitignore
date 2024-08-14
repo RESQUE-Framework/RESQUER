@@ -39,9 +39,6 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
-docs/
-
 # translation temp files
 po/*~
 
@@ -50,7 +47,8 @@ rsconnect/
 .Rproj.user
 
 _test
-docs
 inst/doc
 
 inst/dashboard/dashboard_shiny_files
+
+*.code-workspace
