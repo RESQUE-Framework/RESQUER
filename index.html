@@ -36,15 +36,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/Radarchart_interpretation.html">How to read the radarcharts of the relative rigor score (RRS)</a></li>
-    <li><a class="dropdown-item" href="articles/RESQUE_profile.html">Exemplary RESQUE Profile</a></li>
   </ul>
 </li>
       </ul>
-<ul class="navbar-nav">
-<li class="nav-item"><form class="form-inline" role="search">
- <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
-</form></li>
-      </ul>
+<ul class="navbar-nav"></ul>
 </div>
 
 
@@ -65,11 +60,18 @@
 <p>For the interactive dashboard, you need <a href="https://quarto.org/docs/get-started/" class="external-link">Quarto</a> installed on your system.</p>
 <p>Launch the dashboard with the three included demo profiles:</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/quarto-dev/quarto-r" class="external-link">quarto</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nicebread.github.io/RESQUER/">RESQUER</a></span><span class="op">)</span></span>
-<span><span class="fu">quarto_serve</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"dashboard/dashboard_shiny.qmd"</span>, package<span class="op">=</span><span class="st">"RESQUER"</span><span class="op">)</span><span class="op">)</span></span></code></pre>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RESQUE-Framework/RESQUER" class="external-link">RESQUER</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://quarto-dev.github.io/quarto-r/reference/quarto_serve.html" class="external-link">quarto_serve</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"dashboard/dashboard_shiny.qmd"</span>, package<span class="op">=</span><span class="st">"RESQUER"</span><span class="op">)</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/RESQUE-Framework/RESQUER/issues" class="external-link">Report a bug</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
