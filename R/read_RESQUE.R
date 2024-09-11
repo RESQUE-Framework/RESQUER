@@ -1,6 +1,8 @@
-# file <- system.file("extdata", "resque_Schönbrodt.json", package="RESQUER")
+# file <- system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
+# file="/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_linke.json"
 
-#' Read and preprocess a single RESQUE JSON file
+#' Read a single RESQUE JSON file and do basic preprocessing
+#' (elaborated preprocessing happens in `preprocess()`).
 #'
 #' @param file Path to RESQUE JSON file
 #' @param verbose Show diagnostic information?
@@ -11,7 +13,8 @@
 read_RESQUE <- function(file, verbose=FALSE) {
   dat0 <- read_json(file, simplifyVector = TRUE)
 
-  meta <- dat0[1, 1:16]
+  meta <- dat0[1, , drop=TRUE]
+  meta <- meta[!is.na(meta)]
   dat <- dat0[-1, ]
 
   # clean and create some fields
@@ -29,11 +32,21 @@ read_RESQUE <- function(file, verbose=FALSE) {
   # Now each list entry is one publication, in the same order as in `dat`
   scores$scores <- scores$scores[-1]
 
+  # Do some conversion between old versions of the packs
+  if (any(dat$version != "0.4.0")) {
+    dat <- dat %>% rename(
+      P_TypeMethod_EmpiricalQuantitative = P_TypeMethod_Empirical
+    )
+    if (!is.null(dat$P_TypeMethod_Simulation)) {
+      dat <- dat %>% rename(P_TypeMethod_Computational = P_TypeMethod_Simulation)
+    }
+  }
+
   # Create nice factor labels
   dat$type <- factor(dat$type, levels=c("pub", "data", "software"), labels=c("Publication", "Data set", "Research software"))
 
-  dat <- unCamel(dat, "P_TypePublication")
-  dat <- unCamel(dat, "P_ReproducibleScripts")
+  #dat <- unCamel(dat, "P_TypePublication")
+  #dat <- unCamel(dat, "P_ReproducibleScripts")
 
   dat$dois_normalized <- str_extract(dat$DOI, pattern="10.\\d{4,9}/[-._;()/:a-z0-9A-Z]+")
 
