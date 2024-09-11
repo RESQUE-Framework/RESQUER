@@ -78,19 +78,16 @@ library(OAmetrics)
   #applicant <- function(x=2) applicant_list[[x]]
   #applicant <- applicant_list[[1]]
   
-  x <- sapply(applicant_list, "[", "meta")
-  fullmeta <- bind_rows(x)
-  
   RRS_overall_score <- sapply(applicant_list, "[", "RRS") |> sapply("[", "overall_score") |> unlist()
   
   # create overview table (this is the static version; overview_tab2() is reactive and gets updated)
   overview_tab <- data.frame(
-    "Last Name" = fullmeta$LastName,
-    "First Name" = fullmeta$FirstName,
-    "Year PhD" = fullmeta$YearPhD,
-    "Academic Age" = fullmeta$AcademicAge,
+    "Last Name" = sapply(applicant_list, function(x) x$meta$LastName),
+    "First Name" = sapply(applicant_list, function(x) x$meta$FirstName),
+    "Year PhD" = sapply(applicant_list, function(x) x$meta$YearPhD),
+    "Academic Age" = sapply(applicant_list, function(x) x$meta$AcademicAge),
     "RRS" = RRS_overall_score |> round(2),
-    "RRS_Chart" = 1:nrow(fullmeta) # add the candidate index to the table (this is replaced by the mini plot)
+    "RRS_Chart" = 1:length(applicant_list) # add the candidate index to the table (this is replaced by the mini plot)
   )
 ```
 
@@ -444,14 +441,16 @@ tableOutput("credit_inv_table")
 ## Column2 credit_barchart {height=60%}
 
 ### Column {.tabset}
-
+```{r credit_barchart_input}
+#| content: card-toolbar
+checkboxInput(inputId="credit_ordered", "Order by top contribution?", value = FALSE)
+```
 ```{r credit_barchart}
 #| context: server
 
-# TODO: Keep standard order
 output$credit_barchart <- renderPlot({
   dat <- applicant()$credit
-  credit_barchart(dat, ordered=FALSE)
+  credit_barchart(dat, ordered=input$credit_ordered)
 })
 ```
 ```{r credit_barchart_plot, out.width="100%", fig.width = 8, fig.height = 5}

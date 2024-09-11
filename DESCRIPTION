@@ -7,12 +7,15 @@ Authors@R:
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
+URL: https://github.com/RESQUE-Framework/RESQUER
+BugReports: https://github.com/RESQUE-Framework/RESQUER/issues
 Imports:
   httr,
   jsonlite,
   purrr,
   stringr,
   dplyr,
+  rmarkdown,
   plyr,
   tidyr,
   ggplot2,
@@ -24,13 +27,12 @@ Imports:
   tibble,
   lubridate,
   janitor,
+  quarto,
   OAmetrics (>= 0.3.1)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Suggests: 
     knitr,
-    rmarkdown,
     forcats,
     wordcloud
 VignetteBuilder: knitr
-URL: https://nicebread.github.io/RESQUER/

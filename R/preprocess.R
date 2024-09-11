@@ -16,11 +16,10 @@
 #' @importFrom openalexR oa_fetch
 #' @importFrom utils URLencode
 #' @importFrom lubridate year
-#' @importFrom OAmetrics normalize_dois normalize_ORCIDs
+#' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP
 #' @export
 
-# applicant <- read_RESQUE(system.file("extdata", "resque_Schönbrodt.json", package="RESQUER"))
-#applicant <- read_RESQUE("/Users/felix/LMU/Research/1 - In Arbeit/RESQUE/RESQUE-Clinical/raw_data/resque_behrens_CH.json")
+# applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
@@ -143,7 +142,6 @@ preprocess <- function(applicant, verbose=FALSE) {
   applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
   applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
 
-
   #----------------------------------------------------------------
   # Retrieve submitted works from OpenAlex
   #----------------------------------------------------------------
@@ -168,6 +166,14 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   applicant$all_papers <- all_papers
   rm(all_papers)
+
+  #----------------------------------------------------------------
+  # Get FNCS
+  #----------------------------------------------------------------
+
+  c_counts_psy_2001_2023 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2023.RDS", package="RESQUER"))
+  fncs <- FNCS(dois=applicant$all_papers$doi, ref_set=c_counts_psy_2001_2023, verbose=FALSE)
+  applicant$FNCS <- fncs
 
   #----------------------------------------------------------------
   # Create table of publications
@@ -210,6 +216,16 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   applicant$RRS <- compute_RRS(applicant)
+
+  #----------------------------------------------------------------
+  # Some meta-data
+  #----------------------------------------------------------------
+
+  applicant$meta$date_exported <- as.POSIXct(applicant$meta$date_exported / 1000, origin = "1970-01-01", tz = "UTC")
+  applicant$meta$date_added <- as.POSIXct(applicant$meta$date_added / 1000, origin = "1970-01-01", tz = "UTC")
+  applicant$meta$date_created <- as.POSIXct(applicant$meta$date_created / 1000, origin = "1970-01-01", tz = "UTC")
+  applicant$meta$date_modified <- as.POSIXct(applicant$meta$date_modified / 1000, origin = "1970-01-01", tz = "UTC")
+  applicant$meta$date_analysis <- format(Sys.time(), tz = "UTC", usetz = TRUE)
 
   return(applicant)
 }
