@@ -3,9 +3,8 @@ pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   Radarchart_interpretation: Radarchart_interpretation.html
-  RESQUE_profile: RESQUE_profile.html
-last_built: 2024-08-14T05:36Z
+last_built: 2024-09-11T13:18Z
 urls:
-  reference: https://nicebread.github.io/RESQUER/reference
-  article: https://nicebread.github.io/RESQUER/articles
+  reference: https://resque-framework.github.io/RESQUER/reference
+  article: https://resque-framework.github.io/RESQUER/articles
 

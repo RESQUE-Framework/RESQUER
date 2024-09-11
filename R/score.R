@@ -46,7 +46,7 @@ get_pack_name <- function(research_output) {
 # Internal function: Get the scoring information for a pack
 get_scoring_information <- function(research_output) {
   get_json_object(paste0(
-    "https://raw.githubusercontent.com/RESQUE-framework/website/main/packs/",
+    "https://raw.githubusercontent.com/RESQUE-framework/website/main/archive/packs/",
     get_pack_name(research_output),
     ".json"
   ))$scoring

@@ -2,7 +2,8 @@
 % Please edit documentation in R/read_RESQUE.R
 \name{read_RESQUE}
 \alias{read_RESQUE}
-\title{Read and preprocess a single RESQUE JSON file}
+\title{Read a single RESQUE JSON file and do basic preprocessing
+(elaborated preprocessing happens in \code{preprocess()}).}
 \usage{
 read_RESQUE(file, verbose = FALSE)
 }
@@ -12,5 +13,6 @@ read_RESQUE(file, verbose = FALSE)
 \item{verbose}{Show diagnostic information?}
 }
 \description{
-Read and preprocess a single RESQUE JSON file
+Read a single RESQUE JSON file and do basic preprocessing
+(elaborated preprocessing happens in \code{preprocess()}).
 }

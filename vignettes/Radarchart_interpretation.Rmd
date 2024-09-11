@@ -24,9 +24,9 @@ library(dplyr)
 ```
 
 The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality.
-The radar chart helps you to see 
+The radar chart helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
 
-- The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If you often opt-out of certain indicators, then the maximal points get reduced.
+- The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If you often opt-out of certain indicators, then the maximal points get reduced and the sector gets more narrow.
 - The **colored part** of each sector shows the **achieved rigor points**.
 
 In the following examples, we will focus on the **Open Data** sector of the radar charts.
@@ -36,7 +36,7 @@ In the following examples, we will focus on the **Open Data** sector of the rada
 This candidate had nearly no chance to gain open data points, which can be seen from the very narrow sector.
 For example, he submitted many methodological/purely theoretical papers which had no data, or had convincing justifications that the data strictly could not be openly released.
 
-But in the few cases where he could provide open data, he did it in a perfect way (i.e., according to all FAIR criteria and the other indicators related to open data): The narrow sector has 100% of points.
+But in the few cases where he could provide open data, he did it in a perfect way (i.e., according to all FAIR criteria and other indicators related to open data): The narrow sector has 100% of points.
 
 ```{r, out.width=400, out.height=400, dpi=200}
 dat1 <- tibble(
