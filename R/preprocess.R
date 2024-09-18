@@ -1,7 +1,7 @@
 #' Preprocess and enrich the raw information from an applicant's JSON
 #'
 #' This function preprocesses the applicant data and enriches it with additional data.
-#' Needs an internet connection to query the BIP! API.
+#' Needs an internet connection to query the BIP! and openAlex APIs.
 #'
 #' @param applicant The applicant data to be preprocessed (as loaded with the `read_RESQUE` function).
 #' @param verbose Show diagnostic information?
@@ -16,10 +16,12 @@
 #' @importFrom openalexR oa_fetch
 #' @importFrom utils URLencode
 #' @importFrom lubridate year
-#' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP
+#' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network
 #' @export
 
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
+# applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
+# applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Leising.json", package="RESQUER"))
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
@@ -45,6 +47,10 @@ preprocess <- function(applicant, verbose=FALSE) {
   # normalize some variables
   applicant$meta$LastName <- str_trim(applicant$meta$LastName)
   applicant$meta$ORCID <- normalize_ORCIDs(applicant$meta$ORCID)
+
+  # Retrieve OpenAlex Author ID
+  author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
+  applicant$meta$OA_author_id <- author_info$id
 
   # Split the research outputs into types, reduce to suitable submissions
   applicant$pubs <- applicant$indicators %>% filter(type == "Publication", P_Suitable == "Yes")
@@ -216,6 +222,30 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   applicant$RRS <- compute_RRS(applicant)
+
+
+  #----------------------------------------------------------------
+  # Get internationalization and interdisciplinarity scores
+  #----------------------------------------------------------------
+
+  nw <- get_network(works=applicant$all_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
+  applicant$internationalization <- list(
+    international_evenness = nw$international_evenness,
+    country_codes_repeated = nw$country_codes_repeated,
+    internationalization_string = nw$internationalization_string,
+    n_coauthors_international = nw$n_coauthors_international,
+    n_coauthors_same_country = nw$n_coauthors_same_country,
+    perc_international = (nw$n_coauthors_international*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round(),
+    perc_same_country = (nw$n_coauthors_same_country*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round()
+
+  )
+  applicant$interdisciplinarity <- list(
+    interdisc_evenness = nw$interdisc_evenness,
+    primary_fields_tab_reduced = nw$primary_fields_tab_reduced,
+    subfields_tab = nw$subfields_tab,
+    topics_tab = nw$topics_tab,
+    interdisc_string = nw$interdisc_string
+  )
 
   #----------------------------------------------------------------
   # Some meta-data
