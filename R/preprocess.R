@@ -228,6 +228,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   nw <- get_network(works=applicant$all_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
+
   applicant$internationalization <- list(
     international_evenness = nw$international_evenness,
     country_codes_repeated = nw$country_codes_repeated,
