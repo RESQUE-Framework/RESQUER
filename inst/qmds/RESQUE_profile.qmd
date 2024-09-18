@@ -5,11 +5,11 @@ output: html
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt2.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Gaertner.json"
 ---
 
 
-```{r}
+```{r setup0}
 #| include: false
 
 library(knitr)
@@ -42,7 +42,7 @@ table, th, td {
 </style>
 
 
-```{r}
+```{r demo_warning}
 #| results: "asis"
 
 if (is.null(params$json_path)) {
@@ -115,7 +115,7 @@ kable(table(applicant$indicators[applicant$indicators$type == "Publication", "P_
 
 The `r nrow(applicant$indicators[applicant$indicators$type == "Publication", ])` publications had the following methodological type:
 
-```{r}
+```{r ROs}
 dat_tM <- applicant$indicators %>% select(contains("P_TypeMethod"))
 
 # add missing columns
@@ -148,7 +148,7 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 
 ### Team science in publications?
 
-```{r}
+```{r teamscience}
 #| results: "asis"
 
 cat(paste0(nrow(applicant$all_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
@@ -173,7 +173,7 @@ team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$all_papers)), "
 colnames(team_tab) <- c("Team category", "Frequency", "%")
 ```
 
-```{r}
+```{r TS_showtable}
 kable(team_tab, align=c("l", "r", "r"))
 ```
 
@@ -182,7 +182,7 @@ kable(team_tab, align=c("l", "r", "r"))
 
 The applicant submitted `r sum(is.na(applicant$pubs$P_Data_Source_Simulated) | !applicant$pubs$P_Data_Source_Simulated)` papers with empirical data. 
 
-```{r}
+```{r datatypes}
 #| results: asis
 
 #applicant$pubs |> select(contains("P_Data_Source"))
@@ -217,6 +217,9 @@ if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
 ## Types of samples
 
 ```{r}
+# Compatibility with old versions:
+if (is.null(applicant$pubs$P_Sample_Type)) {applicant$pubs$P_Sample_Type <- NA}
+if (is.null(applicant$pubs$P_Sample_CrossCultural)) {applicant$pubs$P_Sample_CrossCultural <- NA}
 applicant$pubs$P_Sample_Type[is.na(applicant$pubs$P_Sample_Type)] <- FALSE
 ```
 
