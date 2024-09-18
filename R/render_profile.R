@@ -1,18 +1,16 @@
 #' Render an HTML or PDF profile of a single applicant
 #'
 #' @param json_path The path to the applicant's JSON file
-#' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant as filename.
-#' @param output_format The output format ("html" or "pdf")
+#' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.
 #' @return The path to the rendered file
 #' @export
 #' @importFrom quarto quarto_render
 #' @importFrom jsonlite read_json
 #'
-render_profile <- function(json_path, output_file = NA, output_format = "html") {
+render_profile <- function(json_path, output_file = NA) {
 
   # For testing purposes:
   #json_path = "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/extdata/demo_profiles/resque_Gaertner.json"
-  #json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_leehr.json"
   #qmd_file = "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/qmds/RESQUE_profile.qmd"
   # output_file = "~/Downloads/test2.html"
 
@@ -27,21 +25,20 @@ render_profile <- function(json_path, output_file = NA, output_format = "html") 
   # copy template to the temp_dir, render there
   file.copy(qmd_file, temp_dir)
 
-  # get last name of applicant:
-
+  # get name of applicant:
   js <- read_json(json_path, simplifyVector = TRUE)
   LastName <- js[1, "LastName"]
   FullName <- paste(js[1, "FirstName"], js[1, "LastName"])
   print(paste0("Creating profile report for ", FullName))
   if (is.na(output_file)) {
-    output_file <- paste0(LastName, "_report.", output_format)
+    output_file <- paste0(LastName, "_report.html")
   }
 
   setwd(temp_dir)
   # Render the Rmd file
   quarto::quarto_render(input = "RESQUE_profile.qmd",
                     output_file = basename(output_file),
-                    output_format = output_format,
+                    output_format = "html",
                     execute_dir = temp_dir,
                     execute_params = list(
                       FullName = FullName,

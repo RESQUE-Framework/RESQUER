@@ -5,7 +5,7 @@ output: html
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_linke.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt2.json"
 ---
 
 
@@ -66,7 +66,7 @@ library(tibble)
 library(OAmetrics)
 library(sparkline)
 
-#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_leehr.json"
+#params$json_path = "/Users/felix/Downloads/resque_1726568079549.json"
 
 if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
@@ -83,12 +83,12 @@ applicant <- preprocess(applicant=applicant_json)
 <br>*Academic Age: `r applicant$meta$AcademicAge`. Analysis based on `r nrow(applicant$indicators)` publications.*
 
 ::: {.callout-note}
-This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially.
+This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially. No bonus points have been assigned to the theory indicators yet, and also not to some other indicators of sample characteristics.
 :::
 
-Some parts of this profile are purely descriptive. For example, it is summarized whether researchers focus on lab or field studies, whether they predominantly work with psychophysiological data or rather focus on questionnaire studies. 
+Some parts of this profile are purely descriptive. For example, it is summarized the type of participant samples, or whether researchers predominantly work with psychophysiological data or rather focus on questionnaire studies. 
 
-Other parts contain, to some extent, an evaluative aspect: For example, research that is reproducible, which allows independent auditing because it provides open data and scripts is, *ceteris paribus*, better than research that does not have these aspects. Research outputs with these objective quality criteria of methodological rigor can gain "bonus points" which are summed across all provided research outputs and contribute to the [Rigor Profile Overview](#rigor-profile-overview).
+Other parts contain an evaluative aspect: For example, research that is reproducible, which allows independent auditing because it provides open data and scripts is, *ceteris paribus*, better than research that does not have these aspects. Research outputs with these objective quality criteria of methodological rigor can gain "bonus points" which are summed across all provided research outputs and contribute to the [Rigor Profile Overview](#rigor-profile-overview).
 
 ::: {.callout-note title="Methods: Is the rigor score systematically biased against certain fields?" collapse="true"}
 We took care not to systematically disadvantage certain fields or research styles. Generally, the rigor score is a relative score, computed as “percentage of maximal points” (POMP) score across all indicators that are applicable. For any indicator, one can choose the option "not applicable" if an indicator *principally* cannot be attained by a research output. The points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficient justification, in contrast, the indicator is set to "not available" (=0 points) and the maximum points are not adjusted.
@@ -151,7 +151,7 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r}
 #| results: "asis"
 
-cat(paste0(nrow(applicant$all_papers), " out of ", nrow(applicant$pubs), " submitted publications could be automatically retrieved with OpenAlex.\n"))
+cat(paste0(nrow(applicant$all_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
 
 if (nrow(applicant$all_papers) < nrow(applicant$pubs)) {
   cat('\n::: {.callout-caution collapse="true"}\n
@@ -180,7 +180,7 @@ kable(team_tab, align=c("l", "r", "r"))
 
 ## Types of research data
 
-The applicant submitted `r sum(applicant$pubs$P_Data == "Yes")` papers with empirical data. 
+The applicant submitted `r sum(is.na(applicant$pubs$P_Data_Source_Simulated) | !applicant$pubs$P_Data_Source_Simulated)` papers with empirical data. 
 
 ```{r}
 #| results: asis
@@ -191,8 +191,8 @@ get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
   df <- applicant$pubs |> select(contains(selector))
 
   tab <- data.frame(
-    c1 = colnames(df) |> str_replace(selector, ""),
-    c2 = apply(df, 2, function(x) sum(!is.na(x)))
+    c1 = colnames(df) |> str_replace(selector, "") |> unCamel0(),
+    c2 = apply(df, 2, function(x) sum(x == TRUE, na.rm=TRUE))
   )
   rownames(tab) <- NULL
   colnames(tab) <- headings
@@ -200,14 +200,14 @@ get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
 }
 
 # for some reason, you need to explicitly set the table.attr when you use `results: asis`
-get_data_types("P_Data_Type_") |> kable(table.attr = "class='table table-sm table-striped small'") 
+get_data_types(selector="P_Data_Type_") |> kable(table.attr = "class='table table-sm table-striped small'") 
 
 if (any(applicant$pubs$P_Data_Type_Behavioral, na.rm = TRUE)) {
-  cat("\n\n### Types of behavioral data\n\n")
+  cat("\n\n### ⤷ Types of behavioral data\n\n")
   get_data_types("P_Data_TypeBehavioral_") |> kable(table.attr = "class='table table-sm table-striped small'")  
 }
 if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
-  cat("\n\n### Types of physiological data\n\n")
+  cat("\n\n### ⤷ Types of physiological data\n\n")
   get_data_types(selector="P_Data_TypePhysiological_") |> kable(table.attr = "class='table table-sm table-striped small'")
 }
 
@@ -216,7 +216,12 @@ if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
 
 ## Types of samples
 
-Type of population/sample and representativeness for the `r sum(applicant$indicators$P_Data_Source_NewOwn)` papers with own new data collection:
+```{r}
+applicant$pubs$P_Sample_Type[is.na(applicant$pubs$P_Sample_Type)] <- FALSE
+```
+
+
+Type of population/sample and representativeness for the `r sum(applicant$pubs$P_Data_Source_NewOwn & applicant$pubs$P_Sample_Type != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
 
 ```{r}
 #| fig-width: 6
@@ -238,16 +243,19 @@ Sample_Type <- factor(
 
 df <- data.frame(
   Sample_Type = Sample_Type, 
-  Sample_Representative = factor(na.omit(applicant$pubs$P_Sample_Representative), levels=c("ConvenienceSample", "RepresentativeSample"), labels=c("Convenience Sample", "Representative Sample"))
+  Sample_CrossCultural = factor(applicant$pubs$P_Sample_CrossCultural, levels=c("NotApplicable", "SingleCulture", "MultipleCultures"), labels=c("Not applicable", "Single cultural or ethnic background", "Multiple cultural or ethnic backgrounds"))
 )
 
+df <- na.omit(df)
 
-# Count occurrences of each combination
+# Count occurrences of each combination, and add missing factor levels (to also show the non-existent cells)
 heatmap_data <- df %>%
-  count(Sample_Type, Sample_Representative) %>%
-  complete(Sample_Type, Sample_Representative, fill = list(n = 0))
+  filter(Sample_CrossCultural != "NotApplicable") %>%
+  count(Sample_Type, Sample_CrossCultural) %>%
+  complete(Sample_Type, Sample_CrossCultural, fill = list(n = 0)) |> 
+  na.omit()
 
-ggplot(heatmap_data, aes(x = Sample_Representative, y = Sample_Type, fill = n)) +
+ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
   geom_tile() +
   geom_text(aes(label = n), color="#EFEFEF") +  
   scale_fill_gradient(low = "white", high = "#444444") +
@@ -260,12 +268,17 @@ ggplot(heatmap_data, aes(x = Sample_Representative, y = Sample_Type, fill = n)) 
 
 ```
 
+<!--
 
 ## Types of population(s)
 
 Type of population for the `r sum(applicant$indicators$P_Data_Source_NewOwn)` papers with own new data collection:
 
+-->
+
 ```{r}
+#| include: false
+#| eval: false
 #| fig-width: 6
 #| fig-height: 3
 #| out-width: 80%
@@ -319,7 +332,7 @@ if (all(applicant$credit$Degree == "NoRole")) {
 }
 ```
 
-## Contributorship profile (CRediT roles)
+# Contributorship profile (CRediT roles)
 
 Based on `r nrow(applicant$indicators)` submitted publications, this is the self-reported contributorship profile:
 
@@ -331,32 +344,6 @@ Based on `r nrow(applicant$indicators)` submitted publications, this is the self
 credit_barchart(applicant$credit, ordered=FALSE)
 ```
 
-
-We categorized papers into levels of involvement, based on the degrees of contributorship:
-
-```{r}
-
-credit_inv_tab <- data.frame(
-  "Involvement Level" = c("Very High", "High", "Medium", "Low"),
-  "Definition" = c(
-    "(>=3 roles as *lead*) OR (>= 5 roles as (*lead* OR *equal*))",
-    "(1-2 roles as *lead*) OR (3-4 roles as *equal*)",
-    "(1-2 roles as *equal*) OR (>= 5 roles as *support*)",
-    "All other combinations"
-  )
-)
-
-t1 <- table(applicant$indicators$CRediT_involvement) %>% as.data.frame() 
-
-# this is an ugly way of merging ...
-credit_inv_tab$Publications <- 0
-credit_inv_tab$Publications[1] <- t1[t1$Var1 == "Very High", 2]
-credit_inv_tab$Publications[2] <- t1[t1$Var1 == "High", 2]
-credit_inv_tab$Publications[3] <- t1[t1$Var1 == "Medium", 2]
-
-
-kable(credit_inv_tab)
-```
 </div>
 <div id="CRediT-disclaimer" style="display: none;">
 <hr>
@@ -453,13 +440,47 @@ RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall
 [BIP! Scholar](https://bip.imsi.athenarc.gr/site/home) (a non-commercial open-source service to facilitate fair researcher assessment) provides **five impact classes** based on norm values:
 
 ::: {style="font-size: 80%;"}
+<style>.table-equal-width th, .table-equal-width td {width: 20%; text-align: center; }
+</style>
+
+<div class="table-equal-width">
 | 🚀 Top 0.01% | ️🌟 Top 0.1%  |️✨ Top 1% | Top 10% | Average (Bottom 90%) |
 |--------------|--------------|----------|--------|----------------------|
+</div>
+
 :::
 
 
 ::: {.callout-note title="Methods: Computation of the Popularity metric" collapse="true"}
 This indicator reflects impact/attention of an article in the research community at large. It is based on *AttRank*, a variation of PageRank (known from the Google search algorithm) that accounts for the temporal evolution of the citation network. By that, it alleviates the bias against younger publications, which have not had the chance to accumulate a lot of citations. It models a researcher's preference to read papers which received a lot of attention recently. It was evaluated (and vetted) in its performance to predict the ranking of papers concerning their *future impact* (i.e., citations). For more details, see [BIP! glossary](https://bip.imsi.athenarc.gr/site/indicators) and the references therein.
+:::
+
+::: {.callout-note title="Methods: CRediT Levels of involvement" collapse="true"}
+We categorized papers into levels of involvement, based on the degrees of contributorship:
+
+```{r}
+
+credit_inv_tab <- data.frame(
+  "Involvement Level" = c("Very High", "High", "Medium", "Low"),
+  "Definition" = c(
+    "(>=3 roles as *lead*) OR (>= 5 roles as (*lead* OR *equal*))",
+    "(1-2 roles as *lead*) OR (3-4 roles as *equal*)",
+    "(1-2 roles as *equal*) OR (>= 5 roles as *support*)",
+    "All other combinations"
+  )
+)
+
+t1 <- table(applicant$indicators$CRediT_involvement) %>% as.data.frame() 
+
+# this is an ugly way of merging ...
+credit_inv_tab$Publications <- 0
+credit_inv_tab$Publications[1] <- t1[t1$Var1 == "Very High", 2]
+credit_inv_tab$Publications[2] <- t1[t1$Var1 == "High", 2]
+credit_inv_tab$Publications[3] <- t1[t1$Var1 == "Medium", 2]
+
+
+kable(credit_inv_tab)
+```
 :::
 
 From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullName`, `r nrow(applicant$BIP %>% filter(pop_class <= "C4"))` `r ifelse(nrow(applicant$BIP %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class of all papers or better.
@@ -508,219 +529,64 @@ if (nrow(pop_sel) > 0) {
 
 
 
+# Internationality and Interdisciplinarity
 
+::: {.callout-note title="Methods: Computation of Internationality and Interdisciplinarity" collapse="true"}
+The analysis is only based on the submitted publications (not the entire publication list) of the applicant. Publication and co-author data is retrieved from the OpenAlex data base. Note that preprints are not indexed by OpenAlex and therefore do not contribute to this analysis.
 
+- *Internationality*: All co-authors are retrieved from OpenAlex with their current affiliation. The index is measured by Pielou's Evenness Index (Pielou 1966) of the country codes of all co-authors. It considers the 10 most frequent country codes.
+- *Interdisciplinarity* is measured by the Evenness Index of the fields (as classified by OpenAlex) of the publications. It considers the 6 most frequent fields.
 
-<!--
-## Reproducibility
-
-### Correctness of computational results has been independently verified
-
-```{r}
-IV <- applicant$indicators %>% 
-  filter(!is.na(P_TypeMethod_EmpiricalQuantitative) & P_TypeMethod_EmpiricalQuantitative == TRUE)
-
-```
-
-`r nrow(IV)` papers had empirical data. Of these analysis have been independently verified for computational correctness:
-
-```{r}
-#| fig-width: 10
-#| fig-height: 4
-
-IV$IV <- factor(IV$P_IndependentVerification, levels=c("NotApplicable", "No", "WorkflowReproducible", "MainResultsReproducible", "AllResultsReproducible", "AnalysisReplication"), labels=c("not applicable", "No", "Workflow/technical repro", "Main results verified", "All results verified", "Independent Reimplementation"))
-
-IV_tab <- table(IV$IV) |> prop.table() |> as.data.frame() %>%
-  mutate(perc = round(Freq*100)) %>% 
-  filter(perc > 0)
-
- ggplot(IV_tab, aes(x = "x", y = perc, fill = Var1)) +
-  geom_col(width=0.35) +
-  scale_y_continuous(expand = expansion(add = c(10, 10))) + 
-  scale_fill_manual(values = rev(c("grey80", "indianred1", "darkseagreen1", "darkolivegreen2", "chartreuse2", "green1")), breaks=rev(c("not applicable", "No", "Workflow/technical repro", "Main results verified", "All results verified", "Independent Reimplementation")), guide="none") +
-  geom_text(aes(label = paste0(gsub(" ", "\n", Var1), ":\n", round(perc), "%")), position = position_stack(vjust = 0.5), size=6) +
-  RESQUER:::theme_singlebar() + coord_flip()
-```
-
--->
-
-
-<!--
-
-## Preregistration
-
-### Was the research preregistered / a registered report?
-```{r}
-#| fig-width: 10
-#| fig-height: 4
-
-applicant$pubs$P_Preregistration2 <- factor(applicant$pubs$P_Preregistration, levels=c("NotApplicable", "No", "Yes", "RegisteredReport"), labels=c("Not Applicable", "Not preregistered", "Pre- registration", "Registered Report"))
-
-prereg_tab <- table(applicant$pubs$P_Preregistration2) |> as.data.frame() %>%
-  mutate(perc = round(Freq*100/sum(Freq)))
-
-# give missing categories a minimal width to make them visible
-prereg_tab$perc[prereg_tab$perc == 0] <- 0.2
-
- ggplot(prereg_tab, aes(x = "x", y = perc, fill = Var1)) +
-  ggtitle(paste0("n=", nrow(applicant$pubs), " publications")) +
-  geom_col(width=0.35) +
-  scale_y_continuous(expand = expansion(add = c(10, 10))) + 
-  scale_fill_manual(values = rev(c("grey80", "#FED976", "#90c916", "green4")), breaks=rev(c("Not Applicable", "Not preregistered", "Pre- registration", "Registered Report")), guide="none") +
-  geom_text(aes(label = paste0(gsub(" ", "\n", Var1), ":\nn=", Freq, "\n(", round(perc), "%)")), position = position_stack(vjust = 0.5), size=6) +
-  RESQUER:::theme_singlebar() + coord_flip()
-
-```
-
-### Replication: The publication contained a preregistered replication attempt (either direct/close or conceptual)
-```{r}
-#| fig-width: 10
-#| fig-height: 4
-
-if (!is.null(applicant$pubs$P_PreregisteredReplication)) {
-
-applicant$pubs$replication <- factor(applicant$pubs$P_PreregisteredReplication, levels=c("NotApplicable", "No", "Yes"), labels=c("not applicable", "No", "Yes"))
-
-# fix some logical dependencies
-applicant$pubs$replication[is.na(applicant$pubs$replication) & applicant$pubs$P_Preregistration2 == "Not preregistered"] <- "No"
-
-repl_tab <- table(applicant$pubs$replication) |> as.data.frame() %>%
-  mutate(perc = round(Freq*100/sum(Freq))) %>% 
-  filter(perc > 0)
-
- ggplot(repl_tab, aes(x = "x", y = perc, fill = Var1)) +
-  ggtitle(paste0("n=", nrow(applicant$pubs), " publications")) +
-  geom_col(width=0.35) +
-  scale_y_continuous(expand = expansion(add = c(10, 10))) + 
-  scale_fill_manual(values = rev(c("#FED976", "#90c916", "grey80")), breaks=rev(c("No", "Yes", "not applicable")), guide="none") +
-  geom_text(aes(label = paste0(gsub(" ", "\n", Var1), ":\nn=", Freq, "\n(", round(perc), "%)")), position = position_stack(vjust = 0.5), size=6) +
-  RESQUER:::theme_singlebar() + coord_flip()
- 
-}
-```
-
-::: {.callout-note title="The following publications contained preregistered replications:" collapse="true"}
-
-```{r}
-kable(applicant$pubs %>% 
-  filter(P_PreregisteredReplication == "Yes") %>% 
-  select(TitleLink, Year)
-)
-```
+The evenness indexes are normalized to a scale from 0 (no diversity, everything is one category) to 1 (maximum diversity, all categories are equally represented). It is computed as a normalized Shannon entropy.
 :::
 
-
-
-### What has been preregistered?
-
 ```{r}
-prereg_pubs <- applicant$pubs[applicant$pubs$P_Preregistration %in% c("Yes", "RegisteredReport"), ]
+n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
 
-prereg_content <- prereg_pubs %>% select(contains("P_Preregistration_Content"))
+internationality_string <- paste0(sum(applicant$internationalization$country_codes_repeated$n), " unique identifiable co-authors:<br><ul><li>", applicant$internationalization$perc_international, "% from ", nrow(applicant$internationalization$country_codes_repeated)-1, " international countries</li><li>", applicant$internationalization$perc_same_country, "% from the same country</li></ul>")
 
-# add missing columns
-expected_columns<- c(
-  P_Preregistration_Content_SampleSizePlanning = FALSE,
-  P_Preregistration_Content_Hypotheses = FALSE, 
-  P_Preregistration_Content_Operationalizations = FALSE, 
-  P_Preregistration_Content_AnalysisPlan = FALSE
+n_countries <- min(nrow(applicant$internationalization$country_codes_repeated), 10)
+country_tab <- applicant$internationalization$country_codes_repeated
+colnames(country_tab) <- c("Co-authors' Country Code", "# of Co-authors")
 
-)
-# adding those columns to df1
-prereg_content <- add_column(prereg_content, !!!expected_columns[setdiff(names(expected_columns), names(prereg_content))])
+subfield_tab <- applicant$interdisciplinarity$subfields_tab[1:n_subfields, ]
+colnames(subfield_tab) <- c("Subfield", "# of papers")
 
-prereg_content_tab <- pivot_longer(prereg_content, everything()) %>% 
-  group_by(name) %>% 
-  summarise(preregs=sum(value)) %>% 
-  mutate(preregs = preregs/nrow(prereg_content))
-
-prereg_content_tab$name <- str_replace(prereg_content_tab$name, "P_Preregistration_Content_", "")
-prereg_content_tab <- unCamel(prereg_content_tab, "name")
-```
-
-`r nrow(prereg_pubs)` of `r nrow(applicant$pubs)` eligible publications had preregistrations. The following components have been preregistered (relative to `r nrow(prereg_pubs)` preregistrations):
-
-```{r}
-# TODO: Print percentages for y axis, remove legend
-ggplot(prereg_content_tab, aes(x=name, y=preregs, fill=name)) + geom_bar(stat="identity") + coord_flip()
+interdisciplinarity_string <- paste0(nrow(applicant$interdisciplinarity$primary_fields_tab_reduced), " primary fields: <ul>", paste0(
+  "<li>", applicant$interdisciplinarity$primary_fields_tab_reduced$primary_field, " (", applicant$interdisciplinarity$primary_fields_tab_reduced$n, ")</li>", collapse=" "), "</ul>")
 ```
 
 
-
-# "Not applicable" justifications
-
-Choosing "not applicable" indicates that an indicator *principally* cannot be attained by a research output. To avoid bias against certain research fields, the points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficent justification, in contrast, the indicator is set to "not available" (=0 points) and the maximum points are not adjusted.
-
-
-```{r}
-#| results='asis'
-
-# cols with "NotApplicable"
-cols_with_NotApplicable <- apply(applicant$indicators, 2, function(col) any(col == "NotApplicable")) |> na.omit()
-colnames_with_NotApplicable <- names(cols_with_NotApplicable)[cols_with_NotApplicable == TRUE]
-
-# remove one field: P_MultiStudy has no explanation if "not applicable" is selected
-colnames_with_NotApplicable <- colnames_with_NotApplicable[colnames_with_NotApplicable != "P_MultiStudy"]
-
-if (length(colnames_with_NotApplicable) > 0) {
-  cat("These are all claims of non-applicability from this applicant:\n\n")
-  
-  for (i in colnames_with_NotApplicable) {
-    # add corresponding explanation
-    cat(paste0("### ", i, "\n\n"))
+```{=html}
+<div style="display: flex; flex-direction: column; border: 1px solid #BBBBBB;">
+    <!-- Row 1 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; text-align: center"><b>Internationality</b></div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; text-align: center"><b>Interdisciplinarity</b></div>
+    </div>
+    <!-- Row 2 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r slider(applicant$internationalization$international_evenness |> round(2), "Only within country co-authors", "Broad coauthor network from many countries")`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r slider(applicant$interdisciplinarity$interdisc_evenness |> round(2), "Single discipline", "Many disciplines")`</div>
+    </div>
     
-    NotAppl <- applicant$indicators[applicant$indicators[, i] == "NotApplicable", c("Title", "Year", "DOI", i, paste0(i, "_NAExplanation"))]
-    NotAppl <- NotAppl[!is.na(NotAppl[, i]), ]
-    rownames(NotAppl) <- NULL
+        <!-- Row 3 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r internationality_string`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r interdisciplinarity_string`</div>
+    </div>
     
-    NotAppl$Title <- paste0("[", NotAppl$Title, "](", NotAppl$DOI, ")")
-    NotAppl$DOI <- NULL
-    
-    # beware: within for-loops, kable() needs an explicit `print`
-    print(kable(NotAppl))
-  }
-} else {
-  cat("**The applicant had no claims of non-applicability.**\n\n")
-}
+    <!-- Row 4 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; font-size:80%;">`r kable(country_tab, format="html", escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; font-size:80%;">The main subfields are (multiple categories per paper are possible): `r kable(subfield_tab, format="html", escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")`</div>
+    </div>
+
+</div>
 ```
 
-```{r}
-#| results='asis'
 
 
-# Two extra explanations: 
-# (1) P_Suitable_Explanation 
-# -> general opt-out of this research output
-# (2) P_Data_Open_AccessLevel_ZK2Explanation
-# -> Justification for restricted access (ZK2)
-
-if (all(c("P_Suitable", "P_Suitable_Explanation") %in% colnames(applicant$indicators))) {
-  P_Suitable_tab <- applicant$indicators %>% 
-    select(Title0=Title, Year, DOI, P_Suitable, P_Suitable_Explanation)
-    
-  P_Suitable_tab$Title <- paste0("[", P_Suitable_tab$Title, "](", P_Suitable_tab$DOI, ")")
-
-  P_Suitable_tab <- P_Suitable_tab %>% 
-    filter(P_Suitable == "No") %>% 
-    select(Title, Year, P_Suitable, P_Suitable_Explanation)
-
-  cat("### 'This output is generally not suitable for the assessment scheme'\n")
-  kable(P_Suitable_tab)
-}
-
-if (all(c("P_Data_Open_AccessLevel", "P_Data_Open_AccessLevel_ZK2Explanation") %in% colnames(applicant$indicators))) {
-  # TODO: Show table
-  applicant$indicators[, c("P_Data_Open_AccessLevel", "P_Data_Open_AccessLevel_ZK2Explanation")]
-
-  cat("\n\n### Justification for open data access level >= 2")
-  #kable(P_Suitable_tab)
-
-  print("WARNING: Not implemented yet")
-}
-
-```
-
--->
 
 
 

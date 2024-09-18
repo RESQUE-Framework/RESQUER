@@ -1,0 +1,145 @@
+---
+title: "RESQUE Profile for `r params$FullName`"
+embed-resources: true
+format:
+  html:
+    unsafe: true
+toc: true
+params:
+  FullName: "Max Mustermann Demoprofile"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Leising.json"
+---
+
+
+```{r}
+#| include: false
+
+library(knitr)
+library(kableExtra)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo=FALSE,
+  message=FALSE,
+  warning=FALSE,
+  out.width="100%"
+)
+
+# Set global chunk options for tables
+options(knitr.table.format = "html")
+
+# Set default kableExtra styling options
+knit_hooks$set(kable = function(x, options) {
+  kable(x, format = "html") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+})
+```
+
+<style>
+table, th, td {
+  border: 1px solid #BBBBBB;
+  border-collapse: collapse;
+}
+</style>
+
+
+```{r}
+#| results: "asis"
+
+if (is.null(params$json_path)) {
+  cat("\n\n::: {.callout-warning}\nNo data supplied - using demo profile\n:::\n\n")
+}
+```
+
+
+```{r setup}
+library(RESQUER)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(scales)
+library(forcats)
+library(wordcloud)
+library(knitr)
+library(openalexR)
+library(tibble)
+library(OAmetrics)
+library(sparkline)
+
+#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_leehr.json"
+#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt.json"
+# file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json"
+
+if (is.null(params$json_path)) {
+  applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
+} else {
+  applicant_json <- read_RESQUE(file=params$json_path)
+}
+
+applicant <- preprocess(applicant=applicant_json)
+
+```
+
+
+# Internationality and Interdisciplinarity
+
+::: {.callout-note title="Methods: Computation of Internationality and Interdisciplinarity" collapse="true"}
+The analysis is only based on the submitted publications (not the entire publication list) of the applicant. Publication and co-author data is retrieved from the OpenAlex data base. Note that preprints are not indexed by OpenAlex and therefore do not contribute to this analysis.
+
+- *Internationality* is measured by Pielou's Evenness Index (Pielou 1966) of the country codes of all co-authors. It considers the 10 most frequent country codes.
+- *Interdisciplinarity* is measured by the Evenness Index of the fields (as classified by OpenAlex) of the publications. It considers the 6 most frequent fields.
+
+The evenness indexes are normalized to a scale from 0 (no diversity, everything is one category) to 1 (maximum diversity, all categories are equally represented).
+:::
+
+```{r}
+n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
+
+internationality_string <- paste0(sum(applicant$internationalization$country_codes_repeated$n), " unique identifiable co-authors:<br><ul><li>", applicant$internationalization$perc_international, "% from ", nrow(applicant$internationalization$country_codes_repeated)-1, " international countries</li><li>", applicant$internationalization$perc_same_country, "% from the same country</li></ul>")
+
+n_countries <- min(nrow(applicant$internationalization$country_codes_repeated), 10)
+country_tab <- applicant$internationalization$country_codes_repeated
+colnames(country_tab) <- c("Co-authors' Country Code", "# of Co-authors")
+
+subfield_tab <- applicant$interdisciplinarity$subfields_tab[1:n_subfields, ]
+colnames(subfield_tab) <- c("Subfield", "# of papers")
+
+interdisciplinarity_string <- paste0(nrow(applicant$interdisciplinarity$primary_fields_tab_reduced), " primary fields: <ul>", paste0(
+  "<li>", applicant$interdisciplinarity$primary_fields_tab_reduced$primary_field, " (", applicant$interdisciplinarity$primary_fields_tab_reduced$n, ")</li>", collapse=" "), "</ul>")
+```
+
+
+```{=html}
+<div style="display: flex; flex-direction: column; border: 1px solid #BBBBBB;">
+    <!-- Row 1 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; text-align: center"><b>Internationality</b></div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; text-align: center"><b>Interdisciplinarity</b></div>
+    </div>
+    <!-- Row 2 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r slider(applicant$internationalization$international_evenness |> round(2), "Only within country co-authors", "Broad coauthor network from many countries")`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r slider(applicant$interdisciplinarity$interdisc_evenness |> round(2), "Single discipline", "Many disciplines")`</div>
+    </div>
+    
+        <!-- Row 3 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r internationality_string`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r interdisciplinarity_string`</div>
+    </div>
+    
+    <!-- Row 4 -->
+    <div style="display: flex;">
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r kable(country_tab, format="html", escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">The main subfields are (multiple categories per paper are possible): `r kable(subfield_tab, format="html", escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")`</div>
+    </div>
+
+</div>
+```
+
+
+
+
+

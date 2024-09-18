@@ -1,5 +1,5 @@
 # file <- system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
-# file="/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_linke.json"
+# file="/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt2.json"
 
 #' Read a single RESQUE JSON file and do basic preprocessing
 #' (elaborated preprocessing happens in `preprocess()`).
@@ -9,6 +9,7 @@
 #' @import dplyr
 #' @import stringr
 #' @import tidyr
+#' @import OAmetrics
 #' @export
 read_RESQUE <- function(file, verbose=FALSE) {
   dat0 <- read_json(file, simplifyVector = TRUE)
@@ -33,13 +34,11 @@ read_RESQUE <- function(file, verbose=FALSE) {
   scores$scores <- scores$scores[-1]
 
   # Do some conversion between old versions of the packs
-  if (any(dat$version != "0.4.0")) {
-    dat <- dat %>% rename(
-      P_TypeMethod_EmpiricalQuantitative = P_TypeMethod_Empirical
-    )
-    if (!is.null(dat$P_TypeMethod_Simulation)) {
-      dat <- dat %>% rename(P_TypeMethod_Computational = P_TypeMethod_Simulation)
-    }
+  if ("P_TypeMethod_Empirical" %in% colnames(dat)) {
+    dat <- dat %>% rename(P_TypeMethod_EmpiricalQuantitative = P_TypeMethod_Empirical)
+  }
+  if ("P_TypeMethod_Simulation" %in% colnames(dat)) {
+    dat <- dat %>% rename(P_TypeMethod_Computational = P_TypeMethod_Simulation)
   }
 
   # Create nice factor labels
@@ -48,12 +47,12 @@ read_RESQUE <- function(file, verbose=FALSE) {
   #dat <- unCamel(dat, "P_TypePublication")
   #dat <- unCamel(dat, "P_ReproducibleScripts")
 
-  dat$dois_normalized <- str_extract(dat$DOI, pattern="10.\\d{4,9}/[-._;()/:a-z0-9A-Z]+")
+  dat$dois_normalized <- OAmetrics::normalize_dois(dat$DOI)
 
   #-----------------------------------------------------------------
   # CRediT
   credit <- dat %>%
-    select(contains("CRediT")) %>%
+    select(contains("CRediT"), -P_CRediT_InJournal) %>%
     pivot_longer(everything(), names_prefix = "P_CRediT_")
 
   colnames(credit) <- c("Role", "Degree")
