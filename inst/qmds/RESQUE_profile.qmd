@@ -5,7 +5,7 @@ output: html
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt2.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test Wien/resque_scheffel_1726655196995.json"
 ---
 
 
@@ -156,8 +156,8 @@ cat(paste0(nrow(applicant$all_papers), " out of ", sum(applicant$indicators$type
 if (nrow(applicant$all_papers) < nrow(applicant$pubs)) {
   cat('\n::: {.callout-caution collapse="true"}\n
 ## The following papers could *not* be retrieved by openAlex:\n\n')
-  applicant$pubs[!applicant$pubs$doi_links %in% applicant$all_papers$doi, ] %>% 
-    select(Title, Year, doi, P_TypePublication) %>% 
+  applicant$pubs[!applicant$pubs$dois_normalized %in% applicant$all_papers$doi, ] %>% 
+    select(Title, Year, doi=dois_normalized, P_TypePublication) %>% 
     kable() %>% 
     print()
 
@@ -177,10 +177,13 @@ colnames(team_tab) <- c("Team category", "Frequency", "%")
 kable(team_tab, align=c("l", "r", "r"))
 ```
 
-
 ## Types of research data
 
-The applicant submitted `r sum(is.na(applicant$pubs$P_Data_Source_Simulated) | !applicant$pubs$P_Data_Source_Simulated)` papers with empirical data. 
+<!-- 
+TODO: This does not work without Simualted data.
+
+The applicant submitted r sum(is.na(applicant$pubs$P_Data_Source_Simulated) | !applicant$pubs$P_Data_Source_Simulated) papers with empirical data. 
+-->
 
 ```{r datatypes}
 #| results: asis

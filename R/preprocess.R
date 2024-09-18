@@ -21,7 +21,7 @@
 
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
-# applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Leising.json", package="RESQUER"))
+# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test Wien/resque_scheffel_1726655196995.json")
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
@@ -229,6 +229,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   nw <- get_network(works=applicant$all_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
+
   applicant$internationalization <- list(
     international_evenness = nw$international_evenness,
     country_codes_repeated = nw$country_codes_repeated,
