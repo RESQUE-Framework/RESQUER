@@ -102,7 +102,7 @@ evaluate_condition_in_context <- function(condition, context) {
 #' @export
 score <- function(research_output, verbose = FALSE) {
   # for debugging:
-  # research_output <- research_outputs[[1]]
+  # research_output <- research_outputs[[2]]
 
   # load the scoring information from the current pack on github:
   scoring <- get_scoring_information(research_output)
