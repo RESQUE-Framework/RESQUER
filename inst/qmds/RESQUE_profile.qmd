@@ -5,7 +5,7 @@ output: html
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Gaertner.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt2.json"
 ---
 
 
