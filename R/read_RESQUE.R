@@ -52,7 +52,7 @@ read_RESQUE <- function(file, verbose=FALSE) {
   #-----------------------------------------------------------------
   # CRediT
   credit <- dat %>%
-    select(contains("CRediT"), -P_CRediT_InJournal) %>%
+    select(contains("CRediT"), -contains("P_CRediT_InJournal")) %>%
     pivot_longer(everything(), names_prefix = "P_CRediT_")
 
   colnames(credit) <- c("Role", "Degree")
