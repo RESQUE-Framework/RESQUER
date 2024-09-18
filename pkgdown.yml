@@ -3,7 +3,7 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   Radarchart_interpretation: Radarchart_interpretation.html
-last_built: 2024-09-18T06:38Z
+last_built: 2024-09-18T06:41Z
 urls:
   reference: https://resque-framework.github.io/RESQUER/reference
   article: https://resque-framework.github.io/RESQUER/articles
