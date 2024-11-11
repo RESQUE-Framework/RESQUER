@@ -53,7 +53,7 @@ RRS_radarchart <- function(RRS, title="", overall_score=FALSE, minimal=FALSE, sh
 
   if (!minimal) {
     p1 <- p1 + geom_rect(aes(xmin=xstart, xmax=xend, ymin=rel_score, ymax=1), fill="#EFEFEF", color="#DEDEDE") +
-      guides(fill=guide_legend("Rigor Dimension")) +
+      guides(fill=guide_legend("Rigor Domain")) +
       scale_fill_brewer(palette="Set3") +
       geom_text(aes(x=xmid, y=1, label = dimension), vjust = 0, hjust=0.5, size=base_size/5)
 
