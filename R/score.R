@@ -44,12 +44,9 @@ get_pack_name <- function(research_output) {
 # ====== Scoring ======
 
 # Internal function: Get the scoring information for a pack
-get_scoring_information <- function(research_output) {
-  get_json_object(paste0(
-    "https://raw.githubusercontent.com/RESQUE-framework/website/main/archive/packs/",
-    get_pack_name(research_output),
-    ".json"
-  ))$scoring
+get_scoring_information <- function(research_output, meta = fromJSON("{}")) {
+  # If the pack has a scoring information, return it
+  meta$forms[[research_output$type]]$scoring
 }
 
 
@@ -100,12 +97,12 @@ evaluate_condition_in_context <- function(condition, context) {
 #' @importFrom purrr map2_dbl map
 #' @importFrom stats setNames
 #' @export
-score <- function(research_output, verbose = FALSE) {
+score <- function(research_output, verbose = FALSE, meta = fromJSON("{}")) {
   # for debugging:
   # research_output <- research_outputs[[2]]
 
   # load the scoring information from the current pack on github:
-  scoring <- get_scoring_information(research_output)
+  scoring <- get_scoring_information(research_output, meta = meta)
 
   if (verbose == TRUE && is.null(scoring)) {
     print(paste0("scoring skipped (scoring == NULL)"))
@@ -134,7 +131,7 @@ score <- function(research_output, verbose = FALSE) {
       if (verbose == TRUE) {
         print(paste0("This indicator is not applicable; skipping."))
       }
-      next;
+      next
     }
 
     max_score <- max_score + indicator$max
@@ -144,17 +141,13 @@ score <- function(research_output, verbose = FALSE) {
 
     # Evaluate each condition:
     # if it is met, add the corresponding value to the score
-    values <- map2_dbl(
-      indicator$points$condition,
-      indicator$points$value,
-      function(condition, value) {
-        if (evaluate_condition_in_context(condition, research_output)) {
-          value
-        } else {
-          0
-        }
+    values <- c(0)
+
+    for (p in indicator$points) {
+      if (evaluate_condition_in_context(p$condition, research_output)) {
+        values <- c(values, p$value)
       }
-    )
+    }
 
     # Apply the specified operation to the values
     indicator_score <- if (indicator$op == "sum") {
@@ -167,6 +160,10 @@ score <- function(research_output, verbose = FALSE) {
 
     # Add the indicator score to the reached score
     reached_score <- reached_score + indicator_score
+
+    if (verbose == TRUE) {
+      print(paste0("reached_score now is: ", reached_score))
+    }
 
     # Add the indicator score to the indicator score list
     indicators <- c(indicators, setNames(list(list(value = indicator_score, max = indicator$max)), indicator_name))
@@ -198,7 +195,8 @@ score <- function(research_output, verbose = FALSE) {
 #' @return A list with scores, number of scored research outputs, and overall score
 #' @export
 score_all <- function(research_outputs, verbose = FALSE) {
-  scores <- map(research_outputs, score, verbose = verbose)
+  meta <- research_outputs[[1]]
+  scores <- map(research_outputs, ~ score(.x, meta = meta, verbose = verbose))
 
   # Applicant requests manual processing if the max score is 0
   max_scores <- sapply(scores, function(x) x$max_score)
@@ -243,12 +241,15 @@ score_all_from_file <- function(file, verbose = FALSE) {
 # ====== Example ======
 
 # Example: score multiple research outputs
-# research_outputs <- read_json("profile/data/resque_1697454489129.json")
+# research_outputs <- read_json("~/Downloads/resque.json")
 # score_all(research_outputs)
 
 # Example: score a single research output
-# research_output <- research_outputs[[1]]
-# score(research_output)
+# research_output <- research_outputs[[2]]
+
+# meta <- research_outputs[[1]]
+
+# score(research_outputs[[11]], meta = meta, verbose = TRUE)
 
 # Example: score all research outputs from a file
 # scores <- score_all_from_file("profile/data/resque_Felix.json", verbose = TRUE)
