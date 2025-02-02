@@ -43,12 +43,6 @@ get_pack_name <- function(research_output) {
 
 # ====== Scoring ======
 
-# Internal function: Get the scoring information for a pack
-get_scoring_information <- function(research_output, meta = fromJSON("{}")) {
-  # If the pack has a scoring information, return it
-  meta$forms[[research_output$type]]$scoring
-}
-
 
 # Evaluate a condition in a context
 #' @importFrom stringr str_replace_all
@@ -97,15 +91,21 @@ evaluate_condition_in_context <- function(condition, context) {
 #' @importFrom purrr map2_dbl map
 #' @importFrom stats setNames
 #' @export
-score <- function(research_output, verbose = FALSE, meta = fromJSON("{}")) {
+score <- function(research_output, verbose = FALSE, meta) {
   # for debugging:
   # research_output <- research_outputs[[2]]
 
-  # load the scoring information from the current pack on github:
-  scoring <- get_scoring_information(research_output, meta = meta)
+  # load the scoring information, which is stored in the exported json file
+  scoring <- meta$forms[[research_output$type]]$scoring
 
   if (verbose == TRUE && is.null(scoring)) {
-    print(paste0("scoring skipped (scoring == NULL)"))
+    print(paste0("scoring skipped (scoring information missing in `meta`)"))
+    return(list(
+      indicators = NA,
+      max_score = NA,
+      score = NA,
+      relative_score = NA
+    ))
   }
 
   indicators <- list()
@@ -205,7 +205,10 @@ score_all <- function(research_outputs, verbose = FALSE) {
   list(
     scores = scores,
     scored_research_outputs = length(valid_scores),
-    overall_score = mean(sapply(valid_scores, function(x) x$relative_score))
+    overall_score = ifelse(
+      length(valid_scores) > 0,
+      mean(sapply(valid_scores, function(x) x$relative_score)),
+      NA)
   )
 }
 
@@ -253,3 +256,7 @@ score_all_from_file <- function(file, verbose = FALSE) {
 # Example: score all research outputs from a file
 # scores <- score_all_from_file("profile/data/resque_Felix.json", verbose = TRUE)
 
+
+# scores <- score_all_from_file(json_file, verbose = TRUE)
+
+# applicant <- read_RESQUE(file=json_file)
