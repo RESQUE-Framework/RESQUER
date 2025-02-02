@@ -17,7 +17,20 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
 
   # Which outputs should be scored? At the moment, only publications
   score_list <- applicant$scores$scores[applicant$indicators$P_Suitable == "Yes"]
-  n_scorable <- length(score_list)
+  NaNs <- sapply(score_list, "[[", "relative_score")
+  n_scorable <- sum(!is.nan(NaNs))
+
+  if (n_scorable == 0) {
+    warning("No publications suitable for scoring.")
+    return(list(
+      overall_score = NA,
+      paper_scores = NA,
+      n_papers = 0,
+      sector_scores = NA,
+      radar_dat = NA,
+      publication_years = NA
+    ))
+  }
 
   scores_all <- get_indicators(sc=score_list)
 
@@ -39,7 +52,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
       scores = sum(value),
       max_points = sum(max),
       rel_score = scores/max_points
-    ) %>% 
+    ) %>%
     arrange(output)
 
   RRS_by_paper_overall$doi <- normalize_dois(applicant$pubs$doi[RRS_by_paper_overall$output])
@@ -52,8 +65,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
       scores = sum(value),
       max_points = sum(max),
       rel_score = scores/max_points
-    ) %>% 
-    ungroup() %>% 
+    ) %>%
+    ungroup() %>%
     select(-max_points, -scores) %>%
     pivot_wider(names_from=category, values_from=rel_score) %>%
     arrange(output)
@@ -78,7 +91,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
 
 
   # overall rigor score as in webform:
-  # (this code does not work anymore, as the raw scores and max_points 
+  # (this code does not work anymore, as the raw scores and max_points
   # are not present in this data frame any more)
   #sum(RRS_by_paper$scores)/sum(RRS_by_paper$max_points)
 
