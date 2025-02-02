@@ -5,7 +5,7 @@ output: html
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt2.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_afterupdateto_charts.json"
 ---
 
 
@@ -79,8 +79,29 @@ applicant <- preprocess(applicant=applicant_json)
 ```
 
 **The "fingerprint" of how research is conducted, when only the best work is submitted.** 
-<br>*Analysis from `r as.Date(applicant$meta$date_analysis)`*
-<br>*Academic Age: `r applicant$meta$AcademicAge`. Analysis based on `r nrow(applicant$indicators)` publications.*
+
+```{r overview_table}
+overview_tab <- data.frame(
+  col1 = c("Name", "Analysis date", "Academic age", "# of analysed outputs", "Package version"),
+  col2 = c(
+    applicant$meta$FullName, 
+    as.Date(applicant$meta$date_analysis) |> as.character(), 
+    applicant$meta$AcademicAge,
+    nrow(applicant$indicators),
+    packageVersion("RESQUER") |> as.character()
+  )
+)
+# Apply dark grey text color to all cells
+overview_tab[] <- lapply(overview_tab, function(x) {
+  cell_spec(x, color = "darkgrey")
+})
+
+# Create the table without column headers and with smaller text
+kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:", "")) %>% 
+  kable_styling(font_size = 9, bootstrap_options = c("hover", "condensed"), full_width = FALSE) %>% 
+  row_spec(1:nrow(overview_tab), extra_css = "padding-top:1px; padding-bottom:1px;")
+```
+
 
 ::: {.callout-note}
 This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially. No bonus points have been assigned to the theory indicators yet, and also not to some other indicators of sample characteristics.
@@ -329,33 +350,33 @@ ggplot(heatmap_data, aes(x = Sample_WEIRDness, y = Sample_CC, fill = n)) +
 
 
 
-<div id="CRediT-section" style="display: block;">
-```{r}
-if (all(applicant$credit$Degree == "NoRole")) {
-  hideCRediT <- "true"
-} else {
-  hideCRediT <- "false"
-}
-```
-
-# Contributorship profile (CRediT roles)
-
-Based on `r nrow(applicant$indicators)` submitted publications, this is the self-reported contributorship profile:
-
+<!-- Conditionally render the CRediT section -->
 ```{r}
 #| out.width: 100%
 #| fig.width: 8
 #| fig.height: 5
+#| comment: NA
+#| results: asis
 
-credit_barchart(applicant$credit, ordered=FALSE)
-```
+if (!all(applicant$credit$Degree == "NoRole")) {
+  hideCRediT <- FALSE
+  cat(paste0("
+# Contributorship profile (CRediT roles)
 
-</div>
-<div id="CRediT-disclaimer" style="display: none;">
+Based on ", nrow(applicant$indicators), " submitted publications, this is the self-reported contributorship profile:  
+"))
+  
+  credit_barchart(applicant$credit, ordered=FALSE)  
+  
+} else {
+  cat("
 <hr>
 *[Note: The CRediT profile was omitted as no data is provided.]*
-<hr>
-</div>
+<hr>")
+  hideCRediT <- TRUE
+}
+```
+
 
 
 # Indicators of Research Transparency and Reproducibility
