@@ -1,3 +1,10 @@
+add_variables <- function(df, varnames, default=NA) {
+  for (v in varnames) {
+    if (!v %in% colnames(df)) df[, v] <- default
+  }
+  df
+}
+
 #' Replaces CamelCase in a vector with spaces between words
 #' @param x A character vector which should be uncameled.
 #' @import stringr

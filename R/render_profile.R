@@ -28,7 +28,7 @@ render_profile <- function(json_path, output_file = NA) {
   FullName <- paste(js[1, "FirstName"], js[1, "LastName"])
   print(paste0("Creating profile report for ", FullName))
   if (is.na(output_file)) {
-    output_file <- paste0(LastName, "_report.html")
+    output_file <- paste0(dirname(full_json_path), "/", LastName, "_report.html")
   }
 
   setwd(temp_dir)

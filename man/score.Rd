@@ -4,12 +4,14 @@
 \alias{score}
 \title{Score a single research output}
 \usage{
-score(research_output, verbose = FALSE)
+score(research_output, verbose = FALSE, meta)
 }
 \arguments{
-\item{research_output}{The research output to be scored}
+\item{research_output}{The research output to be scored. This is the latter part of the export json with the actual item values of one specific publication.}
 
 \item{verbose}{A logical value indicating whether to print verbose output (default is \code{FALSE})}
+
+\item{meta}{The meta object from the export json}
 }
 \value{
 A list with the scoring information
