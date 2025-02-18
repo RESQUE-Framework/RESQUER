@@ -1,3 +1,4 @@
+#' Check a data frame for the existence of columns. If not present, create variables with a default value.
 add_variables <- function(df, varnames, default=NA) {
   for (v in varnames) {
     if (!v %in% colnames(df)) df[, v] <- default

@@ -21,6 +21,7 @@
 
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
+
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
@@ -64,10 +65,10 @@ preprocess <- function(applicant, verbose=FALSE) {
 
 
   # clean the dois:
-  applicant$indicators$doi_links <- normalize_dois(applicant$indicators$DOI)
-  applicant$indicators$doi_links_md <- paste0("[", applicant$indicators$doi_links, "](", applicant$indicators$doi_links, ")")
+  applicant$indicators$doi <- normalize_dois(applicant$indicators$DOI)
+  applicant$indicators$doi_links_md <- paste0("[", applicant$indicators$doi, "](", applicant$indicators$doi, ")")
 
-  applicant$indicators$title_links_html <- paste0("<a href='", applicant$indicators$doi_links, "'>", applicant$indicators$Title, "</a>")
+  applicant$indicators$title_links_html <- paste0("<a href='", applicant$indicators$doi, "'>", applicant$indicators$Title, "</a>")
 
   if (!is.null(applicant$indicators$P_TopPaper_Select)) {
     applicant$indicators$P_TopPaper_Select[is.na(applicant$indicators$P_TopPaper_Select)] <- FALSE
@@ -153,14 +154,14 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   all_pubs <- applicant$indicators[applicant$indicators$type == "Publication", ]
 
-  all_papers <- oa_fetch(entity = "works", doi = normalize_dois(all_pubs$doi_links))
+  all_papers <- oa_fetch(entity = "works", doi = normalize_dois(all_pubs$doi))
 
   #cat(paste0(nrow(all_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
 
   if (nrow(all_papers) < nrow(all_pubs)) {
     warning(paste0(
       '## The following papers could *not* be retrieved by openAlex:\n\n',
-      all_pubs[!all_pubs$doi_links %in% all_papers$doi, ] %>%
+      all_pubs[!all_pubs$doi %in% all_papers$doi, ] %>%
         select(Title, Year, DOI, P_TypePublication)
     ))
   }
@@ -184,7 +185,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Create table of publications
   #----------------------------------------------------------------
 
-  ref_list <- left_join(applicant$all_papers, applicant$indicators %>% select(doi=doi_links, CRediT_involvement, CRediT_involvement_roles, title_links_html, P_TopPaper_Select), by="doi") %>%
+  ref_list <- left_join(applicant$all_papers, applicant$indicators %>% select(doi, CRediT_involvement, CRediT_involvement_roles, title_links_html, P_TopPaper_Select), by="doi") %>%
     arrange(-P_TopPaper_Select, -as.numeric(CRediT_involvement))
 
   names_vec <- c()
@@ -221,6 +222,9 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   applicant$RRS <- compute_RRS(applicant)
+
+  # merge RRS scores into the indicators object
+  applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by="doi")
 
 
   #----------------------------------------------------------------
