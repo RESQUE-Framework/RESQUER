@@ -36,5 +36,7 @@ RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     forcats,
-    wordcloud
+    wordcloud,
+    rmarkdown,
+    kableExtra
 VignetteBuilder: knitr

@@ -74,6 +74,7 @@ library(sparkline)
 if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 } else {
+  applicant_raw_json <- readLines(params$json_path, warn=FALSE)
   applicant_json <- read_RESQUE(file=params$json_path)
 }
 
@@ -580,21 +581,14 @@ interdisciplinarity_string <- paste0(nrow(applicant$interdisciplinarity$primary_
 
 
 
+<!-- JS script to embed the raw json material -->
+<!-- Retrieve later, e.g. with JS:
+  const jsonData = JSON.parse(document.getElementById('raw-json-data').textContent);
+-->
 
+```{r embed_json}
+#| output: asis
+cat(sprintf('<script id="raw-json-data" type="application/json" style="display:none;">%s</script>',
+            paste(applicant_raw_json, collapse="\n")))
 
-
-
-<!-- JS scripts to conditionally hide sections -->
-
-```{=html}
-<script> // This JavaScript will run after the page loads 
-document.addEventListener("DOMContentLoaded", function() { 
-  var hideCRediT = `r hideCRediT`; // Embed R variable in JS 
-  if (hideCRediT) { 
-    document.getElementById("CRediT-section").style.display = "none"; 
-    document.getElementById("CRediT-disclaimer").style.display = "block"; 
-  }
-}
-); 
-</script>
 ```
