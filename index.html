@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Enrich, analyse and visualize data from the RESQUE rating scheme • RESQUER</title>
+<title>A companion R package for The Research Quality Evaluation (RESQUE) Framework • RESQUER</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Enrich, analyse and visualize data from the RESQUE rating scheme">
-<meta name="description" content="What the package does (one paragraph).">
-<meta property="og:description" content="What the package does (one paragraph).">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A companion R package for The Research Quality Evaluation (RESQUE) Framework">
+<meta name="description" content="Enrich, analyse and visualize data from the RESQUE rating scheme. Get your personal open science research profile.">
+<meta property="og:description" content="Enrich, analyse and visualize data from the RESQUE rating scheme. Get your personal open science research profile.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -50,17 +50,30 @@
 <div class="page-header"><h1 id="resquer">RESQUER<a class="anchor" aria-label="anchor" href="#resquer"></a>
 </h1></div>
 <p>An R package for analyzing the <a href="https://resque-framework.github.io/website/" class="external-link">RESQUE Research Quality Evaluation</a> schemes. This is work in progress, and likely to change.</p>
-<div class="section level2">
-<h2 id="how-to-preview-the-dashboard">How to preview the dashboard:<a class="anchor" aria-label="anchor" href="#how-to-preview-the-dashboard"></a>
-</h2>
 <p>Install the development versions from GitHub with:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"nicebread/OAmetrics"</span>, auth_token<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"RESQUE-Framework/RESQUER"</span>, auth_token<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre>
+<p>The package is not on CRAN yet.</p>
+<div class="section level2">
+<h2 id="how-to-create-an-individual-profile-html-file">How to create an individual profile (html file):<a class="anchor" aria-label="anchor" href="#how-to-create-an-individual-profile-html-file"></a>
+</h2>
+<p>You need <a href="https://quarto.org/docs/get-started/" class="external-link">Quarto</a> installed on your system.</p>
+<pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/quarto-dev/quarto-r" class="external-link">quarto</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://resque-framework.github.io/RESQUER/">RESQUER</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># The rendered html file is created in the same folder as the input json file.</span></span>
+<span><span class="co"># `outfile` also contains the path to the rendered file</span></span>
+<span><span class="va">json_path</span> <span class="op">=</span> <span class="st">"resque_123456.json"</span></span>
+<span><span class="va">outfile</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/render_profile.html">render_profile</a></span><span class="op">(</span><span class="va">json_path</span><span class="op">)</span></span></code></pre>
+</div>
+<div class="section level2">
+<h2 id="how-to-preview-the-interactive-dashboard-shiny-app">How to preview the interactive dashboard (Shiny App):<a class="anchor" aria-label="anchor" href="#how-to-preview-the-interactive-dashboard-shiny-app"></a>
+</h2>
 <p>For the interactive dashboard, you need <a href="https://quarto.org/docs/get-started/" class="external-link">Quarto</a> installed on your system.</p>
 <p>Launch the dashboard with the three included demo profiles:</p>
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/quarto-dev/quarto-r" class="external-link">quarto</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RESQUE-Framework/RESQUER" class="external-link">RESQUER</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://resque-framework.github.io/RESQUER/">RESQUER</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://quarto-dev.github.io/quarto-r/reference/quarto_serve.html" class="external-link">quarto_serve</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"dashboard/dashboard_shiny.qmd"</span>, package<span class="op">=</span><span class="st">"RESQUER"</span><span class="op">)</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
