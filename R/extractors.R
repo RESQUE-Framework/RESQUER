@@ -27,7 +27,7 @@ extract_indicators <- function(applicant_list) {
   all_indicators <- data.frame()
   for (i in 1:length(applicant_list)) {
     ind <- applicant_list[[i]]$indicators %>%
-      select(starts_with("P_"), Title, Year, doi_links) %>%
+      select(starts_with("P_"), Title, Year, doi) %>%
       select(-starts_with("P_CRediT"), -matches("P_SchemeFit"), -P_TopPaper_Select)
 
     ind$ORCID <- applicant_list[[i]]$meta$ORCID
@@ -161,7 +161,7 @@ extract_indicator_scores <- function(applicant_list) {
               ind_scores0$ORCID <- applicant_list[[i]]$meta$ORCID
               ind_scores0$LastName <- applicant_list[[i]]$meta$LastName
               ind_scores0$ExternalRaterName <- applicant_list[[i]]$meta$ExternalRaterName
-              ind_scores0$doi <- applicant_list[[i]]$indicators$doi_links[j]
+              ind_scores0$doi <- applicant_list[[i]]$indicators$doi[j]
 
               ind_scores <- plyr::rbind.fill(ind_scores, ind_scores0)
           }
