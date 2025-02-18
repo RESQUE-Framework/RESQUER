@@ -2,7 +2,10 @@
 title: "RESQUE Profile for `r params$FullName`"
 embed-resources: true
 output: html
-toc: true
+format:
+  html:
+    toc: true
+    toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
   json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_afterupdateto_charts.json"
@@ -242,13 +245,13 @@ if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
 
 ```{r}
 # Compatibility with old versions:
-if (is.null(applicant$pubs$P_Sample_Type)) {applicant$pubs$P_Sample_Type <- NA}
+if (is.null(applicant$pubs$P_Sample)) {applicant$pubs$P_Sample <- NA}
 if (is.null(applicant$pubs$P_Sample_CrossCultural)) {applicant$pubs$P_Sample_CrossCultural <- NA}
-applicant$pubs$P_Sample_Type[is.na(applicant$pubs$P_Sample_Type)] <- FALSE
+applicant$pubs$P_Sample[is.na(applicant$pubs$P_Sample)] <- FALSE
 ```
 
 
-Type of population/sample and representativeness for the `r sum(applicant$pubs$P_Data_Source_NewOwn & applicant$pubs$P_Sample_Type != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
+Type of population/sample and cultural background for the `r sum(applicant$pubs$P_Data_Source_NewOwn & applicant$pubs$P_Sample != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
 
 ```{r}
 #| fig-width: 6
@@ -257,7 +260,7 @@ Type of population/sample and representativeness for the `r sum(applicant$pubs$P
 #| out-height: auto
 
 Sample_Type <- factor(
-  x = na.omit(applicant$pubs$P_Sample_Type),
+  x = na.omit(applicant$pubs$P_Sample),
   levels = c("MostlyPsychStudents", "MostlyStudents", "General", "Specific", "Rare"),
   labels = c("(Predominantly) psychology students", 
              "(Predominantly) students, interdisciplinary", 
@@ -301,7 +304,7 @@ ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
 
 Type of population for the `r sum(applicant$indicators$P_Data_Source_NewOwn)` papers with own new data collection:
 
--->
+
 
 ```{r}
 #| include: false
@@ -348,7 +351,7 @@ ggplot(heatmap_data, aes(x = Sample_WEIRDness, y = Sample_CC, fill = n)) +
 
 ```
 
-
+-->
 
 <!-- Conditionally render the CRediT section -->
 ```{r}
@@ -407,8 +410,12 @@ The radar chart with the **Relative Rigor Score** helps you to see how many qual
 - The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If many indicators are flagged as "not applicable", then the maximal points get reduced and the sector gets more narrow.
 - The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
 - The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
+- The indicators cover current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
+  - 15-20% can be considered average
+  - 30% is very good
+  - >40% is excellent.
 
-```{r}
+```{r Radarchart}
 #| fig.width=8
 
 RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
@@ -440,7 +447,7 @@ This indicator reflects impact/attention of an article in the research community
 ::: {.callout-note title="Methods: CRediT Levels of involvement" collapse="true"}
 We categorized papers into levels of involvement, based on the degrees of contributorship:
 
-```{r}
+```{r credit_involvement_tab}
 
 credit_inv_tab <- data.frame(
   "Involvement Level" = c("Very High", "High", "Medium", "Low"),
@@ -468,7 +475,7 @@ kable(credit_inv_tab)
 From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullName`, `r nrow(applicant$BIP %>% filter(pop_class <= "C4"))` `r ifelse(nrow(applicant$BIP %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class of all papers or better.
 
 ::: {style="font-size: 80%;"}
-```{r}
+```{r impact_table}
 
 pop_sel <- applicant$BIP %>% 
   filter(pop_class <= "C4") %>% 
@@ -479,13 +486,16 @@ pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("To
 pop_sel$pop_class <- NULL
 
 pop_sel <- pop_sel |> 
-  left_join(applicant$indicators %>% select(doi=doi_links, Title = title_links_html, CRediT_involvement, CRediT_involvement_roles), by="doi") %>%
-  left_join(applicant$FNCS %>% select(doi=doi, FNCS, FNPR), by="doi") %>%
+  left_join(applicant$indicators %>% select(doi, Title = title_links_html, RRS_overall, CRediT_involvement, CRediT_involvement_roles), by="doi") %>%
+  left_join(applicant$FNCS %>% select(doi, FNCS, FNPR), by="doi") %>%
   relocate(Title) |> 
   relocate(FNCS, .after = cc) |> 
-  relocate(FNPR, .after = FNCS)
+  relocate(FNPR, .after = FNCS) |> 
+  mutate(RRS_overall = paste0(round(RRS_overall*100), "%"))
 
-colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Candidates' CRediT involvement", "Candidates' CRediT main roles")
+pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
+
+colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles")
 
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
 pop_sel$FNPR <- paste0(round(pop_sel$FNPR*100, 1), "%")
@@ -498,7 +508,7 @@ pop_sel$Title[pop_sel$Popularity == "Top 0.1%"] <- paste0("️🌟", pop_sel$Tit
 pop_sel$Title[pop_sel$Popularity == "Top 1%"] <- paste0("️✨", pop_sel$Title[pop_sel$Popularity == "Top 1%"])
 
 if (hideCRediT == "true") {
-  pop_sel <- pop_sel[, 1:5]
+  pop_sel <- pop_sel[, 1:8]
 }
 
 if (nrow(pop_sel) > 0) {
@@ -522,7 +532,7 @@ The analysis is only based on the submitted publications (not the entire publica
 The evenness indexes are normalized to a scale from 0 (no diversity, everything is one category) to 1 (maximum diversity, all categories are equally represented). It is computed as a normalized Shannon entropy.
 :::
 
-```{r}
+```{r compute_internationality_index}
 n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
 
 internationality_string <- paste0(sum(applicant$internationalization$country_codes_repeated$n), " unique identifiable co-authors:<br><ul><li>", applicant$internationalization$perc_international, "% from ", nrow(applicant$internationalization$country_codes_repeated)-1, " international countries</li><li>", applicant$internationalization$perc_same_country, "% from the same country</li></ul>")
