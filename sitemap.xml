@@ -10,6 +10,7 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/compute_RRS.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/credit_barchart.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/evaluate_condition_in_context.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/extract_indicator_scores.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/extract_indicators.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/extract_overall_scores.html</loc></url>
@@ -27,7 +28,9 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/score_all.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/score_all_from_file.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/slider.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/sparkpie.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/unCamel.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/unCamel0.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/validate_json.html</loc></url>
 </urlset>
 
