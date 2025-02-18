@@ -22,7 +22,7 @@ credit_dat <- data.frame(
     "Validation", "Visualization", "Writing: Original draft",
     "Writing: Review & Editing"), 10),
   Degree = sample(c("Lead", "Equal", "Support", "NoRole", "not applicable"),
-     size=140, replace=TRUE)
+    prob = c(0.1, 0.2, 0.3, 0.3, 0.1), size=140, replace=TRUE)
 )
 credit_barchart(credit_dat)
 credit_barchart(credit_dat, ordered=TRUE)

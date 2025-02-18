@@ -3,7 +3,9 @@
 \name{read_RESQUE}
 \alias{read_RESQUE}
 \title{Read a single RESQUE JSON file and do basic preprocessing
-(elaborated preprocessing happens in \code{preprocess()}).}
+(elaborated preprocessing happens in \code{preprocess()}).
+TODO: Why is some preprocessing here, and some in the other function?
+Make a principled design.}
 \usage{
 read_RESQUE(file, verbose = FALSE)
 }
@@ -15,4 +17,6 @@ read_RESQUE(file, verbose = FALSE)
 \description{
 Read a single RESQUE JSON file and do basic preprocessing
 (elaborated preprocessing happens in \code{preprocess()}).
+TODO: Why is some preprocessing here, and some in the other function?
+Make a principled design.
 }

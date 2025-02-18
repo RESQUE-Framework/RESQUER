@@ -11,7 +11,6 @@ extract_paper_scores(applicant_list)
 }
 \value{
 A data frame containing the RRS sector scores for each paper of each applicant.
-The structure of the returned data frame depends on the \code{format} parameter.
 }
 \description{
 This function processes a list of applicants, extracting the Relative Rigor Score (RRS)

@@ -1,3 +1,7 @@
+home:
+  title: A companion R package for The Research Quality Evaluation (RESQUE) Framework
+  description: Enrich, analyse and visualize data from the RESQUE rating scheme. Get your personal open science research profile.
+
 url: https://resque-framework.github.io/RESQUER/
 template:
   bootstrap: 5

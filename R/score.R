@@ -4,56 +4,22 @@ library(stringr)
 library(purrr)
 
 
-# ====== Fetching information on packs ======
-
-#' Get JSON Object
-#'
-#' Make a GET request to a specified URL and convert the JSON response to an R object using the jsonlite package.
-#'
-#' @param url The URL to make the GET request to.
-#' @return An R object representing the converted JSON response.
-#'
-#' @importFrom jsonlite fromJSON
-#' @importFrom httr GET
-#' @importFrom httr timeout
-#' @importFrom httr content
-#'
-#'
-#' @export
-get_json_object <- function(url) {
-  response <- httr::GET(url, timeout(20))
-  json <- httr::content(response, as = 'text')
-  jsonlite::fromJSON(json)
-}
-
-# Get the name of the pack that a research output uses
-get_pack_name <- function(research_output) {
-  if (research_output$type == "pub") {
-    "core-pubs"
-  } else if (research_output$type == "software") {
-    "core-software"
-  } else if (research_output$type == "data") {
-    "core-data"
-  } else if (research_output$type == "meta") {
-    "core-meta"
-  } else {
-    "unknown"
-  }
-}
-
 # ====== Scoring ======
 
 
-# Evaluate a condition in a context
+#' Evaluate a condition in a context
+
+#' @param research_output The research output to be scored. This is the latter part of the export json with the actual item values of one specific publication.
+#' @param condition The logical conditions in the `scoring` section of core-pub.json. This can either be the `score` -> `not_applicable` condition or the `score` -> `condition` condition
 #' @importFrom stringr str_replace_all
-evaluate_condition_in_context <- function(condition, context) {
+evaluate_condition_in_context <- function(condition, research_output) {
   processed_condition <- condition |>
-    # replace "$<variable> =|= [<values>]" with "context$<variable> %in% c(<values>)"
+    # replace "$<variable> =|= [<values>]" with "research_output$<variable> %in% c(<values>)"
     str_replace_all("(\\$[a-zA-Z0-9_]+)\\s*=\\|=\\s*\\[(.*?)\\]", "\\1 %in% c(\\2)") |>
-    # replace "exists($<variable>)" with "exists(<variable>, context)"
-    str_replace_all("exists\\(\\$(.*?)\\)", "exists('\\1', context)") |>
-    # replace "!(<variable>)" with "not(<variable>, context)"
-    str_replace_all("!\\(\\$([^=]*?)\\)", "not('\\1', context)") |>
+    # replace "exists($<variable>)" with "exists(<variable>, research_output)"
+    str_replace_all("exists\\(\\$(.*?)\\)", "exists('\\1', research_output)") |>
+    # replace "!(<variable>)" with "not(<variable>, research_output)"
+    str_replace_all("!\\(\\$([^=]*?)\\)", "not('\\1', research_output)") |>
     # replace "&&" with "%and%"
     str_replace_all("&&", "%and%") |>
     # replace "||" with "%or%"
@@ -62,10 +28,17 @@ evaluate_condition_in_context <- function(condition, context) {
     str_replace_all("===", "==") |>
     # replace "!==" with "!="
     str_replace_all("!==", "!=") |>
-    # replace "$<variable>"" with "context$<variable>"
-    str_replace_all("\\$([a-zA-Z0-9_]+)", "context$\\1")
+    # replace "$<variable>"" with "research_output$<variable>"
+    str_replace_all("\\$([a-zA-Z0-9_]+)", "research_output$\\1")
 
-  result <- eval(parse(text = processed_condition))
+  # In order to parse the expression correctly, all expressions between the
+  # %and%s and %or%s must be wrapped in (). In case this was forgotten in the
+  # core-pubs.json, here we add those parentheses.
+
+  processed_condition_par <- str_replace_all(processed_condition, "(?<=^|%and%|%or%)\\s*(.*?\\S)\\s*(?=%and%|%or%|$)", " (\\1) ")
+
+
+  result <- eval(parse(text = processed_condition_par))
 
   !is.na(result) &&
     !is.null(result) &&
@@ -83,8 +56,9 @@ evaluate_condition_in_context <- function(condition, context) {
 #' - \code{score}: the score that was reached
 #' - \code{relative_score}: the score that was reached divided by the maximum score
 #'
-#' @param research_output The research output to be scored
+#' @param research_output The research output to be scored. This is the latter part of the export json with the actual item values of one specific publication.
 #' @param verbose A logical value indicating whether to print verbose output (default is \code{FALSE})
+#' @param meta The meta object from the export json
 #'
 #' @return A list with the scoring information
 #'
@@ -244,7 +218,7 @@ score_all_from_file <- function(file, verbose = FALSE) {
 # ====== Example ======
 
 # Example: score multiple research outputs
-# research_outputs <- read_json("~/Downloads/test.json")
+# research_outputs <- read_json("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/old_conversion/resque_blackwell_CH_old.json")
 # score_all(research_outputs)
 
 # Example: score a single research output

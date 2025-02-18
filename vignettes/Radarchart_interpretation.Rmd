@@ -39,6 +39,9 @@ For example, he submitted many methodological/purely theoretical papers which ha
 But in the few cases where he could provide open data, he did it in a perfect way (i.e., according to all FAIR criteria and other indicators related to open data): The narrow sector has 100% of points.
 
 ```{r, out.width=400, out.height=400, dpi=200}
+#| fig.alt: >
+#|   A radar chart with five areas:
+#|   Open Data, Open Materials, Preregistration, Reproducible Code & Verification, Theorizing & Formal Modeling.
 dat1 <- tibble(
   dimension = c("Open Data", "Open Materials", "Preregistration", "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
   max_points = c(1, 14, 16, 12, 13),
@@ -58,6 +61,9 @@ In this profile, a lot of open data points could have been gained: The Open Data
 But only very few of these potential points have actually been gained.
 
 ```{r, out.width=400, out.height=400, dpi=200}
+#| fig.alt: >
+#|   A radar chart with five areas:
+#|   Open Data, Open Materials, Preregistration, Reproducible Code & Verification, Theorizing & Formal Modeling.
 dat1 <- tibble(
   dimension = c("Open Data", "Open Materials", "Preregistration", "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
   max_points = c(40, 14, 16, 12, 13),
@@ -76,6 +82,9 @@ This candidate had many opportunities of providing open data (the sector is very
 This is true expertise: Having both a lot of experience *and* doing it in a proper way.
 
 ```{r, out.width=400, out.height=400, dpi=200}
+#| fig.alt: >
+#|   A radar chart with five areas:
+#|   Open Data, Open Materials, Preregistration, Reproducible Code & Verification, Theorizing & Formal Modeling.
 dat1 <- tibble(
   dimension = c("Open Data", "Open Materials", "Preregistration", "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
   max_points = c(40, 14, 16, 12, 13),
