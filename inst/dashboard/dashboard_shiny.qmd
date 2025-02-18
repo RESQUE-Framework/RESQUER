@@ -52,6 +52,7 @@ library(OAmetrics)
   
   json_files <- list.files(json_folder, pattern="*.json", full.names=TRUE)
   
+  # read and preprocess all applicant data
   applicant_list <- list()
   applicant_names <- c()
   version_mismatch <- c()
@@ -70,6 +71,7 @@ library(OAmetrics)
         
     version_mismatch[i] <- any(version_df0$version != version_df$required_version)
   }
+  
   applicant_position <- applicant_ID <- 1:length(json_files)
   names(applicant_position) <- applicant_names
   names(applicant_ID) <- applicant_ID
@@ -162,6 +164,22 @@ RRS_miniplot <- function(x) {
   x <- as.numeric(x)
   if (!is.null(x)) {
     RRS_radarchart(applicant_list[[x]]$RRS, minimal=TRUE)
+  } else {
+    print("Skipping")
+  }
+}
+
+# TODO this dies not work yet. HTML sparklines can't be displayed.
+OS_pie_miniplot <- function(x) {
+  x <- as.numeric(x)
+  if (!is.null(x)) {
+    
+    p1 <- sparkpie(applicant_list[[x]]$OS_pie$OpenData)
+    p2 <- sparkpie(applicant_list[[x]]$OS_pie$Prereg, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))
+    p3 <- sparkpie(applicant_list[[x]]$OS_pie$OpenMaterial)
+    p4 <- sparkpie(applicant_list[[x]]$OS_pie$OpenCode)
+    p5 <- sparkpie(applicant_list[[x]]$OS_pie$Repro)
+    
   } else {
     print("Skipping")
   }

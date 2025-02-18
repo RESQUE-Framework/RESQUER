@@ -381,51 +381,6 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 
 # Indicators of Research Transparency and Reproducibility
 
-```{r}
-# sparkline pie chart function. The default colors are grey (for not applicable in the first value slot) and then a color ramp from red to green
-sl <- function(values, sliceColors=NA, ...) {
-  if (all(is.na(sliceColors))) {
-    sliceColors <- c("#EEEEEE", colorRampPalette(c("red", "yellowgreen", "green"))(length(values)-1))
-  }
-  sparkline(values, type="pie", sliceColors=sliceColors, borderWidth=1, ...)
-}
-
-OD <- data.frame(
-  notApplicable = sum(applicant$pubs$P_Data_Open == "NotApplicable", na.rm=TRUE),
-  No = sum(applicant$pubs$P_Data_Open == "NotAvailable", na.rm=TRUE),
-  Partial = sum(applicant$pubs$P_Data_Open == "YesParts", na.rm=TRUE),
-  Yes = sum(applicant$pubs$P_Data_Open == "YesEntire", na.rm=TRUE)
-  )
-
-OM <- data.frame(
-  notApplicable = sum(applicant$pubs$P_OpenMaterials == "NotApplicable", na.rm=TRUE),
-  No = sum(applicant$pubs$P_OpenMaterials == "NotAvailable", na.rm=TRUE),
-  Partial = sum(applicant$pubs$P_OpenMaterials == "YesParts", na.rm=TRUE),
-  Yes = sum(applicant$pubs$P_OpenMaterials == "YesEntire", na.rm=TRUE)
-  )
-
-OC <- data.frame(
-  notApplicable = sum(applicant$pubs$P_ReproducibleScripts == "NotApplicable", na.rm=TRUE),
-  No = sum(applicant$pubs$P_ReproducibleScripts == "NotAvailable", na.rm=TRUE),
-  Partial = sum(applicant$pubs$P_ReproducibleScripts == "YesParts", na.rm=TRUE),
-  Yes = sum(applicant$pubs$P_ReproducibleScripts == "YesEntire", na.rm=TRUE)
-  )
-
-repro <-  data.frame(
-  notApplicable = sum(applicant$pubs$P_IndependentVerification == "NotApplicable", na.rm=TRUE),
-  No = sum(applicant$pubs$P_IndependentVerification == "No", na.rm=TRUE),
-  Workflow = sum(applicant$pubs$P_IndependentVerification == "WorkflowReproducible", na.rm=TRUE),
-  Results = sum(applicant$pubs$P_IndependentVerification %in% c("MainResultsReproducible", "AllResultsReproducible"), na.rm=TRUE),
-  Replication = sum(applicant$pubs$P_IndependentVerification == "AnalysisReplication", na.rm=TRUE)
-  )
-
-applicant$pubs$P_Preregistration2 <- factor(applicant$pubs$P_Preregistration, levels=c("NotApplicable", "No", "Yes", "RegisteredReport"), labels=c("Not Applicable", "Not preregistered", "Preregistration", "Registered Report"))
-
-prereg_tab <- table(applicant$pubs$P_Preregistration2) |> as.data.frame() %>%
-  mutate(perc = round(Freq*100/sum(Freq)))
-
-```
-
 
 ## Overview of open research practices
 
@@ -433,7 +388,7 @@ prereg_tab <- table(applicant$pubs$P_Preregistration2) |> as.data.frame() %>%
 
 | Open Data Available | Preregistration available | Open Material available | Open Code available | Correctness of computational results has been independently verified
 |-|-|-|-|-
-| `r sl(OD)`  | `r sl(prereg_tab$Freq, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))`| `r sl(OM)` | `r sl(OC)` | `r sl(repro)`  
+| `r sparkpie(applicant$OS_pie$OpenData)`  | `r sparkpie(applicant$OS_pie$Prereg, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))`| `r sparkpie(applicant$OS_pie$OpenMaterial)` | `r sparkpie(applicant$OS_pie$OpenCode)` | `r sparkpie(applicant$OS_pie$Repro)`  
 
 </div>
 

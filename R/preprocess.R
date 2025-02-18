@@ -22,6 +22,7 @@
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 # applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test Wien/resque_scheffel_1726655196995.json")
+# applicant <- read_RESQUE("/Users/felix/LMU/Research/1 - In Arbeit/RESQUE/RESQUE-Clinical/raw_data/consensus/resque_blackwell_Konsens.json")
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
@@ -246,6 +247,52 @@ preprocess <- function(applicant, verbose=FALSE) {
     subfields_tab = nw$subfields_tab,
     topics_tab = nw$topics_tab,
     interdisc_string = nw$interdisc_string
+  )
+
+
+  #----------------------------------------------------------------
+  # prepare all data for the open science sparkpie charts
+  #----------------------------------------------------------------
+
+  OpenDataPie <- data.frame(
+    notApplicable = sum(applicant$pubs$P_Data_Open == "NotApplicable", na.rm=TRUE),
+    No = sum(applicant$pubs$P_Data_Open == "NotAvailable", na.rm=TRUE),
+    Partial = sum(applicant$pubs$P_Data_Open == "YesParts", na.rm=TRUE),
+    Yes = sum(applicant$pubs$P_Data_Open == "YesEntire", na.rm=TRUE)
+  )
+
+  OpenMaterialPie <- data.frame(
+    notApplicable = sum(applicant$pubs$P_OpenMaterials == "NotApplicable", na.rm=TRUE),
+    No = sum(applicant$pubs$P_OpenMaterials == "NotAvailable", na.rm=TRUE),
+    Partial = sum(applicant$pubs$P_OpenMaterials == "YesParts", na.rm=TRUE),
+    Yes = sum(applicant$pubs$P_OpenMaterials == "YesEntire", na.rm=TRUE)
+  )
+
+  OpenCodePie <- data.frame(
+    notApplicable = sum(applicant$pubs$P_ReproducibleScripts == "NotApplicable", na.rm=TRUE),
+    No = sum(applicant$pubs$P_ReproducibleScripts == "NotAvailable", na.rm=TRUE),
+    Partial = sum(applicant$pubs$P_ReproducibleScripts == "YesParts", na.rm=TRUE),
+    Yes = sum(applicant$pubs$P_ReproducibleScripts == "YesEntire", na.rm=TRUE)
+  )
+
+  ReproPie <-  data.frame(
+    notApplicable = sum(applicant$pubs$P_IndependentVerification == "NotApplicable", na.rm=TRUE),
+    No = sum(applicant$pubs$P_IndependentVerification == "No", na.rm=TRUE),
+    Workflow = sum(applicant$pubs$P_IndependentVerification == "WorkflowReproducible", na.rm=TRUE),
+    Results = sum(applicant$pubs$P_IndependentVerification %in% c("MainResultsReproducible", "AllResultsReproducible"), na.rm=TRUE),
+    Replication = sum(applicant$pubs$P_IndependentVerification == "AnalysisReplication", na.rm=TRUE)
+  )
+
+  applicant$pubs$P_Preregistration2 <- factor(applicant$pubs$P_Preregistration, levels=c("NotApplicable", "No", "Yes", "RegisteredReport"), labels=c("Not Applicable", "Not preregistered", "Preregistration", "Registered Report"))
+
+  PreregPie <- table(applicant$pubs$P_Preregistration2)
+
+  applicant$OS_pie <- list(
+    OpenData = OpenDataPie,
+    OpenMaterial = OpenMaterialPie,
+    OpenCode = OpenCodePie,
+    Repro = ReproPie,
+    Prereg = PreregPie
   )
 
   #----------------------------------------------------------------
