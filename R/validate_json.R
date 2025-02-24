@@ -90,8 +90,7 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
 
   # replace the existing scoring and forms information
   if (update_forms == TRUE) {
-    # TODO: Use the package link
-    # system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
+    meta_new <- read_json(path=system.file("extdata/forms_0_6_0.json", package="RESQUER"), simplifyVector=FALSE)
 
     j1[[1]]$forms <- meta_new$forms
   }
