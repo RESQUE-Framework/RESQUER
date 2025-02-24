@@ -9,16 +9,17 @@
 #'
 #' @param file Path to RESQUE JSON file
 #' @param verbose Show diagnostic information?
+#' @param update_forms Should the `forms` node in the json (which contains the scoring information) be overwritten with the current version?
 #' @import dplyr
 #' @import stringr
 #' @import tidyr
 #' @import OAmetrics
 #' @importFrom jsonlite parse_json
 #' @export
-read_RESQUE <- function(file, verbose=FALSE) {
+read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
 
   # clean up the json (in case that it is an old version)
-  fixed_json <- validate_json(file, update_forms=TRUE, verbose=verbose)
+  fixed_json <- validate_json(file, update_forms=update_forms, verbose=verbose)
   dat0 <- parse_json(fixed_json, simplifyVector = TRUE)
 
   # create a clean meta object
