@@ -16,5 +16,5 @@ Preprocessed applicant data.
 }
 \description{
 This function preprocesses the applicant data and enriches it with additional data.
-Needs an internet connection to query the BIP! and openAlex APIs.
+Needs an internet connection to query the BIP! and OpenAlex APIs.
 }

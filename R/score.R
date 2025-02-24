@@ -218,7 +218,7 @@ score_all_from_file <- function(file, verbose = FALSE) {
 # ====== Example ======
 
 # Example: score multiple research outputs
-# research_outputs <- read_json("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/old_conversion/resque_blackwell_CH_old.json")
+# research_outputs <- read_json("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_after_name_change.json")
 # score_all(research_outputs)
 
 # Example: score a single research output

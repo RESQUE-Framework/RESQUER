@@ -68,7 +68,6 @@ library(tibble)
 library(OAmetrics)
 library(sparkline)
 
-#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 1/resque_leehr.json"
 #params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt.json"
 # file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json"
 
