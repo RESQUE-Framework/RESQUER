@@ -169,18 +169,11 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
       if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
     }
 
-
   }  # of r in seq_along
-
-
-
 
 
   # Rebuild the entire json
   j1_new <- c(j1[1], research_outputs)
-
-  # TODO: Remove this file writing - rather return the json object
-  #write_json(j1_new, path=str_replace(file, ".json", "_new.json"))
 
   # this returns the JSON as text data
   return(jsonlite::toJSON(j1_new, auto_unbox=TRUE, pretty=TRUE))

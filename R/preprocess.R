@@ -1,7 +1,7 @@
 #' Preprocess and enrich the raw information from an applicant's JSON
 #'
 #' This function preprocesses the applicant data and enriches it with additional data.
-#' Needs an internet connection to query the BIP! and openAlex APIs.
+#' Needs an internet connection to query the BIP! and OpenAlex APIs.
 #'
 #' @param applicant The applicant data to be preprocessed (as loaded with the `read_RESQUE` function).
 #' @param verbose Show diagnostic information?
