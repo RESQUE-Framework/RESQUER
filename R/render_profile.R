@@ -2,12 +2,13 @@
 #'
 #' @param json_path The path to the applicant's JSON file
 #' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.
+#' @param template The path to the .Rmd file with the profile. If set to `NA`(default), the package's built-in profile is used.
 #' @return The path to the rendered file
 #' @export
 #' @importFrom quarto quarto_render
 #' @importFrom jsonlite read_json
 #'
-render_profile <- function(json_path, output_file = NA) {
+render_profile <- function(json_path, output_file = NA, template = NA) {
 
   # For testing purposes:
   #json_path = "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/extdata/demo_profiles/resque_Gaertner.json"
@@ -16,7 +17,10 @@ render_profile <- function(json_path, output_file = NA) {
   # output_file = "~/Downloads/test2.html"
 
   # Path to the qmd template
-  qmd_file <- system.file("qmds", "RESQUE_profile.qmd", package = "RESQUER")
+  if (is.na(template)) {
+    template <- system.file("qmds", "RESQUE_profile.qmd", package = "RESQUER")
+  }
+
 
   old_wd <- getwd()
   full_json_path <- normalizePath(json_path)
@@ -24,7 +28,7 @@ render_profile <- function(json_path, output_file = NA) {
   if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
 
   # copy template to the temp_dir, render there
-  file.copy(qmd_file, temp_dir)
+  file.copy(template, temp_dir)
 
   # get name of applicant:
   js <- read_json(json_path, simplifyVector = TRUE)
@@ -37,7 +41,7 @@ render_profile <- function(json_path, output_file = NA) {
 
   setwd(temp_dir)
   # Render the Rmd file
-  quarto::quarto_render(input = "RESQUE_profile.qmd",
+  quarto::quarto_render(input = basename(template),
                     output_file = basename(output_file),
                     output_format = "html",
                     execute_dir = temp_dir,

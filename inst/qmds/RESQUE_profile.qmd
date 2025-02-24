@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_afterupdateto_charts.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_gärtner_0.6.0.json"
 ---
 
 
@@ -244,10 +244,10 @@ if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
 
 ## Types of samples
 
-```{r}
+```{r ensure_compatibility}
 # Compatibility with old versions:
-if (is.null(applicant$pubs$P_Sample)) {applicant$pubs$P_Sample <- NA}
-if (is.null(applicant$pubs$P_Sample_CrossCultural)) {applicant$pubs$P_Sample_CrossCultural <- NA}
+if (!"P_Sample" %in% names(applicant$pubs)) {applicant$pubs$P_Sample <- NA}
+if (!"P_Sample_CrossCultural" %in% names(applicant$pubs)) {applicant$pubs$P_Sample_CrossCultural <- NA}
 applicant$pubs$P_Sample[is.na(applicant$pubs$P_Sample)] <- FALSE
 ```
 

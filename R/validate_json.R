@@ -41,7 +41,6 @@ get_pack_name <- function(research_output) {
 }
 
 
-# file = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/old_conversion/resque_blackwell_CH_old.json"
 # file = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_afterupdateto_charts_TEST.json"
 
 
@@ -172,18 +171,11 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
       if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
     }
 
-
   }  # of r in seq_along
-
-
-
 
 
   # Rebuild the entire json
   j1_new <- c(j1[1], research_outputs)
-
-  # TODO: Remove this file writing - rather return the json object
-  #write_json(j1_new, path=str_replace(file, ".json", "_new.json"))
 
   # this returns the JSON as text data
   return(jsonlite::toJSON(j1_new, auto_unbox=TRUE, pretty=TRUE))

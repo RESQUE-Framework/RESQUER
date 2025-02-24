@@ -4,12 +4,14 @@
 \alias{render_profile}
 \title{Render an HTML or PDF profile of a single applicant}
 \usage{
-render_profile(json_path, output_file = NA)
+render_profile(json_path, output_file = NA, template = NA)
 }
 \arguments{
 \item{json_path}{The path to the applicant's JSON file}
 
 \item{output_file}{The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.}
+
+\item{template}{The path to the .Rmd file with the profile. If set to \code{NA}(default), the package's built-in profile is used.}
 }
 \value{
 The path to the rendered file

@@ -1,7 +1,7 @@
 #' Preprocess and enrich the raw information from an applicant's JSON
 #'
 #' This function preprocesses the applicant data and enriches it with additional data.
-#' Needs an internet connection to query the BIP! and openAlex APIs.
+#' Needs an internet connection to query the BIP! and OpenAlex APIs.
 #'
 #' @param applicant The applicant data to be preprocessed (as loaded with the `read_RESQUE` function).
 #' @param verbose Show diagnostic information?
@@ -21,8 +21,6 @@
 
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
-# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test Wien/resque_scheffel_1726655196995.json")
-# applicant <- read_RESQUE("/Users/felix/LMU/Research/1 - In Arbeit/RESQUE/RESQUE-Clinical/raw_data/consensus/resque_blackwell_Konsens.json")
 # applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_after_name_change.json")
 
 preprocess <- function(applicant, verbose=FALSE) {
