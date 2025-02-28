@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_gärtner_0.6.0.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.0.json"
 ---
 
 
@@ -222,6 +222,11 @@ get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
     c1 = colnames(df) |> str_replace(selector, "") |> unCamel0(),
     c2 = apply(df, 2, function(x) sum(x == TRUE, na.rm=TRUE))
   )
+  
+  tab <- tab %>% 
+    filter(c2 > 0) %>%
+    arrange(-c2)
+  
   rownames(tab) <- NULL
   colnames(tab) <- headings
   return(tab)
@@ -405,6 +410,7 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 The relative rigor score (RRS) is computed as a “percentage of maximal points” (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
 :::
 
+::: {.callout-note title="How to read the relative rigor score" collapse="true"}
 The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality.
 The radar chart with the **Relative Rigor Score** helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
 
@@ -414,7 +420,8 @@ The radar chart with the **Relative Rigor Score** helps you to see how many qual
 - The indicators cover current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
   - 15-20% can be considered average
   - 30% is very good
-  - >40% is excellent.
+  - \>40% is excellent.
+:::
 
 ```{r Radarchart}
 #| fig.width=8
@@ -521,7 +528,6 @@ if (nrow(pop_sel) > 0) {
 :::
 
 
-
 # Internationality and Interdisciplinarity
 
 ::: {.callout-note title="Methods: Computation of Internationality and Interdisciplinarity" collapse="true"}
@@ -533,24 +539,40 @@ The analysis is only based on the submitted publications (not the entire publica
 The evenness indexes are normalized to a scale from 0 (no diversity, everything is one category) to 1 (maximum diversity, all categories are equally represented). It is computed as a normalized Shannon entropy.
 :::
 
+
+
 ```{r compute_internationality_index}
-n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
+if (length(applicant$internationalization) > 1) {
+  n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
 
-internationality_string <- paste0(sum(applicant$internationalization$country_codes_repeated$n), " unique identifiable co-authors:<br><ul><li>", applicant$internationalization$perc_international, "% from ", nrow(applicant$internationalization$country_codes_repeated)-1, " international countries</li><li>", applicant$internationalization$perc_same_country, "% from the same country</li></ul>")
+  internationality_string <- paste0(sum(applicant$internationalization$country_codes_repeated$n), " unique identifiable co-authors:<br><ul><li>", applicant$internationalization$perc_international, "% from ", nrow(applicant$internationalization$country_codes_repeated)-1, " international countries</li><li>", applicant$internationalization$perc_same_country, "% from the same country</li></ul>")
+  
+  n_countries <- min(nrow(applicant$internationalization$country_codes_repeated), 10)
+  country_tab <- applicant$internationalization$country_codes_repeated
+  colnames(country_tab) <- c("Co-authors' Country Code", "# of Co-authors")
+} else {
+  internationality_string <- "Could not compute internationality."
+}
 
-n_countries <- min(nrow(applicant$internationalization$country_codes_repeated), 10)
-country_tab <- applicant$internationalization$country_codes_repeated
-colnames(country_tab) <- c("Co-authors' Country Code", "# of Co-authors")
+if (length(applicant$internationalization) > 1) {
+  subfield_tab <- applicant$interdisciplinarity$subfields_tab[1:n_subfields, ]
+  colnames(subfield_tab) <- c("Subfield", "# of papers")
 
-subfield_tab <- applicant$interdisciplinarity$subfields_tab[1:n_subfields, ]
-colnames(subfield_tab) <- c("Subfield", "# of papers")
-
-interdisciplinarity_string <- paste0(nrow(applicant$interdisciplinarity$primary_fields_tab_reduced), " primary fields: <ul>", paste0(
+  interdisciplinarity_string <- paste0(nrow(applicant$interdisciplinarity$primary_fields_tab_reduced), " primary fields: <ul>", paste0(
   "<li>", applicant$interdisciplinarity$primary_fields_tab_reduced$primary_field, " (", applicant$interdisciplinarity$primary_fields_tab_reduced$n, ")</li>", collapse=" "), "</ul>")
+} else {
+  interdisciplinarity_string <- "Interdisciplinarity could not be computed."
+}
+
 ```
 
 
-```{=html}
+```{r}
+#| results: asis
+
+if (length(applicant$internationalization) > 1) {
+cat(paste0('
+````{=html}
 <div style="display: flex; flex-direction: column; border: 1px solid #BBBBBB;">
     <!-- Row 1 -->
     <div style="display: flex;">
@@ -559,26 +581,30 @@ interdisciplinarity_string <- paste0(nrow(applicant$interdisciplinarity$primary_
     </div>
     <!-- Row 2 -->
     <div style="display: flex;">
-        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r slider(applicant$internationalization$international_evenness |> round(2), "Only within country co-authors", "Broad coauthor network from many countries")`</div>
-        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r slider(applicant$interdisciplinarity$interdisc_evenness |> round(2), "Single discipline", "Many disciplines")`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">', slider(applicant$internationalization$international_evenness |> round(2), "Only within country co-authors", "Broad coauthor network from many countries"), '</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">', slider(applicant$interdisciplinarity$interdisc_evenness |> round(2), "Single discipline", "Many disciplines"), '</div>
     </div>
     
         <!-- Row 3 -->
     <div style="display: flex;">
-        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r internationality_string`</div>
-        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">`r interdisciplinarity_string`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">', internationality_string, '</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px;">', interdisciplinarity_string, '</div>
     </div>
     
     <!-- Row 4 -->
     <div style="display: flex;">
-        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; font-size:80%;">`r kable(country_tab, format="html", escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")`</div>
-        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; font-size:80%;">The main subfields are (multiple categories per paper are possible): `r kable(subfield_tab, format="html", escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")`</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; font-size:80%;">', kable(country_tab, format="html", escape = FALSE, table.attr = "class=\'table table-sm table-striped small\' quarto-disable-processing=true"), '</div>
+        <div style="flex: 1; border: 1px solid #BBBBBB; padding: 10px; font-size:80%;">The main subfields are (multiple categories per paper are possible): ', kable(subfield_tab, format="html", escape = FALSE, table.attr = "class=\'table table-sm table-striped small\' quarto-disable-processing=true"), '</div>
     </div>
-
 </div>
+````
+'))
+} else {
+  cat("
+::: {.callout-warning title='No indexes on internationality and interdisciplinarity could be computed.'}
+:::")
+}
 ```
-
-
 
 
 <!-- JS script to embed the raw json material -->

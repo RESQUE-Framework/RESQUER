@@ -145,7 +145,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Call BIP! API for impact measures
   #----------------------------------------------------------------
 
-  applicant$BIP <- get_BIP(applicant$indicators$dois_normalized, verbose=verbose)
+  applicant$BIP <- get_BIP(dois=applicant$indicators$dois_normalized, verbose=verbose)
   applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
   applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
 
@@ -232,25 +232,32 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get internationalization and interdisciplinarity scores
   #----------------------------------------------------------------
 
-  nw <- get_network(works=applicant$all_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
+  if (!is.null(applicant$meta$OA_author_id)) {
+    nw <- get_network(works=applicant$all_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
 
-  applicant$internationalization <- list(
-    international_evenness = nw$international_evenness,
-    country_codes_repeated = nw$country_codes_repeated,
-    internationalization_string = nw$internationalization_string,
-    n_coauthors_international = nw$n_coauthors_international,
-    n_coauthors_same_country = nw$n_coauthors_same_country,
-    perc_international = (nw$n_coauthors_international*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round(),
-    perc_same_country = (nw$n_coauthors_same_country*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round()
+    applicant$internationalization <- list(
+      international_evenness = nw$international_evenness,
+      country_codes_repeated = nw$country_codes_repeated,
+      internationalization_string = nw$internationalization_string,
+      n_coauthors_international = nw$n_coauthors_international,
+      n_coauthors_same_country = nw$n_coauthors_same_country,
+      perc_international = (nw$n_coauthors_international*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round(),
+      perc_same_country = (nw$n_coauthors_same_country*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round()
 
-  )
-  applicant$interdisciplinarity <- list(
-    interdisc_evenness = nw$interdisc_evenness,
-    primary_fields_tab_reduced = nw$primary_fields_tab_reduced,
-    subfields_tab = nw$subfields_tab,
-    topics_tab = nw$topics_tab,
-    interdisc_string = nw$interdisc_string
-  )
+    )
+    applicant$interdisciplinarity <- list(
+      interdisc_evenness = nw$interdisc_evenness,
+      primary_fields_tab_reduced = nw$primary_fields_tab_reduced,
+      subfields_tab = nw$subfields_tab,
+      topics_tab = nw$topics_tab,
+      interdisc_string = nw$interdisc_string
+    )
+
+  } else {
+    applicant$internationalization <- NA
+    applicant$interdisciplinarity <- NA
+  }
+
 
 
   #----------------------------------------------------------------

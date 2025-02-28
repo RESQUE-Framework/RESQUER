@@ -7,10 +7,12 @@
 TODO: Why is some preprocessing here, and some in the other function?
 Make a principled design.}
 \usage{
-read_RESQUE(file, verbose = FALSE)
+read_RESQUE(file, update_forms = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{file}{Path to RESQUE JSON file}
+
+\item{update_forms}{Should the \code{forms} node in the json (which contains the scoring information) be overwritten with the current version?}
 
 \item{verbose}{Show diagnostic information?}
 }

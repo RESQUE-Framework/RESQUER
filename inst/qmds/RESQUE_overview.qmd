@@ -1,0 +1,244 @@
+---
+title: "RESQUE Overview for multiple candidates"
+embed-resources: true
+output: html
+format:
+  typst: {}
+  pdf:
+    header-includes:
+      - \usepackage{xcolor}
+      - \newcommand{\reddot}{\textcolor{red}{\textbullet}}
+      - \newcommand{\yellowdot}{\textcolor{yellow}{\textbullet}}
+      - \newcommand{\greendot}{\textcolor{green}{\textbullet}}
+  html:
+    toc: true
+    toc-location: left
+params:
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+  clear_cache: false
+---
+
+```{r setup0}
+#| include: false
+
+library(knitr)
+library(kableExtra)
+
+RED <- "red"
+YELLOW <- "#f7cf07"
+GREEN <- "#3af72c"
+
+#* @param value 1 (=red), 2 (=yellow) or 3 (=green)
+dot <- function(value) {
+  color_map <- c(RED, YELLOW, GREEN)
+  # Retrieve the corresponding color for each value
+  colors <- color_map[as.integer(value)]
+  paste0('<span style="color:', colors, '">&#9679;</span>')
+}
+
+cut2 <- function(x, breaks) {
+  if (length(breaks) != 2) {
+    stop("In cut2(), you need exactly two breaks to get a traffic light rating.")
+  } else {
+    cut(x, c(-Inf, breaks, Inf), labels=FALSE)
+  }
+}
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  echo=FALSE,
+  message=FALSE,
+  warning=FALSE,
+  out.width="100%"
+)
+
+# Set global chunk options for tables
+options(knitr.table.format = "html")
+
+# Set default kableExtra styling options
+knit_hooks$set(kable = function(x, options) {
+  kable(x, format = "html") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+})
+```
+
+<style>
+table, th, td {
+  border: 1px solid #BBBBBB;
+  border-collapse: collapse;
+}
+</style>
+
+
+```{r normvalues}
+RRS_norms <- c(.25, .40)
+OD_norms <- c(.25, .40)
+OM_norms <- c(.4, .6)
+PreReg_norms <- c(.1, .2)
+Repro_norms <- c(.2, .3)
+Theory_norms <- c(.1, .2)
+```
+
+
+```{r demo_warning}
+#| results: "asis"
+
+if (is.null(params$json_path)) {
+  cat("\n\n::: {.callout-warning}\nNo data supplied - using demo profile\n:::\n\n")
+}
+```
+
+
+```{r setup}
+#| results: "asis"
+
+library(RESQUER)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(scales)
+library(forcats)
+library(wordcloud)
+library(knitr)
+library(openalexR)
+library(tibble)
+library(OAmetrics)
+library(sparkline)
+
+#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+
+if (is.null(params$json_path)) {
+  # TODO: Load demo profiles if no folder with jsons is provided
+  #applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
+} else {
+  
+  cache_file <- paste0(params$json_path, "/applicant_data.RData")
+  
+  # Check if a cached, pre-computed file exists
+  if (file.exists(cache_file)) {
+    load(cache_file)
+    cat(paste0("::: {.callout-note title='Using cached results (date of analysis: ", format(store$date_analysis, tz = "UTC", usetz = TRUE), ")'}\n:::\n\n"))
+    
+  } else {
+    # Read all jsons in that folder
+    json_files <- list.files(params$json_path, pattern="*.json", full.names=TRUE)
+    
+    applicant_list <- list()
+    
+    for (i in 1:length(json_files)) {
+        R <- read_RESQUE(file=json_files[i], verbose=FALSE)
+        applicant_list[[i]] <- preprocess(applicant=R, verbose=FALSE)
+    }
+    
+    # `store` stores more meta-information on the analysis
+    store <- list(
+      date_analysis = Sys.time()
+    )
+    
+    save(applicant_list, store, file=cache_file)
+  }
+  
+}
+
+```
+
+
+## Applicant descriptives
+
+```{r descriptive_tab}
+
+overview_tab <- data.frame(
+  names = sapply(applicant_list, function(x) x$meta$LastName),
+  academic_age = sapply(applicant_list, function(x) x$meta$AcademicAge),
+  analysed_outputs = sapply(applicant_list, function(x) x$pubs |> nrow())
+)
+
+kable(overview_tab, col.names = c("Name", "Academic age", "# of analysed publications"), escape = TRUE) %>% 
+  kable_styling(font_size = 9, bootstrap_options = c("hover", "condensed"), full_width = FALSE) %>% 
+  row_spec(1:nrow(overview_tab), extra_css = "padding-top:1px; padding-bottom:1px;")
+
+# TODO: Add note: Academic age is since PhD, minus self-reported times for childcare etc.
+```
+
+<!--
+::: {.callout-note}
+This is a preview of a comparison chart that summarizes key RESQUE indicators for multiple candidates. Not all indicators have been covered yet, and things might change substantially.
+:::
+-->
+
+## Research Transparency (v1)
+
+The traffic lights are based on normative values of the Relative Rigor Score (i.e., "What could reasonably be expected in that field?").
+
+```{r overview_table2}
+
+tab2 <- data.frame(
+  applicant = overview_tab$names,
+  RRS_overall = sapply(applicant_list, function(x) x$scores$overall_score) |> cut2(RRS_norms) |> dot(),
+  RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score)) |> cut2(OD_norms) |> dot(),
+  RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score)) |> cut2(OM_norms) |> dot(),
+  RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score)) |> cut2(PreReg_norms) |> dot()
+)
+
+kable(tab2, col.names=c("Applicant", "Overall Rigor Score", "Open Data", "Open Materials", "Preregistration &<br>Replication"), escape=FALSE)
+```
+
+## Research Transparency (v2)
+
+The colors are based on normative values of the Relative Rigor Score (i.e., "What could reasonably be expected in that field?").
+
+```{r overview_table2b}
+library(htmltools)
+library(DT)
+
+tab2b <- data.frame(
+  applicant = overview_tab$names,
+  RRS_overall = c(.31, .21, .50)
+)
+
+ministack_tag <- sapply(tab2b$RRS_overall, ministack_html)
+waffle_tag <- lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |>
+  sapply(waffle_html)
+
+tab2b$RRS_overall <- paste(ministack_tag, waffle_tag)
+
+kable(tab2b, escape=FALSE)
+```
+
+## Impact
+
+TBD: Some aggregated impact statistics
+
+## Internationality & Interdisciplinarity
+
+```{r inter_tab}
+
+tab4 <- data.frame(
+  applicant = overview_tab$names,
+  inter1 = slider(
+      sapply(applicant_list, function(x) x$internationalization$international_evenness), 
+      "Only within country co-authors", "Broad coauthor network from many countries"
+  ),
+  inter2 = slider(
+    sapply(applicant_list, function(x) x$interdisciplinarity$interdisc_evenness), 
+      "Single discipline", "Many disciplines"
+  )
+)
+
+kable(tab4, col.names=c("Applicant", "Internationality", "Interdisciplinarity"), escape=FALSE)
+```
+
+
+```{r}
+ministack(0.3)
+minigauge(0.5)
+```
+
+
+
+
+## Session info
+
+`r paste0("*Analysis date: ", format(Sys.time(), tz = "UTC", usetz = TRUE) |> as.character(), ". RESQUER package version: ", packageVersion("RESQUER") |> as.character(), "*")`
