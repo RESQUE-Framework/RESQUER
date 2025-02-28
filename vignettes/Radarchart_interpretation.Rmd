@@ -38,7 +38,7 @@ For example, he submitted many methodological/purely theoretical papers which ha
 
 But in the few cases where he could provide open data, he did it in a perfect way (i.e., according to all FAIR criteria and other indicators related to open data): The narrow sector has 100% of points.
 
-```{r, out.width=400, out.height=400, dpi=200}
+```{r, out.width=300, out.height=300, dpi=300}
 #| fig.alt: >
 #|   A radar chart with five areas:
 #|   Open Data, Open Materials, Preregistration, Reproducible Code & Verification, Theorizing & Formal Modeling.
@@ -60,7 +60,7 @@ RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE)
 In this profile, a lot of open data points could have been gained: The Open Data sector is very broad.
 But only very few of these potential points have actually been gained.
 
-```{r, out.width=400, out.height=400, dpi=200}
+```{r, out.width=300, out.height=300, dpi=300}
 #| fig.alt: >
 #|   A radar chart with five areas:
 #|   Open Data, Open Materials, Preregistration, Reproducible Code & Verification, Theorizing & Formal Modeling.
@@ -81,7 +81,7 @@ RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE)
 This candidate had many opportunities of providing open data (the sector is very broad), and she did it in an excellent way.
 This is true expertise: Having both a lot of experience *and* doing it in a proper way.
 
-```{r, out.width=400, out.height=400, dpi=200}
+```{r, out.width=300, out.height=300, dpi=300}
 #| fig.alt: >
 #|   A radar chart with five areas:
 #|   Open Data, Open Materials, Preregistration, Reproducible Code & Verification, Theorizing & Formal Modeling.
