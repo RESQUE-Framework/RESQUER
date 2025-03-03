@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.0.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Workshop Allg1/resque_mückstein_1740406498057.json"
 ---
 
 
@@ -36,13 +36,6 @@ knit_hooks$set(kable = function(x, options) {
     kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 })
 ```
-
-<style>
-table, th, td {
-  border: 1px solid #BBBBBB;
-  border-collapse: collapse;
-}
-</style>
 
 
 ```{r demo_warning}
@@ -92,11 +85,11 @@ if (is.na(applicant$meta$ORCID)) {
 
 ```{r overview_table}
 overview_tab <- data.frame(
-  col1 = c("Name", "Analysis date", "Academic age", "# of analysed outputs", "Package version"),
+  col1 = c("Name", "Analysis date", "Academic age (years since PhD, minus child care etc.)", "# of analysed outputs", "Package version"),
   col2 = c(
     applicant$meta$FullName, 
     as.Date(applicant$meta$date_analysis) |> as.character(), 
-    applicant$meta$AcademicAge,
+    paste0(applicant$meta$AcademicAge, " (PhD: ", applicant$meta$YearPhD, "; subtracted years: ", applicant$meta$AcademicAgeBonus, ")"),
     nrow(applicant$indicators),
     packageVersion("RESQUER") |> as.character()
   )
@@ -113,6 +106,7 @@ kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:"
 ```
 
 
+
 ::: {.callout-note}
 This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially. No bonus points have been assigned to the theory indicators yet, and also not to some other indicators of sample characteristics.
 :::
@@ -124,6 +118,17 @@ Other parts contain an evaluative aspect: For example, research that is reproduc
 ::: {.callout-note title="Methods: Is the rigor score systematically biased against certain fields?" collapse="true"}
 We took care not to systematically disadvantage certain fields or research styles. Generally, the rigor score is a relative score, computed as “percentage of maximal points” (POMP) score across all indicators that are applicable. For any indicator, one can choose the option "not applicable" if an indicator *principally* cannot be attained by a research output. The points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficient justification, in contrast, the indicator is set to "not available" (=0 points) and the maximum points are not adjusted.
 :::
+
+
+## Overall Merit Statement
+
+<div style="font-size:90%; background:#fffce6; ">
+```{r}
+#| results: asis
+cat(applicant$meta$P_MeritStatement)
+```
+</div>
+
 
 ## Submitted research outputs
 
@@ -308,60 +313,28 @@ ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
 
 ```
 
-<!--
-
-## Types of population(s)
-
-Type of population for the `r sum(applicant$indicators$P_Data_Source_NewOwn)` papers with own new data collection:
-
 
 
 ```{r}
-#| include: false
-#| eval: false
-#| fig-width: 6
-#| fig-height: 3
-#| out-width: 80%
-#| out-height: auto
+#| results: asis
 
-Sample_WEIRDness <- factor(
-  x = na.omit(applicant$pubs$P_Sample_WEIRD),
-  levels = c("WEIRD", "non_WEIRD"),
-  labels = c("WEIRD", "non-WEIRD")
-)
-
-Sample_CC <- factor(
-  x = na.omit(applicant$pubs$P_Sample_CrossCultural),
-  levels = c("SingleCulture", "MultipleCultures"),
-  labels = c("Single Culture", "Multiple Cultures")
-)
-
-
-df <- data.frame(
-  Sample_WEIRDness = Sample_WEIRDness, 
-  Sample_CC = Sample_CC
-)
-
-
-# Count occurrences of each combination
-heatmap_data <- df %>%
-  count(Sample_WEIRDness, Sample_CC) %>%
-  complete(Sample_WEIRDness, Sample_CC, fill = list(n = 0))
-
-ggplot(heatmap_data, aes(x = Sample_WEIRDness, y = Sample_CC, fill = n)) +
-  geom_tile() +
-  geom_text(aes(label = n), color="#EFEFEF") +  
-  scale_fill_gradient(low = "white", high = "#444444") +
-  theme_minimal() +
-  labs(x = "", y = "") +
-  theme(legend.position = "none") +
-  scale_y_discrete(limits = rev(levels(df$Sample_Type))) +  # Reverse the order on the y-axis
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
+if (any(!is.na(applicant$pubs$P_Sample_RareOther))) {
+  res <- "**Rare samples used in studies:**\n\n"
+  
+  rare_sample_position <- which(!is.na(applicant$pubs$P_Sample_RareOther))
+  for (i in rare_sample_position) {
+    res <- paste0(res, "- ", applicant$pubs$P_Sample_RareOther[i], "\n")
+    if (!is.na(applicant$pubs$P_SampleSize[i])) {
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", applicant$pubs$P_SampleSize[i], "</span>\n")
+    } else {
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")
+    }
+  }
+  cat(res)
+}
 ```
 
--->
+
 
 <!-- Conditionally render the CRediT section -->
 ```{r}
@@ -487,11 +460,11 @@ kable(credit_inv_tab)
 From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullName`, `r nrow(applicant$BIP %>% filter(pop_class <= "C4"))` `r ifelse(nrow(applicant$BIP %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class of all papers or better.
 
 
+
 ```{r impact_table}
 #| results: asis
 
 pop_sel <- applicant$BIP %>% 
-  #filter(pop_class <= "C4") %>% 
   arrange(pop_class, -cc) %>% 
   select(doi, "three_year_cc", cc,	pop_class)
 
@@ -499,7 +472,7 @@ pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("To
 pop_sel$pop_class <- NULL
 
 pop_sel <- pop_sel |> 
-  left_join(applicant$indicators %>% select(doi, Title = title_links_html, RRS_overall, CRediT_involvement, CRediT_involvement_roles), by="doi") %>%
+  left_join(applicant$indicators %>% select(doi, Title = title_links_html, RRS_overall, CRediT_involvement, CRediT_involvement_roles, P_MeritStatement), by="doi") %>%
   left_join(applicant$FNCS %>% select(doi, FNCS, FNPR), by="doi") %>%
   relocate(Title) |> 
   relocate(FNCS, .after = cc) |> 
@@ -508,7 +481,21 @@ pop_sel <- pop_sel |>
 
 pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
 
-colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles")
+pop_sel$merit <- cell_spec(
+  ifelse(!is.na(pop_sel$P_MeritStatement) & pop_sel$P_MeritStatement != "",
+    '<i class="bi bi-info-circle text-primary fs-5"></i>',
+    ""),
+  escape=FALSE,
+  popover = spec_popover(
+    content = pop_sel$P_MeritStatement,
+    title = NULL,                           # title will add a Title Panel on top
+    position = "right"
+  ))
+
+# This has been added as a popover; column can now be deleted
+pop_sel$P_MeritStatement <- NULL
+
+colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles", "Merit Statement")
 
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
 pop_sel$FNPR <- paste0(round(pop_sel$FNPR*100, 1), "%")
@@ -606,7 +593,7 @@ if (length(applicant$internationalization) > 1) {
 ```{r}
 #| results: asis
 
-if (!is.na(applicant$meta$ORCID)) {
+if (length(applicant$internationalization) > 1) {
 cat(paste0('
 ````{=html}
 <div style="display: flex; flex-direction: column; border: 1px solid #BBBBBB;">
@@ -637,7 +624,7 @@ cat(paste0('
 '))
 } else {
   cat("
-::: {.callout-warning title='No ORCID provided - indexes on internationality and interdisciplinarity cannot be computed.'}
+::: {.callout-warning title='No OpenAlex author ID available - indexes on internationality and interdisciplinarity cannot be computed.'}
 :::")
 }
 ```
@@ -653,4 +640,107 @@ cat(paste0('
 cat(sprintf('<script id="raw-json-data" type="application/json" style="display:none;">%s</script>',
             paste(applicant_raw_json, collapse="\n")))
 
+```
+
+
+
+<!-- Custom script to show popovers -->
+```{=html}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Find all elements with data-toggle="popover"
+  const popoverElements = document.querySelectorAll('[data-toggle="popover"]');
+  
+  popoverElements.forEach(function(element) {
+    // Get attributes
+    const content = element.getAttribute('data-content');
+    const placement = element.getAttribute('data-placement') || 'top';
+    const trigger = element.getAttribute('data-trigger') || 'hover';
+    
+    // Style the trigger element
+    element.style.cursor = 'help';
+    element.style.borderBottom = '1px dotted #999';
+    element.style.position = 'relative';
+    element.style.display = 'inline-block';
+    
+    // Create the popup element
+    const popup = document.createElement('div');
+    popup.style.position = 'absolute';
+    popup.style.visibility = 'hidden';
+    popup.style.backgroundColor = '#fff';
+    popup.style.color = '#333';
+    popup.style.padding = '10px';
+    popup.style.borderRadius = '4px';
+    popup.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    popup.style.width = '300px';
+    popup.style.zIndex = '1000';
+    popup.style.fontSize = '0.85rem';
+    popup.style.lineHeight = '1.4';
+    popup.style.opacity = '0';
+    popup.style.transition = 'opacity 0.2s';
+    popup.style.pointerEvents = 'none'; // Prevents the popup from interfering with mouse events
+    popup.innerHTML = content;
+    
+    // Set placement
+    if (placement === 'left') {
+      popup.style.right = '100%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translateY(-50%)';
+      popup.style.marginRight = '10px';
+    } else if (placement === 'right') {
+      popup.style.left = '100%';
+      popup.style.top = '50%';
+      popup.style.transform = 'translateY(-50%)';
+      popup.style.marginLeft = '10px';
+    } else if (placement === 'bottom') {
+      popup.style.top = '100%';
+      popup.style.left = '50%';
+      popup.style.transform = 'translateX(-50%)';
+      popup.style.marginTop = '10px';
+    } else { // default to top
+      popup.style.bottom = '100%';
+      popup.style.left = '50%';
+      popup.style.transform = 'translateX(-50%)';
+      popup.style.marginBottom = '10px';
+    }
+    
+    // Add popup to the DOM
+    element.appendChild(popup);
+    
+    // Handle trigger type
+    if (trigger === 'hover' || trigger === 'mouseenter') {
+      // Add hover event listeners
+      element.addEventListener('mouseenter', function() {
+        popup.style.visibility = 'visible';
+        popup.style.opacity = '1';
+      });
+      
+      element.addEventListener('mouseleave', function() {
+        popup.style.visibility = 'hidden';
+        popup.style.opacity = '0';
+      });
+    } else {
+      // For click triggers
+      element.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (popup.style.visibility === 'visible') {
+          popup.style.visibility = 'hidden';
+          popup.style.opacity = '0';
+        } else {
+          popup.style.visibility = 'visible';
+          popup.style.opacity = '1';
+        }
+      });
+      
+      // Close on click outside
+      document.addEventListener('click', function(e) {
+        if (!element.contains(e.target)) {
+          popup.style.visibility = 'hidden';
+          popup.style.opacity = '0';
+        }
+      });
+    }
+  });
+});
+</script>
 ```
