@@ -25,7 +25,7 @@
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
-  ind_vars <- c("P_PreregisteredReplication")
+  ind_vars <- c("P_PreregisteredReplication", "P_MeritStatement")
   for (i in ind_vars) {
     if (!i %in% colnames(applicant$indicators)) applicant$indicators[, i] <- NA
   }
@@ -39,6 +39,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   }
   if (!is.null(applicant$meta$AcademicAgeBonus)) {
     applicant$meta$AcademicAgeBonus <- as.numeric(applicant$meta$AcademicAgeBonus)
+    if (is.na(applicant$meta$AcademicAgeBonus)) applicant$meta$AcademicAgeBonus <- 0
   } else {
     applicant$meta$AcademicAgeBonus <- 0
   }
@@ -51,7 +52,11 @@ preprocess <- function(applicant, verbose=FALSE) {
   if (!is.na(applicant$meta$ORCID)) {
     # Retrieve OpenAlex Author ID
     author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
-    applicant$meta$OA_author_id <- author_info$id
+    if (is.null(author_info)) {
+      applicant$meta$OA_author_id <- NA
+    } else {
+      applicant$meta$OA_author_id <- author_info$id
+    }
   } else {
     applicant$meta$OA_author_id <- NA
     warning("No ORCID provided - some indexes cannot be computed.")
