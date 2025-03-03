@@ -49,9 +49,15 @@ preprocess <- function(applicant, verbose=FALSE) {
   applicant$meta$LastName <- str_trim(applicant$meta$LastName)
   applicant$meta$ORCID <- normalize_ORCIDs(applicant$meta$ORCID)
 
-  # Retrieve OpenAlex Author ID
-  author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
-  applicant$meta$OA_author_id <- author_info$id
+  if (!is.na(applicant$meta$ORCID)) {
+    # Retrieve OpenAlex Author ID
+    author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
+    applicant$meta$OA_author_id <- author_info$id
+  } else {
+    applicant$meta$OA_author_id <- NA
+    warning("No ORCID provided - some indexes cannot be computed.")
+  }
+
 
   # Split the research outputs into types, reduce to suitable submissions
   applicant$pubs <- applicant$indicators %>% filter(type == "Publication", P_Suitable == "Yes")
@@ -232,7 +238,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get internationalization and interdisciplinarity scores
   #----------------------------------------------------------------
 
-  if (!is.null(applicant$meta$OA_author_id)) {
+  if (!is.null(applicant$meta$OA_author_id) & !is.na(applicant$meta$OA_author_id)) {
     nw <- get_network(works=applicant$all_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
 
     applicant$internationalization <- list(
