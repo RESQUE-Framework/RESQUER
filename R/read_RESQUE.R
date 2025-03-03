@@ -1,4 +1,5 @@
 # file <- system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
+# applicant <- read_RESQUE(file)
 
 
 #' Read a single RESQUE JSON file and do basic preprocessing
