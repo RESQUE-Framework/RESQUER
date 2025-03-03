@@ -21,12 +21,12 @@
 
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
-# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_after_name_change.json")
+# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Workshop Allg1/resque_mückstein_1740406498057.json")
 
 preprocess <- function(applicant, verbose=FALSE) {
 
   # create missing indicator variables
-  ind_vars <- c("P_PreregisteredReplication")
+  ind_vars <- c("P_PreregisteredReplication", "P_MeritStatement")
   for (i in ind_vars) {
     if (!i %in% colnames(applicant$indicators)) applicant$indicators[, i] <- NA
   }
@@ -40,6 +40,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   }
   if (!is.null(applicant$meta$AcademicAgeBonus)) {
     applicant$meta$AcademicAgeBonus <- as.numeric(applicant$meta$AcademicAgeBonus)
+    if (is.na(applicant$meta$AcademicAgeBonus)) applicant$meta$AcademicAgeBonus <- 0
   } else {
     applicant$meta$AcademicAgeBonus <- 0
   }
@@ -52,7 +53,11 @@ preprocess <- function(applicant, verbose=FALSE) {
   if (!is.na(applicant$meta$ORCID)) {
     # Retrieve OpenAlex Author ID
     author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
-    applicant$meta$OA_author_id <- author_info$id
+    if (is.null(author_info)) {
+      applicant$meta$OA_author_id <- NA
+    } else {
+      applicant$meta$OA_author_id <- author_info$id
+    }
   } else {
     applicant$meta$OA_author_id <- NA
     warning("No ORCID provided - some indexes cannot be computed.")
