@@ -58,7 +58,7 @@ RRS_radarchart <- function(RRS, title="", overall_score=FALSE, minimal=FALSE, sh
       geom_text(aes(x=xmid, y=1, label = dimension), vjust = 0, hjust=0.5, size=base_size/5)
 
       if (overall_score == TRUE) {
-        subtitle <- paste0(subtitle, "Overall score = ", round(RRS$overall_score, 2), ". ")
+        subtitle <- paste0(subtitle, "Overall score = ", round(RRS$overall_score*100), "%. ")
       }
       if (show.n_pub==TRUE) {
         subtitle <- paste0(subtitle, "Chart is based on ", RRS$n_papers, ifelse(RRS$n_papers == 1, " publication", " publications"), ".")

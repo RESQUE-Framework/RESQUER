@@ -55,6 +55,9 @@ if (is.null(params$json_path)) {
 
 
 ```{r setup}
+#| results: "asis"
+#| warnings: false
+
 library(RESQUER)
 library(dplyr)
 library(tidyr)
@@ -75,11 +78,14 @@ if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 } else {
   applicant_raw_json <- readLines(params$json_path, warn=FALSE)
-  applicant_json <- read_RESQUE(file=params$json_path)
+  applicant_json <- read_RESQUE(file=params$json_path, verbose=FALSE)
 }
 
-applicant <- preprocess(applicant=applicant_json)
+applicant <- preprocess(applicant=applicant_json, verbose=FALSE)
 
+if (is.na(applicant$meta$ORCID)) {
+  cat("\n\n::: {.callout-warning title='No ORCID supplied - Cannot compute internationalization and interdisciplinarity indexes'}\n:::\n\n")
+}
 ```
 
 **The "fingerprint" of how research is conducted, when only the best work is submitted.** 
@@ -120,8 +126,6 @@ We took care not to systematically disadvantage certain fields or research style
 :::
 
 ## Submitted research outputs
-
-`r nrow(applicant$indicators)` research outputs have been submitted. 
 
 <!--
 The following table shows the types of submitted outputs, and whether they have been flagged as suitable for the rating sheet (*yes*) or not (*no*).
@@ -431,7 +435,7 @@ RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall
 
 
 
-# Scientific impact: Highly popular publications
+# Scientific impact
 
 
 [BIP! Scholar](https://bip.imsi.athenarc.gr/site/home) (a non-commercial open-source service to facilitate fair researcher assessment) provides **five impact classes** based on norm values:
@@ -482,15 +486,16 @@ kable(credit_inv_tab)
 
 From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullName`, `r nrow(applicant$BIP %>% filter(pop_class <= "C4"))` `r ifelse(nrow(applicant$BIP %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class of all papers or better.
 
-::: {style="font-size: 80%;"}
+
 ```{r impact_table}
+#| results: asis
 
 pop_sel <- applicant$BIP %>% 
-  filter(pop_class <= "C4") %>% 
-  arrange(pop_class) %>% 
+  #filter(pop_class <= "C4") %>% 
+  arrange(pop_class, -cc) %>% 
   select(doi, "three_year_cc", cc,	pop_class)
 
-pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average (Bottom 90%)"))
+pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average"))
 pop_sel$pop_class <- NULL
 
 pop_sel <- pop_sel |> 
@@ -511,18 +516,49 @@ pop_sel$doi <- NULL
 pop_sel$FNPR <- NULL # removed, because it is not always congruent with the popularity category; could be confusing
 
 # add some emojis:
-pop_sel$Title[pop_sel$Popularity == "Top 0.01%"] <- paste0("🚀", pop_sel$Title[pop_sel$Popularity == "Top 0.01%"])
-pop_sel$Title[pop_sel$Popularity == "Top 0.1%"] <- paste0("️🌟", pop_sel$Title[pop_sel$Popularity == "Top 0.1%"])
-pop_sel$Title[pop_sel$Popularity == "Top 1%"] <- paste0("️✨", pop_sel$Title[pop_sel$Popularity == "Top 1%"])
+pop_sel$Title[pop_sel$Popularity == "Top 0.01%"] <- paste0("🚀", pop_sel$Title[which(pop_sel$Popularity == "Top 0.01%")])
+pop_sel$Title[pop_sel$Popularity == "Top 0.1%"] <- paste0("️🌟", pop_sel$Title[which(pop_sel$Popularity == "Top 0.1%")])
+pop_sel$Title[pop_sel$Popularity == "Top 1%"] <- paste0("️✨", pop_sel$Title[which(pop_sel$Popularity == "Top 1%")])
 
 if (hideCRediT == "true") {
   pop_sel <- pop_sel[, 1:8]
 }
 
-if (nrow(pop_sel) > 0) {
-  kable(pop_sel, escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
+high_impact <- pop_sel[pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ]
+low_impact <- pop_sel[!pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ]
+```
+
+
+## Highly popular publications
+
+::: {style="font-size: 80%;"}
+```{r}
+#| results: asis
+
+if (nrow(high_impact) > 0) {
+  
+  kable(pop_sel[pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ], escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
+    footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
+  
+} else {
+  cat("No publications submitted with popularity class 'Top 10%' or higher.")
+}
+```
+:::
+
+## Publications without citation metrics & average popular publications
+
+For very new publications, no citation metrics can be computed.
+
+::: {style="font-size: 80%;"}
+```{r}
+#| results: asis
+
+if (nrow(low_impact) > 0) {
+  kable(pop_sel[!pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ], escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
     footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
 } else {
+  cat("No publications submitted with popularity class 'Top 10%' or higher.")
 }
 ```
 :::
@@ -570,7 +606,7 @@ if (length(applicant$internationalization) > 1) {
 ```{r}
 #| results: asis
 
-if (length(applicant$internationalization) > 1) {
+if (!is.na(applicant$meta$ORCID)) {
 cat(paste0('
 ````{=html}
 <div style="display: flex; flex-direction: column; border: 1px solid #BBBBBB;">
@@ -601,7 +637,7 @@ cat(paste0('
 '))
 } else {
   cat("
-::: {.callout-warning title='No indexes on internationality and interdisciplinarity could be computed.'}
+::: {.callout-warning title='No ORCID provided - indexes on internationality and interdisciplinarity cannot be computed.'}
 :::")
 }
 ```
