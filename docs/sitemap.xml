@@ -23,6 +23,9 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_json_object.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_reference_list.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/index.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/minigauge.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/ministack.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/ministack_html.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/preprocess.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/read_RESQUE.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/render_profile.html</loc></url>
@@ -34,5 +37,6 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/unCamel.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/unCamel0.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/validate_json.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/waffle_html.html</loc></url>
 </urlset>
 
