@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Workshop Allg1/resque_mückstein_1740406498057.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
 ---
 
 
@@ -336,6 +336,50 @@ if (any(!is.na(applicant$pubs$P_Sample_RareOther))) {
 
 
 
+
+
+## Types of Research Designs
+
+```{r research_design}
+#| fig-width: 6
+#| fig-height: 4
+#| out-width: 100%
+#| out-height: auto
+
+df <- data.frame(
+  Longitudinal_Type = factor(x = applicant$pubs$P_Longitudinal,
+    levels = c("Longitudinal", "Crosssectional"),
+    labels = c("Longitudinal", "Cross-sectional")
+    ),
+  DesignExperimental_Type  = factor(applicant$pubs$P_DesignExperimental,
+      levels=c("Observational", "Experimental"),
+      labels=c("Observational", "Experimental"))
+)
+
+df <- na.omit(df)
+
+# Count occurrences of each combination, and add missing factor levels (to also show the non-existent cells)
+heatmap_data <- df %>%
+  count(Longitudinal_Type, DesignExperimental_Type) %>%
+  complete(Longitudinal_Type, DesignExperimental_Type, fill = list(n = 0)) |> 
+  na.omit()
+
+ggplot(heatmap_data, aes(x = Longitudinal_Type, y = DesignExperimental_Type, fill = n)) +
+  geom_tile() +
+  geom_text(aes(label = n), color="#EFEFEF") +  
+  scale_fill_gradient(low = "white", high = "#444444") +
+  theme_minimal() +
+  labs(x = "", y = "") +
+  theme(legend.position = "none") +
+  scale_y_discrete(limits = rev(levels(df$Sample_Type))) +  # Reverse the order on the y-axis
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+
+
 <!-- Conditionally render the CRediT section -->
 ```{r}
 #| out.width: 100%
@@ -484,13 +528,14 @@ pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
 pop_sel$merit <- cell_spec(
   ifelse(!is.na(pop_sel$P_MeritStatement) & pop_sel$P_MeritStatement != "",
     '<i class="bi bi-info-circle text-primary fs-5"></i>',
-    ""),
+    "(n.a.)"),
   escape=FALSE,
-  popover = spec_popover(
-    content = pop_sel$P_MeritStatement,
-    title = NULL,                           # title will add a Title Panel on top
-    position = "right"
-  ))
+  popover = spec_popover(content = pop_sel$P_MeritStatement, title = NULL, position = "right")
+    )
+
+# hack: Remove popovers for n.a. cells
+pop_sel$merit[is.na(pop_sel$P_MeritStatement) | pop_sel$P_MeritStatement == ""] <- cell_spec("(n.a.)",
+  escape=FALSE, popover = NULL)
 
 # This has been added as a popover; column can now be deleted
 pop_sel$P_MeritStatement <- NULL
@@ -628,6 +673,53 @@ cat(paste0('
 :::")
 }
 ```
+
+
+
+# "Not applicable" justifications
+
+Choosing "not applicable" indicates that an indicator *principally* cannot be attained by a research output. To avoid bias against certain research fields, the points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficent justification, in contrast, the indicator should be set to "not available" (=0 points) and the maximum points are not adjusted. (Note: The latter correction currently needs to be done manually in the json file.)
+
+
+```{r}
+#| results='asis'
+
+# cols with "NotApplicable"
+cols_with_NotApplicable <- apply(applicant$indicators, 2, function(col) any(col == "NotApplicable")) |> na.omit()
+colnames_with_NotApplicable <- names(cols_with_NotApplicable)[cols_with_NotApplicable == TRUE]
+
+# remove one field: P_MultiStudy has no explanation if "not applicable" is selected
+colnames_with_NotApplicable <- colnames_with_NotApplicable[colnames_with_NotApplicable != "P_MultiStudy"]
+
+if (length(colnames_with_NotApplicable) > 0) {
+  cat("These are all claims of non-applicability from this applicant:\n\n")
+  
+  for (i in colnames_with_NotApplicable) {
+    # add corresponding explanation
+    cat(paste0("### ", i, "\n\n"))
+    
+    NotAppl <- applicant$indicators[applicant$indicators[, i] == "NotApplicable", c("Title", "Year", "DOI", i, paste0(i, "_NAExplanation"))]
+    NotAppl <- NotAppl[!is.na(NotAppl[, i]), ]
+    rownames(NotAppl) <- NULL
+    
+    NotAppl$Title <- paste0("[", NotAppl$Title, "](", NotAppl$DOI, ")")
+    NotAppl$DOI <- NULL
+    
+     # beware: within for-loops, kable() needs an explicit `print`
+    kable(NotAppl, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> print()
+  }
+} else {
+  cat("**The applicant had no claims of non-applicability.**\n\n")
+}
+```
+
+
+
+
+
+<!-- ########################################################
+###########  TECHNICAL STUFF, DO NOT CHANGE #################
+############################################################# -->
 
 
 <!-- JS script to embed the raw json material -->

@@ -1,9 +1,9 @@
-pandoc: '3.2'
+pandoc: 2.11.4
 pkgdown: 2.1.0
 pkgdown_sha: ~
 articles:
   Radarchart_interpretation: Radarchart_interpretation.html
-last_built: 2025-02-24T10:39Z
+last_built: 2025-03-06T08:18Z
 urls:
   reference: https://resque-framework.github.io/RESQUER/reference
   article: https://resque-framework.github.io/RESQUER/articles
