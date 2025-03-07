@@ -3,16 +3,17 @@ title: "RESQUE Overview for multiple candidates"
 embed-resources: true
 output: html
 format:
-  typst: {}
-  pdf:
-    header-includes:
-      - \usepackage{xcolor}
-      - \newcommand{\reddot}{\textcolor{red}{\textbullet}}
-      - \newcommand{\yellowdot}{\textcolor{yellow}{\textbullet}}
-      - \newcommand{\greendot}{\textcolor{green}{\textbullet}}
   html:
     toc: true
     toc-location: left
+    df-print: paged
+    css: overview_styles.css
+    page-layout: full
+    grid:
+      sidebar-width: 250px
+      body-width: 900px
+      margin-width: 100px
+      gutter-width: 1.5rem
 params:
   json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
   clear_cache: false
@@ -23,10 +24,25 @@ params:
 
 library(knitr)
 library(kableExtra)
+library(RESQUER)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(scales)
+library(forcats)
+library(wordcloud)
+library(openalexR)
+library(tibble)
+library(OAmetrics)
+library(sparkline)
 
-RED <- "red"
+RED <- "#e4090c"
+DARKRED <- "#c51819"
 YELLOW <- "#f7cf07"
 GREEN <- "#3af72c"
+DARKGREEN <- "#1da412"
+LIGHTGREY <- "#e8e8e8"
 
 #* @param value 1 (=red), 2 (=yellow) or 3 (=green)
 dot <- function(value) {
@@ -63,13 +79,6 @@ knit_hooks$set(kable = function(x, options) {
 })
 ```
 
-<style>
-table, th, td {
-  border: 1px solid #BBBBBB;
-  border-collapse: collapse;
-}
-</style>
-
 
 ```{r normvalues}
 RRS_norms <- c(.25, .40)
@@ -81,31 +90,9 @@ Theory_norms <- c(.1, .2)
 ```
 
 
-```{r demo_warning}
-#| results: "asis"
-
-if (is.null(params$json_path)) {
-  cat("\n\n::: {.callout-warning}\nNo data supplied - using demo profile\n:::\n\n")
-}
-```
-
-
 ```{r setup}
 #| results: "asis"
 
-library(RESQUER)
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(ggplot2)
-library(scales)
-library(forcats)
-library(wordcloud)
-library(knitr)
-library(openalexR)
-library(tibble)
-library(OAmetrics)
-library(sparkline)
 
 #params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
 
@@ -162,54 +149,122 @@ kable(overview_tab, col.names = c("Name", "Academic age", "# of analysed publica
 # TODO: Add note: Academic age is since PhD, minus self-reported times for childcare etc.
 ```
 
-<!--
-::: {.callout-note}
-This is a preview of a comparison chart that summarizes key RESQUE indicators for multiple candidates. Not all indicators have been covered yet, and things might change substantially.
+
+## Research Transparency
+
+You can click on the arrows in each column header (<img src="img/DT_arrows.png" />) to sort by the Rigor Score of the column.
+
+The Overall Rigor Score covers current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
+
+  - 15-20% can be considered average
+  - 30% is very good
+  - \>40% is excellent.
+
+::: {.callout-note collapse="true" title="How to read the small charts"}
+
+- *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
+- *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
+
+![](img/Overview_chart_explanation1.png)
 :::
--->
-
-## Research Transparency (v1)
-
-The traffic lights are based on normative values of the Relative Rigor Score (i.e., "What could reasonably be expected in that field?").
-
-```{r overview_table2}
-
-tab2 <- data.frame(
-  applicant = overview_tab$names,
-  RRS_overall = sapply(applicant_list, function(x) x$scores$overall_score) |> cut2(RRS_norms) |> dot(),
-  RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score)) |> cut2(OD_norms) |> dot(),
-  RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score)) |> cut2(OM_norms) |> dot(),
-  RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score)) |> cut2(PreReg_norms) |> dot()
-)
-
-kable(tab2, col.names=c("Applicant", "Overall Rigor Score", "Open Data", "Open Materials", "Preregistration &<br>Replication"), escape=FALSE)
-```
-
-## Research Transparency (v2)
-
-The colors are based on normative values of the Relative Rigor Score (i.e., "What could reasonably be expected in that field?").
 
 ```{r overview_table2b}
 library(htmltools)
 library(DT)
 
 tab2b <- data.frame(
-  applicant = overview_tab$names,
-  RRS_overall = c(.31, .21, .50)
+  applicant = overview_tab$names
+  )
+
+tab2b$RRS_overall = sapply(applicant_list, function(x) {
+  sum(x$RRS$sector_scores$scores[1:4]) / sum(x$RRS$sector_scores$max_points[1:4])
+})
+tab2b$RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score))
+tab2b$RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score))
+tab2b$RRS_OC = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Reproducible Code \n& Verification") %>% pull(rel_score))
+tab2b$RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score))
+
+tab2b[, "Overall Rigor"] <- NA
+for (i in 1:nrow(tab2b)) {
+  RRS_vec <- c(
+    tab2b$RRS_OD[i],
+    tab2b$RRS_OM[i],
+    tab2b$RRS_OC[i],
+    tab2b$RRS_PreReg[i]) |> sort(decreasing=FALSE)
+  tab2b[i, "Overall Rigor"] <- circle_layer_html(tab2b$RRS_overall[i], get_color(RRS_vec), outer_width = 60)
+}
+
+
+tab2b[, "Open Data"] <- paste(
+  lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
+  sapply(tab2b$RRS_OD, ministack_html, height=14)
 )
 
-ministack_tag <- sapply(tab2b$RRS_overall, ministack_html)
-waffle_tag <- lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |>
-  sapply(waffle_html)
+tab2b[, "Open Material"] <- paste(
+  lapply(applicant_list, function(x) {x$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
+  sapply(tab2b$RRS_OM, ministack_html, height=14)
+)
 
-tab2b$RRS_overall <- paste(ministack_tag, waffle_tag)
+tab2b[, "Reproducible Code \n& Verification"] <- paste(
+  lapply(applicant_list, function(x) {x$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
+  sapply(tab2b$RRS_OC, ministack_html, height=14)
+)
 
-kable(tab2b, escape=FALSE)
+tab2b[, "Preregistration"] <- paste(
+  lapply(applicant_list, function(x) {x$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist()}) |> sapply(waffle_html),
+  sapply(tab2b$RRS_PreReg, ministack_html, height=14)
+)
+
+# dom = 't', # Removes "Show X entries" and search bar
+# The RRS_* columns are needed for sorting, but should not be displayed
+datatable(
+  tab2b, 
+  escape=FALSE, 
+  options = list(
+    pageLength = 5, 
+    autoWidth = TRUE, 
+    dom = 't', 
+    paging = FALSE,
+    columnDefs = list(
+      list(targets = "Overall Rigor", orderData = 2),
+      list(targets = "Open Data", orderData = 3),
+      list(targets = "Open Material", orderData = 4),
+      list(targets = "Reproducible Code \n& Verification", orderData = 5),  # Sort OC by RRS_OC (which is the 5th column)
+      list(targets = "Preregistration", orderData = 6),
+      list (targets = c(2:6), visible = FALSE) # Hide numeric sorting columns
+    ))
+)
 ```
+
 
 ## Impact
 
-TBD: Some aggregated impact statistics
+```{r}
+tab_impact <- data.frame(
+  applicant = overview_tab$names
+)
+
+tab_impact$BIP_n_papers_top10 = sapply(applicant_list, function(x) x$BIP_n_papers_top10)
+
+tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(0))
+
+tab_impact$highest_citation_count = sapply(applicant_list, function(x) max(x$FNCS$cited_by_count, na.rm=TRUE))
+
+
+# dom = 't', # Removes "Show X entries" and search bar
+# The RRS_* columns are needed for sorting, but should not be displayed
+datatable(
+  tab_impact, 
+  escape=FALSE, 
+  options = list(
+    pageLength = 5, 
+    autoWidth = TRUE, 
+    dom = 't', 
+    paging = FALSE),
+  colnames=c("Applicant", "# of papers in top 10% of all cited papers", "mean FNCS")
+)
+```
+
 
 ## Internationality & Interdisciplinarity
 
@@ -227,18 +282,14 @@ tab4 <- data.frame(
   )
 )
 
-kable(tab4, col.names=c("Applicant", "Internationality", "Interdisciplinarity"), escape=FALSE)
+kable(tab4, col.names=c("Applicant", "<span style='font-size:80%;'>Only within country co-authors</span>Internationality", "Interdisciplinarity"), escape=FALSE)
 ```
 
 
-```{r}
-ministack(0.3)
-minigauge(0.5)
-```
 
 
 
 
 ## Session info
 
-`r paste0("*Analysis date: ", format(Sys.time(), tz = "UTC", usetz = TRUE) |> as.character(), ". RESQUER package version: ", packageVersion("RESQUER") |> as.character(), "*")`
+`r paste0("*Analysis date: ", format(Sys.time(), tz = "UTC", usetz = TRUE) |> as.character(), ". RESQUER package version: ", packageVersion("RESQUER") |> as.character(), "; Version of overview sheet: 0.1.0*")`

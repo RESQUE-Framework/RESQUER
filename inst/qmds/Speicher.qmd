@@ -1,0 +1,58 @@
+---
+title: "Speicher"
+format: html
+---
+
+## Research Transparency (v1)
+
+The traffic lights are based on normative values of the Relative Rigor Score (i.e., "What could reasonably be expected in that field?").
+
+```{r overview_table2}
+
+tab2 <- data.frame(
+  applicant = overview_tab$names,
+  RRS_overall = sapply(applicant_list, function(x) x$scores$overall_score) |> cut2(RRS_norms) |> dot(),
+  RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score)) |> cut2(OD_norms) |> dot(),
+  RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score)) |> cut2(OM_norms) |> dot(),
+  RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score)) |> cut2(PreReg_norms) |> dot()
+)
+
+kable(tab2, col.names=c("Applicant", "Overall Rigor Score", "Open Data", "Open Materials", "Preregistration &<br>Replication"), escape=FALSE)
+```
+
+
+## Demo pictures
+
+```{r}
+#| results: asis
+
+
+waffle_html(c(7, 0, 2, 1)) |> HTML()
+ministack_html(0.08) |> HTML()
+br()
+```
+
+```{r}
+#| results: asis
+
+
+waffle_html(c(3, 0, 0, 7)) |> HTML()
+ministack_html(0.7) |> HTML()
+br()
+```
+
+```{r}
+#| results: asis
+
+waffle_html(c(7, 0, 2, 1)) |> HTML()
+ministack_html(0.6) |> HTML()
+br()
+```
+
+```{r}
+#| results: asis
+
+waffle_html(c(1, 0, 9, 0)) |> HTML()
+ministack_html(0.06) |> HTML()
+br()
+```

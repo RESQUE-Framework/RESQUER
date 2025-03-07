@@ -9,7 +9,7 @@ ministack_html(
   breaks = c(0.15, 0.3),
   colors = c("red", "#f7cf07", "#3af72c"),
   width = 120,
-  height = 25
+  height = 12
 )
 }
 \arguments{

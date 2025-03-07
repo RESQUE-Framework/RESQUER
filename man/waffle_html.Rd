@@ -8,7 +8,7 @@ waffle_html(
   values,
   max_values = 10,
   rows = 1,
-  colors = c("#3af72c", "#3af72c", "red", "grey"),
+  colors = c("#1da412", "#1da412", "#c51819", "#C7C7C7"),
   width_px = 120,
   gap_px = 2
 )

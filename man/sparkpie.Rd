@@ -4,14 +4,14 @@
 \alias{sparkpie}
 \title{Sparkline pie chart function.}
 \usage{
-sparkpie(values, sliceColors = NA, ...)
+sparkpie(values, colors = NA, ...)
 }
 \arguments{
 \item{values}{Absolute numbers.}
 
-\item{sliceColors}{Overwrite the default colors with a vector of hex color values. Must have the same length as \code{values}.}
-
 \item{...}{Additional arguments passed to the \code{sparkline} function.}
+
+\item{sliceColors}{Overwrite the default colors with a vector of hex color values. Must have the same length as \code{values}.}
 }
 \description{
 The default colors are grey (for not applicable in the first value slot) and then a color ramp from red to green

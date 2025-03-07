@@ -157,8 +157,8 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   applicant$BIP <- get_BIP(dois=applicant$indicators$dois_normalized, verbose=verbose)
-  applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
-  applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
+  applicant$BIP_n_papers <- sum(applicant$BIP$imp_class <= "C5", na.rm=TRUE)
+  applicant$BIP_n_papers_top10 <- sum(applicant$BIP$imp_class <= "C4", na.rm=TRUE)
 
   #----------------------------------------------------------------
   # Retrieve submitted works from OpenAlex
@@ -265,8 +265,23 @@ preprocess <- function(applicant, verbose=FALSE) {
     )
 
   } else {
-    applicant$internationalization <- NA
-    applicant$interdisciplinarity <- NA
+    applicant$internationalization <- list(
+      international_evenness = NA,
+      country_codes_repeated = NA,
+      internationalization_string = NA,
+      n_coauthors_international = NA,
+      n_coauthors_same_country = NA,
+      perc_international = NA,
+      perc_same_country = NA
+
+    )
+    applicant$interdisciplinarity <- list(
+      interdisc_evenness = NA,
+      primary_fields_tab_reduced = NA,
+      subfields_tab = NA,
+      topics_tab = NA,
+      interdisc_string = NA
+    )
   }
 
 
