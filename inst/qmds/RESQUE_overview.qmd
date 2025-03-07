@@ -15,7 +15,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 9"
   clear_cache: false
 ---
 
@@ -36,6 +36,9 @@ library(openalexR)
 library(tibble)
 library(OAmetrics)
 library(sparkline)
+library(htmltools)
+library(DT)
+library(ggrepel)
 
 RED <- "#e4090c"
 DARKRED <- "#c51819"
@@ -115,6 +118,7 @@ if (is.null(params$json_path)) {
     applicant_list <- list()
     
     for (i in 1:length(json_files)) {
+        # print(paste0("Reading file #", i))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)
         applicant_list[[i]] <- preprocess(applicant=R, verbose=FALSE)
     }
@@ -156,69 +160,78 @@ You can click on the arrows in each column header (<img src="img/DT_arrows.png" 
 
 The Overall Rigor Score covers current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
 
-  - 15-20% can be considered average
+  - 10-20% can be considered average
   - 30% is very good
   - \>40% is excellent.
+
+*(Note: The Overall Rigor Score reported here is only based on the four transparency categories, excluding ***Theorizing***. Therefore it can differ from teh Overall Score in the individual report.)*
 
 ::: {.callout-note collapse="true" title="How to read the small charts"}
 
 - *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
 - *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
 
-![](img/Overview_chart_explanation1.png)
+![](img/Overview_chart_explanation1.png){width=450}
 :::
 
 ```{r overview_table2b}
-library(htmltools)
-library(DT)
 
-tab2b <- data.frame(
+tab_RRS <- data.frame(
   applicant = overview_tab$names
   )
 
-tab2b$RRS_overall = sapply(applicant_list, function(x) {
+tab_RRS$RRS_overall = sapply(applicant_list, function(x) {
   sum(x$RRS$sector_scores$scores[1:4]) / sum(x$RRS$sector_scores$max_points[1:4])
 })
-tab2b$RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score))
-tab2b$RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score))
-tab2b$RRS_OC = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Reproducible Code \n& Verification") %>% pull(rel_score))
-tab2b$RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score))
+tab_RRS$RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score))
+tab_RRS$RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score))
+tab_RRS$RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score))
+tab_RRS$RRS_OC = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Reproducible Code \n& Verification") %>% pull(rel_score))
 
-tab2b[, "Overall Rigor"] <- NA
-for (i in 1:nrow(tab2b)) {
+tab_RRS[, "Overall Rigor"] <- NA
+for (i in 1:nrow(tab_RRS)) {
   RRS_vec <- c(
-    tab2b$RRS_OD[i],
-    tab2b$RRS_OM[i],
-    tab2b$RRS_OC[i],
-    tab2b$RRS_PreReg[i]) |> sort(decreasing=FALSE)
-  tab2b[i, "Overall Rigor"] <- circle_layer_html(tab2b$RRS_overall[i], get_color(RRS_vec), outer_width = 60)
+    tab_RRS$RRS_OD[i],
+    tab_RRS$RRS_OM[i],
+    tab_RRS$RRS_PreReg[i],
+    tab_RRS$RRS_OC[i])
+  
+  RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
+  tab_RRS[i, "Overall Rigor"] <- circle_layer_html(
+      value = tab_RRS$RRS_overall[i], 
+      colors = get_color(RRS_vec_sorted), 
+      weights = applicant_list[[i]]$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
+      outer_width = 60)
 }
 
 
-tab2b[, "Open Data"] <- paste(
+tab_RRS[, "Open Data"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab2b$RRS_OD, ministack_html, height=14)
+  sapply(tab_RRS$RRS_OD, ministack_html, height=14)
 )
 
-tab2b[, "Open Material"] <- paste(
+
+tab_RRS[, "Open Material"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab2b$RRS_OM, ministack_html, height=14)
+  sapply(tab_RRS$RRS_OM, ministack_html, height=14)
 )
 
-tab2b[, "Reproducible Code \n& Verification"] <- paste(
-  lapply(applicant_list, function(x) {x$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab2b$RRS_OC, ministack_html, height=14)
-)
-
-tab2b[, "Preregistration"] <- paste(
+tab_RRS[, "Preregistration"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab2b$RRS_PreReg, ministack_html, height=14)
+  sapply(tab_RRS$RRS_PreReg, ministack_html, height=14)
 )
+
+tab_RRS[, "Reproducible Code \n& Verification"] <- paste(
+  lapply(applicant_list, function(x) {x$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
+  sapply(tab_RRS$RRS_OC, ministack_html, height=14)
+)
+
+
 
 # dom = 't', # Removes "Show X entries" and search bar
 # The RRS_* columns are needed for sorting, but should not be displayed
 datatable(
-  tab2b, 
+  tab_RRS, 
   escape=FALSE, 
   options = list(
     pageLength = 5, 
@@ -226,11 +239,12 @@ datatable(
     dom = 't', 
     paging = FALSE,
     columnDefs = list(
-      list(targets = "Overall Rigor", orderData = 2),
-      list(targets = "Open Data", orderData = 3),
+      list(targets = "Overall Rigor", orderData = 2), 
+      list(targets = "Open Data", orderData = 3),  # Sort OD by RRS_OD (which is the 5th column)
       list(targets = "Open Material", orderData = 4),
-      list(targets = "Reproducible Code \n& Verification", orderData = 5),  # Sort OC by RRS_OC (which is the 5th column)
-      list(targets = "Preregistration", orderData = 6),
+      list(targets = "Preregistration", orderData = 5),
+      list(targets = "Reproducible Code \n& Verification", orderData = 6),  
+      
       list (targets = c(2:6), visible = FALSE) # Hide numeric sorting columns
     ))
 )
@@ -238,6 +252,14 @@ datatable(
 
 
 ## Impact
+
+::: {.callout-note collapse="true" title="How to interpret the indices"}
+
+- **# of papers in top-10% of popularity**: How many papers are ranked in the top 10%, according to a popularity metric based on the AttentionRank algorithm. [This captures *current* impact dynamics (and less so "historical" citations of old papers).]{style="background: #f4fbc6;"}
+- **mean FNCS**: The median of field- and age-normalized citation scores: The FNCS is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publications (on average) got cited twice as much as comparable publications. [This captures *cumulative* impact (across all papers, and also across all years of publication activity).]{style="background: #f4fbc6;"}
+- **Highest citation count of a single paper**: The citation count (and publication year) of the single paper with the most citations.
+
+:::
 
 ```{r}
 tab_impact <- data.frame(
@@ -248,44 +270,52 @@ tab_impact$BIP_n_papers_top10 = sapply(applicant_list, function(x) x$BIP_n_paper
 
 tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(0))
 
-tab_impact$highest_citation_count = sapply(applicant_list, function(x) max(x$FNCS$cited_by_count, na.rm=TRUE))
+tab_impact$highest_citation_count = 
+  sapply(applicant_list, function(x) {
+    top <- which.max(x$FNCS$cited_by_count)
+    paste0(
+      x$FNCS$cited_by_count[top], " (",
+      x$FNCS$publication_year[top],
+      ")"
+    )
+  })
+      
 
 
 # dom = 't', # Removes "Show X entries" and search bar
-# The RRS_* columns are needed for sorting, but should not be displayed
 datatable(
   tab_impact, 
   escape=FALSE, 
+  width = 'auto',
+  class = 'compact',
   options = list(
     pageLength = 5, 
     autoWidth = TRUE, 
+    scrollCollapse = TRUE,
+    columnDefs = list(list(width = 'auto', targets = '_all')),
     dom = 't', 
     paging = FALSE),
-  colnames=c("Applicant", "# of papers in top 10% of all cited papers", "mean FNCS")
+  colnames=c("Applicant", "# of papers in top-10% of popularity", "mean FNCS", "Highest citation count of a single paper")
 )
 ```
 
 
-## Internationality & Interdisciplinarity
+## Impact vs. Rigor overview
 
-```{r inter_tab}
-
-tab4 <- data.frame(
-  applicant = overview_tab$names,
-  inter1 = slider(
-      sapply(applicant_list, function(x) x$internationalization$international_evenness), 
-      "Only within country co-authors", "Broad coauthor network from many countries"
-  ),
-  inter2 = slider(
-    sapply(applicant_list, function(x) x$interdisciplinarity$interdisc_evenness), 
-      "Single discipline", "Many disciplines"
-  )
-)
-
-kable(tab4, col.names=c("Applicant", "<span style='font-size:80%;'>Only within country co-authors</span>Internationality", "Interdisciplinarity"), escape=FALSE)
+```{r}
+tab_combi <- left_join(tab_impact, tab_RRS, by="applicant")
+ggplot(tab_combi, aes(x=RRS_overall, y=mean_FNCS)) + 
+  geom_point() + 
+  geom_text_repel(
+    aes(label=applicant),
+    hjust=0,
+    nudge_x=0.02,
+    direction="y",
+    segment.size=0.1
+  ) + 
+  theme_bw() +
+  xlab("Overall Rigor Score (higher ist better)") + ylab("Mean Citation Score (higher ist better)")
 ```
-
-
 
 
 

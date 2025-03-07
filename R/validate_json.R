@@ -69,6 +69,7 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
     str_replace_all(fixed("P_TypeMethod_Simulation"), "P_TypeMethod_Computational") |>
     str_replace_all(fixed("P_CoG_ParcipantSample"), "P_Sample_CoG") |>
     str_replace_all(fixed("P_Stimuli_Relevance_NAexplanation"), "P_Stimuli_NAExplanation") |>
+    str_replace_all(fixed("P_Sample_RepresentativenessRelevance_NAexplanation"), "P_Sample_RepresentativenessRelevance_NAExplanation") |>
     str_replace_all(fixed("P_CoG_StimulusSample"), "P_Stimuli_CoG") |>
     # respect this order of replacing: P_Stimuli_Relevance should be replaced last to avoid double replacement
     str_replace_all(fixed("P_Stimuli_Relevance"), "P_Stimuli") |>

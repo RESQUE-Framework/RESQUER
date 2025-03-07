@@ -157,8 +157,8 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   applicant$BIP <- get_BIP(dois=applicant$indicators$dois_normalized, verbose=verbose)
-  applicant$BIP_n_papers <- sum(applicant$BIP$imp_class <= "C5", na.rm=TRUE)
-  applicant$BIP_n_papers_top10 <- sum(applicant$BIP$imp_class <= "C4", na.rm=TRUE)
+  applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
+  applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
 
   #----------------------------------------------------------------
   # Retrieve submitted works from OpenAlex
@@ -310,6 +310,11 @@ preprocess <- function(applicant, verbose=FALSE) {
     Partial = sum(applicant$pubs$P_ReproducibleScripts == "YesParts", na.rm=TRUE),
     Yes = sum(applicant$pubs$P_ReproducibleScripts == "YesEntire", na.rm=TRUE)
   )
+
+  # Correction: If applicants claim an independent verification, but provide no link,
+  # this is set to "No".
+  # TODO: Needs to be done for OD and OM as well.
+  applicant$pubs$P_IndependentVerification[applicant$pubs$P_IndependentVerification %in% c("WorkflowReproducible", "MainResultsReproducible", "AnalysisReplication") & applicant$pubs$P_IndependentVerification_Identifier == ""] <- "No"
 
   ReproPie <-  data.frame(
     notApplicable = sum(applicant$pubs$P_IndependentVerification == "NotApplicable", na.rm=TRUE),

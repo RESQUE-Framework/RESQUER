@@ -325,7 +325,7 @@ if (any(!is.na(applicant$pubs$P_Sample_RareOther))) {
   for (i in rare_sample_position) {
     res <- paste0(res, "- ", applicant$pubs$P_Sample_RareOther[i], "\n")
     if (!is.na(applicant$pubs$P_SampleSize[i])) {
-      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", applicant$pubs$P_SampleSize[i], "</span>\n")
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
     } else {
       res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")
     }
@@ -439,7 +439,7 @@ The radar chart with the **Relative Rigor Score** helps you to see how many qual
 - The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
 - The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
 - The indicators cover current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
-  - 15-20% can be considered average
+  - 10-20% can be considered average
   - 30% is very good
   - \>40% is excellent.
 :::
@@ -509,7 +509,6 @@ From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullNa
 #| results: asis
 
 pop_sel <- applicant$BIP %>% 
-  arrange(pop_class, -cc) %>% 
   select(doi, "three_year_cc", cc,	pop_class)
 
 pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average"))
@@ -521,12 +520,14 @@ pop_sel <- pop_sel |>
   relocate(Title) |> 
   relocate(FNCS, .after = cc) |> 
   relocate(FNPR, .after = FNCS) |> 
-  mutate(RRS_overall = paste0(round(RRS_overall*100), "%"))
+  mutate(RRS_overall = paste0(round(RRS_overall*100), "%")) %>%
+  arrange(Label, -FNCS)
 
 pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
 
 pop_sel$merit <- cell_spec(
   ifelse(!is.na(pop_sel$P_MeritStatement) & pop_sel$P_MeritStatement != "",
+# Show Merit Statement as popover
     '<i class="bi bi-info-circle text-primary fs-5"></i>',
     "(n.a.)"),
   escape=FALSE,
@@ -556,8 +557,8 @@ if (hideCRediT == "true") {
   pop_sel <- pop_sel[, 1:8]
 }
 
-high_impact <- pop_sel[pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ]
-low_impact <- pop_sel[!pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ]
+high_impact <- pop_sel[which(pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%")), ]
+low_impact <- pop_sel[which(is.na(pop_sel$Popularity) | !pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%")), ]
 ```
 
 
@@ -569,7 +570,7 @@ low_impact <- pop_sel[!pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1
 
 if (nrow(high_impact) > 0) {
   
-  kable(pop_sel[pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ], escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
+  kable(high_impact, escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
     footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
   
 } else {
@@ -587,7 +588,7 @@ For very new publications, no citation metrics can be computed.
 #| results: asis
 
 if (nrow(low_impact) > 0) {
-  kable(pop_sel[!pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%"), ], escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
+  kable(low_impact, escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
     footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
 } else {
   cat("No publications submitted with popularity class 'Top 10%' or higher.")
@@ -610,7 +611,7 @@ The evenness indexes are normalized to a scale from 0 (no diversity, everything 
 
 
 ```{r compute_internationality_index}
-if (length(applicant$internationalization) > 1) {
+if (!is.na(applicant$internationalization$international_evenness)) {
   n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
 
   internationality_string <- paste0(sum(applicant$internationalization$country_codes_repeated$n), " unique identifiable co-authors:<br><ul><li>", applicant$internationalization$perc_international, "% from ", nrow(applicant$internationalization$country_codes_repeated)-1, " international countries</li><li>", applicant$internationalization$perc_same_country, "% from the same country</li></ul>")
@@ -622,7 +623,7 @@ if (length(applicant$internationalization) > 1) {
   internationality_string <- "Could not compute internationality."
 }
 
-if (length(applicant$internationalization) > 1) {
+if (!is.na(applicant$interdisciplinarity$interdisc_evenness)) {
   subfield_tab <- applicant$interdisciplinarity$subfields_tab[1:n_subfields, ]
   colnames(subfield_tab) <- c("Subfield", "# of papers")
 
@@ -638,7 +639,7 @@ if (length(applicant$internationalization) > 1) {
 ```{r}
 #| results: asis
 
-if (length(applicant$internationalization) > 1) {
+if (!is.na(applicant$internationalization$international_evenness)) {
 cat(paste0('
 ````{=html}
 <div style="display: flex; flex-direction: column; border: 1px solid #BBBBBB;">
@@ -695,7 +696,10 @@ if (length(colnames_with_NotApplicable) > 0) {
   cat("These are all claims of non-applicability from this applicant:\n\n")
   
   for (i in colnames_with_NotApplicable) {
-    # add corresponding explanation
+    
+    # Only if the NAExplanation column exists ...
+    if (paste0(i, "_NAExplanation") %in% colnames(applicant$indicators)) {
+       # add corresponding explanation
     cat(paste0("### ", i, "\n\n"))
     
     NotAppl <- applicant$indicators[applicant$indicators[, i] == "NotApplicable", c("Title", "Year", "DOI", i, paste0(i, "_NAExplanation"))]
@@ -707,6 +711,8 @@ if (length(colnames_with_NotApplicable) > 0) {
     
      # beware: within for-loops, kable() needs an explicit `print`
     kable(NotAppl, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> print()
+    }
+   
   }
 } else {
   cat("**The applicant had no claims of non-applicability.**\n\n")
