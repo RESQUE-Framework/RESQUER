@@ -56,3 +56,25 @@ waffle_html(c(1, 0, 9, 0)) |> HTML()
 ministack_html(0.06) |> HTML()
 br()
 ```
+
+
+
+
+## Internationality & Interdisciplinarity
+
+```{r inter_tab}
+
+tab4 <- data.frame(
+  applicant = overview_tab$names,
+  inter1 = slider(
+      sapply(applicant_list, function(x) x$internationalization$international_evenness), 
+      "Only within country co-authors", "Broad coauthor network from many countries"
+  ),
+  inter2 = slider(
+    sapply(applicant_list, function(x) x$interdisciplinarity$interdisc_evenness), 
+      "Single discipline", "Many disciplines"
+  )
+)
+
+kable(tab4, col.names=c("Applicant", "<span style='font-size:80%;'>Only within country co-authors</span>Internationality", "Interdisciplinarity"), escape=FALSE)
+```

@@ -278,7 +278,8 @@ waffle_html <- function(
 ) {
   # Validate inputs
   if(sum(values) > max_values) {
-    stop("Sum of values cannot exceed max_values")
+    max_values <- sum(values)
+    warning(paste0("More values provided than `max_values`. Increasing `max_values` to ", sum(values)))
   }
 
   if(length(values) > length(colors)) {
@@ -528,22 +529,74 @@ radial_chart <- function(
 #' @param outer_width Circle radius in pixels.
 #' @param value A value between 0 and 1 (which then is transformed into %)
 #' @param colors A vector of four colors, from innermost to outermost color
+#' @param weight A vector of 4 numbers specifying the relative weight of each layer.
+#'        The weights are normalized to percentages automatically.
+#'        Default is c(1, 1, 1, 1) which gives equal 25% spacing.
+#' @param sharp_boundaries Whether to create sharp color transitions (TRUE) or smooth blends (FALSE)
 #' @export
+circle_layer_html <- function(value, colors, outer_width = 60,
+                              weights = c(1, 1, 1, 1), sharp_boundaries = FALSE) {
 
-circle_layer_html <- function(value, colors, outer_width = 60) {
+  # Ensure we have 4 weights
+  if (length(weights) != 4) {
+    stop("Weight parameter must be a vector of 4 values")
+  }
+
+  # Ensure colors is of length 4
+  if (length(colors) != 4) {
+    stop("Colors parameter must be a vector of 4 values")
+  }
+
   value100 <- round(value*100)
+
+  # Calculate the 3 breakpoints between the 4 colors
+  # The first color starts at 0%, the last color ends at 100%
+  total_weight <- sum(weights)
+  breakpoint1 <- (weights[1] / total_weight * 100) |> round()
+  breakpoint2 <- ((weights[1] + weights[2]) / total_weight * 100) |> round()
+  breakpoint3 <- ((weights[1] + weights[2] + weights[3]) / total_weight * 100) |> round()
+
+
+
+  if (sharp_boundaries) {
+    # Create gradient with sharp boundaries
+    gradient <- sprintf('radial-gradient(circle closest-side,
+      %s 0%%, %s %g%%,
+      %s %g%%, %s %g%%,
+      %s %g%%, %s %g%%,
+      %s %g%%, %s 100%%)',
+                        colors[1], colors[1], breakpoint1,
+                        colors[2], breakpoint1, colors[2], breakpoint2,
+                        colors[3], breakpoint2, colors[3], breakpoint3,
+                        colors[4], breakpoint3, colors[4]
+    )
+
+  } else {
+    # Create gradient with smooth transitions
+    gradient <- sprintf('radial-gradient(circle closest-side,
+         %s 0%%,
+      %s %g%%,
+      %s %g%%,
+      %s %g%%,
+      %s 100%%)',
+                        colors[1],
+                        colors[2], breakpoint1,
+                        colors[3], breakpoint2,
+                        colors[4], breakpoint3,
+                        colors[4]  # Add explicit 100% stop for the outermost color
+    )
+  }
+
+
+
+
   html <- sprintf('
 <div style="
   --div-dim: %dpx;  /* Outer dimension */
   width: var(--div-dim);
   height: var(--div-dim);
   border-radius: 50%%;
-  background: radial-gradient(circle,
-    %s 0%%,  %s  0%%,
-    %s 25%%, %s 25%%,
-    %s 50%%, %s 50%%,
-    %s 75%%, %s 75%%,
-    #ffffff 100%%, #ffffff 100%%);
+  background: %s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -553,18 +606,19 @@ circle_layer_html <- function(value, colors, outer_width = 60) {
     color: white;
     font-size: calc(var(--div-dim) * 0.35); /* 30%% of outer div size */
     font-weight: bold;
+    text-shadow:
+      -1px -1px 0 black,
+       1px -1px 0 black,
+      -1px  1px 0 black,
+       1px  1px 0 black;
   ">%s%%</span>
 </div>',
-                  outer_width,
-                  colors[4], colors[4],
-                  colors[3], colors[3],
-                  colors[2], colors[2],
-                  colors[1], colors[1],
+                  outer_width, gradient,
                   value100
   )
-
   html
 }
 
 
-# html_code <- circle_layer_html(value=0.51, colors=c("#3af72c", "#f7cf07", "#c51819", "#0000ff")) |> cat()
+# circle_layer_html(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 4)) |> cat()
+# circle_layer_html(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 10, 1, 10), sharp_boundaries = FALSE) |> cat()
