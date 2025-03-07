@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,7 +29,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Sparkline pie chart function.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/RESQUE-Framework/RESQUER/R/sparkpie.R" class="external-link"><code>R/sparkpie.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/RESQUE-Framework/RESQUER/R/sparkcharts.R" class="external-link"><code>R/sparkcharts.R</code></a></small>
       <div class="d-none name"><code>sparkpie.Rd</code></div>
     </div>
 
@@ -39,7 +39,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sparkpie</span><span class="op">(</span><span class="va">values</span>, sliceColors <span class="op">=</span> <span class="cn">NA</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sparkpie</span><span class="op">(</span><span class="va">values</span>, colors <span class="op">=</span> <span class="cn">NA</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -50,12 +50,12 @@
 <dd><p>Absolute numbers.</p></dd>
 
 
-<dt id="arg-slicecolors">sliceColors<a class="anchor" aria-label="anchor" href="#arg-slicecolors"></a></dt>
-<dd><p>Overwrite the default colors with a vector of hex color values. Must have the same length as <code>values</code>.</p></dd>
-
-
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to the <code>sparkline</code> function.</p></dd>
+
+
+<dt id="arg-slicecolors">sliceColors<a class="anchor" aria-label="anchor" href="#arg-slicecolors"></a></dt>
+<dd><p>Overwrite the default colors with a vector of hex color values. Must have the same length as <code>values</code>.</p></dd>
 
 </dl></div>
 
