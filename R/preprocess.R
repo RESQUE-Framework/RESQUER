@@ -19,9 +19,10 @@
 #' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network
 #' @export
 
+# For testing:
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
-# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Workshop Allg1/resque_mückstein_1740406498057.json")
+# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json")
 
 preprocess <- function(applicant, verbose=FALSE) {
 

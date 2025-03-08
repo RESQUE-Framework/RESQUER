@@ -1,5 +1,5 @@
+# For testing:
 # file <- system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
-# file="/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_gärtner_0.6.0.json"
 # applicant <- read_RESQUE(file)
 
 

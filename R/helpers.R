@@ -2,6 +2,7 @@
 #' @param df Data frame that is checked (and optionally expanded with new variables)
 #' @param varnames The variable names that are searched in the df
 #' @param default The default value for newly created columns
+#' @export
 add_variables <- function(df, varnames, default=NA) {
   for (v in varnames) {
     if (!v %in% colnames(df)) df[, v] <- default

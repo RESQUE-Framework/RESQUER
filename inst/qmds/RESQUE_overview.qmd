@@ -39,6 +39,8 @@ library(sparkline)
 library(htmltools)
 library(DT)
 library(ggrepel)
+library(RColorBrewer)
+library(forcats)
 
 RED <- "#e4090c"
 DARKRED <- "#c51819"
@@ -138,6 +140,8 @@ if (is.null(params$json_path)) {
 
 ## Applicant descriptives
 
+*Note: Academic age is computed as years since PhD, minus self-reported times for childcare etc.*
+
 ```{r descriptive_tab}
 
 overview_tab <- data.frame(
@@ -146,11 +150,20 @@ overview_tab <- data.frame(
   analysed_outputs = sapply(applicant_list, function(x) x$pubs |> nrow())
 )
 
-kable(overview_tab, col.names = c("Name", "Academic age", "# of analysed publications"), escape = TRUE) %>% 
-  kable_styling(font_size = 9, bootstrap_options = c("hover", "condensed"), full_width = FALSE) %>% 
-  row_spec(1:nrow(overview_tab), extra_css = "padding-top:1px; padding-bottom:1px;")
-
-# TODO: Add note: Academic age is since PhD, minus self-reported times for childcare etc.
+datatable(
+  overview_tab, 
+  escape=TRUE, 
+  width = "700px",
+  class = 'compact',
+  options = list(
+    pageLength = 5, 
+    autoWidth = TRUE, 
+    scrollCollapse = TRUE,
+    columnDefs = list(list(width = 'auto', targets = '_all')),
+    dom = 't', 
+    paging = FALSE),
+  colnames= c("Name", "Academic age", "# of analysed publications")
+)
 ```
 
 
@@ -251,6 +264,108 @@ datatable(
 ```
 
 
+
+## Designs & Samples
+
+What types of samples were involved? What types of data were collected?
+
+:::: {.columns}
+::: {.column width="45%"}
+```{r}
+#| results: asis
+
+horizontal_bar_chart(c(1, 1, 1), colors = brewer.pal(3, "Set1"), 300, 80, labels=c(
+"Students", 
+"General population", 
+"Specific target population" 
+)) |> HTML()
+```
+:::
+
+::: {.column width="10%"}
+<!-- empty column to create gap -->
+:::
+
+::: {.column width="45%"}
+```{r}
+#| results: asis
+
+horizontal_bar_chart(c(1, 1, 1, 1, 1), colors = brewer.pal(5, "Set2"), 300, 130, labels=c("Questionnaire", "Behavioral", "Physiological","Interviews / Content Data / Content Coding", "Meta Analysis")) |> HTML()
+```
+:::
+::::
+
+<br>
+
+```{r}
+tab_samples <- data.frame(
+  applicant = overview_tab$names
+)
+
+tab_samples$sample_type <- ""
+tab_samples$data_type <- ""
+for (i in 1:nrow(tab_samples)) {
+  
+  # Types of sample
+  #------------------------------------------
+  
+  Sample_Type <- factor(
+    x = na.omit(applicant_list[[i]]$pubs$P_Sample),
+    levels = c("MostlyPsychStudents", "MostlyStudents", "General", "Specific", "Rare")
+  )
+  
+  # Collapse levels:
+  # - Combine levels 1 ("MostlyPsychStudents") and 2 ("MostlyStudents")
+  # - Combine levels 4 ("Specific") and 5 ("Rare")
+  Sample_Type_collapsed <- fct_collapse(Sample_Type,
+    "Students" = c("MostlyPsychStudents", "MostlyStudents"),
+    "General population" = "General",
+    "Specific target population" = c("Specific", "Rare")
+  )
+
+  Sample_Type_count <- table(Sample_Type_collapsed, useNA="no") |> as.vector()
+  
+  tab_samples$sample_type[i] <- horizontal_bar_chart(Sample_Type_count, colors = brewer.pal(3, "Set1"), 120, 40)
+  
+  
+  # Types of data
+  #------------------------------------------
+  
+  df <- applicant_list[[i]]$pubs |> select(contains("P_Data_Type_"))
+  df <- add_variables(df, c("P_Data_Type_QuestionnaireSelfreport", "P_Data_Type_QuestionnaireOtherreport", "P_Data_Type_Behavioral", "P_Data_Type_Physiological", "P_Data_Type_Interviews", "P_Data_Type_ContentData", "P_Data_Type_Coding", "P_Data_Type_MetaAnalysis", "P_Data_Type_OtherType"), default=FALSE)
+
+  data_type_list <- c(
+    "Questionnaire" = sum(df |> select(contains("Questionnaire")), na.rm=TRUE),
+    "Behavioral" = sum(df |> select(contains("Behavioral")), na.rm=TRUE),
+    "Physiological" = sum(df |> select(contains("Physiological")), na.rm=TRUE),
+    "Interviews/Content Data/Content Coding" = sum(df |> select(contains(c("Interviews", "ContentData", "Coding"))), na.rm=TRUE),
+    "Meta Analysis" = sum(df |> select(contains("MetaAnalysis")), na.rm=TRUE)
+  )
+  
+  tab_samples$data_type[i] <- horizontal_bar_chart(
+    data_type_list, colors = brewer.pal(5, "Set2"), 120, 40)
+}
+
+
+
+# dom = 't', # Removes "Show X entries" and search bar
+datatable(
+  tab_samples, 
+  escape=FALSE, 
+  width = "600px",
+  class = 'compact',
+  options = list(
+    pageLength = 5, 
+    autoWidth = TRUE, 
+    scrollCollapse = TRUE,
+    columnDefs = list(list(width = 'auto', targets = '_all')),
+    dom = 't', 
+    paging = FALSE),
+  colnames=c("Applicant", "Type of sample", "Type of data")
+)
+```
+
+
 ## Impact
 
 ::: {.callout-note collapse="true" title="How to interpret the indices"}
@@ -286,7 +401,7 @@ tab_impact$highest_citation_count =
 datatable(
   tab_impact, 
   escape=FALSE, 
-  width = 'auto',
+  width = "600px",
   class = 'compact',
   options = list(
     pageLength = 5, 

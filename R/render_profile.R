@@ -10,17 +10,10 @@
 #'
 render_profile <- function(json_path, output_file = NA, template = NA) {
 
-  # For testing purposes:
-  #json_path = "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/extdata/demo_profiles/resque_Gaertner.json"
-  # json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Gaertner.json"
-  # qmd_file = "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/qmds/RESQUE_profile.qmd"
-  # output_file = "~/Downloads/test2.html"
-
   # Path to the qmd template
   if (is.na(template)) {
     template <- system.file("qmds", "RESQUE_profile.qmd", package = "RESQUER")
   }
-
 
   old_wd <- getwd()
   full_json_path <- normalizePath(json_path)

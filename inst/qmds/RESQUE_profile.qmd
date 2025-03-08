@@ -65,8 +65,6 @@ library(tibble)
 library(OAmetrics)
 library(sparkline)
 
-#params$json_path = "/Users/felix/Downloads/resque_1726568079549.json"
-
 if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 } else {

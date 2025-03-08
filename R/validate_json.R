@@ -21,8 +21,6 @@ get_json_object <- function(url) {
   j = jsonlite::fromJSON(json)
 }
 
-#url = "https://resque-framework.github.io/collector-app/packs/core-pubs.json"
-#j = get_json_object("https://resque-framework.github.io/collector-app/packs/core-pubs.json")
 
 
 # Get the name of the pack that a research output uses
@@ -41,7 +39,7 @@ get_pack_name <- function(research_output) {
 }
 
 
-# file = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_afterupdateto_charts_TEST.json"
+
 
 
 

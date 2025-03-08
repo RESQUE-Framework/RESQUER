@@ -229,11 +229,8 @@ score_all_from_file <- function(file, verbose = FALSE) {
 # score(research_outputs[[11]], meta = meta, verbose = TRUE)
 
 # Example: score all research outputs from a file
-# scores <- score_all_from_file("profile/data/resque_Felix.json", verbose = TRUE)
+# scores <- score_all_from_file("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json", verbose = TRUE)
 
-# /Users/felix/Documents/Github/RESQUER/_test/resque_Felix2.json
-
-# json_file = "/Users/felix/LMU/Research/1 - In Arbeit/RESQUE/RESQUE-Clinical/raw_data/consensus/resque_freund_Konsens.json"
 # scores <- score_all_from_file(json_file, verbose = TRUE)
 
 # applicant <- read_RESQUE(file=json_file)

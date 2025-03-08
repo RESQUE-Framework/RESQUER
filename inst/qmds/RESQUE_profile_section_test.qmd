@@ -7,7 +7,7 @@ format:
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Leising.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
 ---
 
 
@@ -67,9 +67,6 @@ library(openalexR)
 library(tibble)
 library(OAmetrics)
 library(sparkline)
-
-#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Test 0/resque_Schoenbrodt.json"
-# file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json"
 
 if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
