@@ -177,7 +177,7 @@ The Overall Rigor Score covers current best practices, which often are not used 
   - 30% is very good
   - \>40% is excellent.
 
-*(Note: The Overall Rigor Score reported here is only based on the four transparency categories, excluding ***Theorizing***. Therefore it can differ from teh Overall Score in the individual report.)*
+*(Note: The Overall Rigor Score reported here is only based on the four transparency categories, excluding ***Theorizing***. Therefore it can differ from the Overall Score in the individual report.)*
 
 ::: {.callout-note collapse="true" title="How to read the small charts"}
 
