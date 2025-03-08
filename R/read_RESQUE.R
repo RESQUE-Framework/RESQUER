@@ -1,3 +1,4 @@
+# For testing:
 # file <- system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
 # applicant <- read_RESQUE(file)
 

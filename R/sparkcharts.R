@@ -622,3 +622,130 @@ circle_layer_html <- function(value, colors, outer_width = 60,
 
 # circle_layer_html(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 4)) |> cat()
 # circle_layer_html(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 10, 1, 10), sharp_boundaries = FALSE) |> cat()
+
+
+
+
+#' Create a minimal horizontal bar chart with inline CSS and labels inside bars
+#'
+#' @param values Numeric vector of values representing bar lengths (max norm is 10)
+#' @param colors Character vector of colors for each bar (same length as values)
+#' @param width Overall width of the chart in pixels
+#' @param height Overall height of the chart in pixels
+#' @param labels Optional character vector of labels for each bar (same length as values)
+#'
+#' @return HTML string representing the horizontal bar chart with inline styles
+#' @export
+horizontal_bar_chart <- function(values, colors, width = 500, height = 300, labels = NULL) {
+  # Input validation
+  if (length(values) != length(colors)) {
+    stop("values and colors must have the same length")
+  }
+
+  if (!is.null(labels) && length(labels) != length(values)) {
+    stop("If provided, labels must have the same length as values")
+  }
+
+  # Normalize values using a fixed maximum of 10
+  normalized_values <- (values / 10) * (width * 0.9)  # 90% of width for a value of 10
+
+  # Calculate bar height and spacing
+  n_bars <- length(values)
+  bar_height <- (height * 0.8) / n_bars
+  bar_spacing <- (height * 0.2) / (n_bars + 1)
+
+  # Calculate appropriate font size (approximately 70% of bar height)
+  font_size <- round(bar_height * 0.7)
+
+  # Outer container style with 5px padding
+  outer_container_style <- paste0(
+    "padding:5px; ",
+    "display:inline-block;"
+  )
+
+  # Container style
+  container_style <- paste0(
+    "width:", width, "px; ",
+    "height:", height, "px; ",
+    "position:relative; ",
+    "font-family:Arial, sans-serif; ",
+    "padding:10px;",
+    "display:flex; flex-direction:column; justify-content:center;"
+  )
+
+  # Bar container style (each bar's outer div)
+  bar_style <- paste0(
+    "height:", bar_height, "px; ",
+    "margin-bottom:", bar_spacing, "px; ",
+    "position:relative; ",
+    "display:flex; ",
+    "align-items:center;"
+  )
+
+  # Label style - with font-size proportional to bar height
+  label_style <- paste0(
+    "position:absolute; ",
+    "left:10px; ",        # Small gap from the left edge of the bar
+    "top:50%; ",
+    "transform:translateY(-50%); ",
+    "font-size:", font_size, "px; ",
+    "line-height:", font_size, "px; ",
+    "white-space:nowrap; ",
+    "z-index:2; ",         # Ensure label appears above both bars
+    "color:black; "        # Default text color
+  )
+
+  # Bar fill style base for the colored bar (will be layered above the shadow)
+  bar_fill_style_base <- "position:relative; height:100%; display:inline-block; z-index:1;"
+
+  # Shadow bar style (absolute within bar container)
+  shadow_width <- width * 0.9  # Fixed width corresponding to a value of 10
+  shadow_bar_style <- paste0(
+    "position:absolute; top:0; left:0; height:100%; width:", shadow_width, "px; background-color:#EEEEEE; z-index:0;"
+  )
+
+  # Start building HTML
+  html <- paste0('<div style="', outer_container_style, '">',
+                 '<div style="', container_style, '">')
+
+  # Add bars
+  for (i in 1:n_bars) {
+    bar_fill_style <- paste0(bar_fill_style_base, " width:", normalized_values[i], "px; background-color:", colors[i], ";")
+
+    bar_html <- paste0(
+      '  <div style="', bar_style, '">',
+      '<div style="', shadow_bar_style, '"></div>',
+      '<div style="', bar_fill_style, '">',
+      if (!is.null(labels)) paste0('<div style="', label_style, '">', labels[i], '</div>') else "",
+      '</div>',
+      '</div>'
+    )
+    html <- paste0(html, "\n", bar_html)
+  }
+
+  # Close container div
+  html <- paste0(html, '\n</div>\n</div>')
+
+  return(html)
+}
+
+
+# Example usage:
+# values <- c(45, 23, 67, 12, 39)
+# colors <- c("#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff")
+# labels <- c("Category A", "Category B", "Category C", "Category D", "Category E")
+#
+# chart_html <- horizontal_bar_chart(values, colors, 600, 300, labels)
+#
+# # Save to file
+# writeLines(chart_html, "bar_chart.html")
+#
+# # To display in RStudio viewer:
+# htmltools::html_print(htmltools::HTML(chart_html))
+
+# Example usage:
+# values <- c(45, 23, 67, 12, 39)
+# colors <- c("#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff")
+# labels <- c("Category A", "Category B", "Category C", "Category D", "Category E")
+#
+# horizontal_bar_chart(c(1, 1, 2, 3, 10), colors, 120, 20) |> htmltools::HTML() |> htmltools::html_print()

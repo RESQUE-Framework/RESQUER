@@ -4,12 +4,26 @@
 \alias{circle_layer_html}
 \title{Four layered circles}
 \usage{
-circle_layer_html(outer_width = 60, colors)
+circle_layer_html(
+  value,
+  colors,
+  outer_width = 60,
+  weights = c(1, 1, 1, 1),
+  sharp_boundaries = FALSE
+)
 }
 \arguments{
-\item{outer_width}{Circle radius in pixels.}
+\item{value}{A value between 0 and 1 (which then is transformed into \%)}
 
 \item{colors}{A vector of four colors, from innermost to outermost color}
+
+\item{outer_width}{Circle radius in pixels.}
+
+\item{sharp_boundaries}{Whether to create sharp color transitions (TRUE) or smooth blends (FALSE)}
+
+\item{weight}{A vector of 4 numbers specifying the relative weight of each layer.
+The weights are normalized to percentages automatically.
+Default is c(1, 1, 1, 1) which gives equal 25\% spacing.}
 }
 \description{
 TODO: Provide color ramp breakpoints as parameters

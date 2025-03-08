@@ -19,6 +19,7 @@
 #' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network
 #' @export
 
+# For testing:
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 

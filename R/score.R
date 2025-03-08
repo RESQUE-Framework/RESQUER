@@ -228,8 +228,6 @@ score_all_from_file <- function(file, verbose = FALSE) {
 # score(research_outputs[[11]], meta = meta, verbose = TRUE)
 
 # Example: score all research outputs from a file
-# scores <- score_all_from_file("profile/data/resque_Felix.json", verbose = TRUE)
-
 
 # scores <- score_all_from_file(json_file, verbose = TRUE)
 

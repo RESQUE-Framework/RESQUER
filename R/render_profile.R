@@ -10,13 +10,10 @@
 #'
 render_profile <- function(json_path, output_file = NA, template = NA) {
 
-  # For testing purposes:
-
   # Path to the qmd template
   if (is.na(template)) {
     template <- system.file("qmds", "RESQUE_profile.qmd", package = "RESQUER")
   }
-
 
   old_wd <- getwd()
   full_json_path <- normalizePath(json_path)
