@@ -22,7 +22,7 @@ sparkpie <- function(values, colors=NA, ...) {
     }
   }
 
-  sparkline(values, type="pie", sliceColors=colors, borderWidth=1, ...)
+  sparkline(values, type="pie", sliceColors=colors, borderWidth=1, width = 40, height = 40, ...)
 }
 
 
