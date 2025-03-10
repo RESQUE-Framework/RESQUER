@@ -197,15 +197,15 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r teamscience}
 #| results: "asis"
 
-cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
-
-applicant$OAlex_papers$n_authors <- sapply(applicant$OAlex_papers$author, nrow)
-
-applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
-
-team_tab <- table(applicant$OAlex_papers$team_category) |> as.data.frame()
-team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$OAlex_papers)), "%")
-colnames(team_tab) <- c("Team category", "Frequency", "%")
+  cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
+  
+  applicant$OAlex_papers$n_authors <- sapply(applicant$OAlex_papers$author, nrow)
+  
+  applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
+  
+  team_tab <- table(applicant$OAlex_papers$team_category) |> as.data.frame()
+  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$OAlex_papers)), "%")
+  colnames(team_tab) <- c("Team category", "Frequency", "%")
 ```
 
 ```{r TS_showtable}
@@ -260,9 +260,11 @@ if (any(applicant$rigor_pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
 
 ```{r ensure_compatibility}
 # Compatibility with old versions:
-if (!"P_Sample" %in% names(applicant$rigor_pubs)) {applicant$rigor_pubs$P_Sample <- NA}
-if (!"P_Sample_CrossCultural" %in% names(applicant$rigor_pubs)) {applicant$rigor_pubs$P_Sample_CrossCultural <- NA}
-applicant$rigor_pubs$P_Sample[is.na(applicant$rigor_pubs$P_Sample)] <- FALSE
+if (nrow(applicant$rigor_pubs) > 0) {
+  if (!"P_Sample" %in% names(applicant$rigor_pubs)) {applicant$rigor_pubs$P_Sample <- NA}
+  if (!"P_Sample_CrossCultural" %in% names(applicant$rigor_pubs)) {applicant$rigor_pubs$P_Sample_CrossCultural <- NA}
+  applicant$rigor_pubs$P_Sample[is.na(applicant$rigor_pubs$P_Sample)] <- FALSE
+}
 ```
 
 
@@ -448,8 +450,9 @@ The radar chart with the **Relative Rigor Score** helps you to see how many qual
 
 ```{r Radarchart}
 #| fig.width=8
-
-RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
+if (!applicant$all_empty) {
+  RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
+}
 ```
 
 

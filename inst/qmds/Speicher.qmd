@@ -28,7 +28,7 @@ kable(tab2, col.names=c("Applicant", "Overall Rigor Score", "Open Data", "Open M
 
 
 waffle_html(c(7, 0, 2, 1)) |> HTML()
-ministack_html(0.08) |> HTML()
+ministack(0.08) |> HTML()
 br()
 ```
 
@@ -37,7 +37,7 @@ br()
 
 
 waffle_html(c(3, 0, 0, 7)) |> HTML()
-ministack_html(0.7) |> HTML()
+ministack(0.7) |> HTML()
 br()
 ```
 
@@ -45,7 +45,7 @@ br()
 #| results: asis
 
 waffle_html(c(7, 0, 2, 1)) |> HTML()
-ministack_html(0.6) |> HTML()
+ministack(0.6) |> HTML()
 br()
 ```
 
@@ -53,7 +53,7 @@ br()
 #| results: asis
 
 waffle_html(c(1, 0, 9, 0)) |> HTML()
-ministack_html(0.06) |> HTML()
+ministack(0.06) |> HTML()
 br()
 ```
 

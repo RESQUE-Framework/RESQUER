@@ -15,7 +15,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 9"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
   clear_cache: false
 ---
 
@@ -110,10 +110,10 @@ if (is.null(params$json_path)) {
   
   # Check if a cached, pre-computed file exists
   if (file.exists(cache_file)) {
+    use_cache <- TRUE
     load(cache_file)
-    cat(paste0("::: {.callout-note title='Using cached results (date of analysis: ", format(store$date_analysis, tz = "UTC", usetz = TRUE), ")'}\n:::\n\n"))
-    
   } else {
+    use_cache <- FALSE
     # Read all jsons in that folder
     json_files <- list.files(params$json_path, pattern="*.json", full.names=TRUE)
     
@@ -210,7 +210,7 @@ for (i in 1:nrow(tab_RRS)) {
     tab_RRS$RRS_OC[i])
   
   RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
-  tab_RRS[i, "Overall Rigor"] <- circle_layer_html(
+  tab_RRS[i, "Overall Rigor"] <- circle_layer(
       value = tab_RRS$RRS_overall[i], 
       colors = get_color(RRS_vec_sorted), 
       weights = applicant_list[[i]]$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
@@ -220,23 +220,23 @@ for (i in 1:nrow(tab_RRS)) {
 
 tab_RRS[, "Open Data"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_OD, ministack_html, height=14)
+  sapply(tab_RRS$RRS_OD, ministack, height=14)
 )
 
 
 tab_RRS[, "Open Material"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_OM, ministack_html, height=14)
+  sapply(tab_RRS$RRS_OM, ministack, height=14)
 )
 
 tab_RRS[, "Preregistration"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_PreReg, ministack_html, height=14)
+  sapply(tab_RRS$RRS_PreReg, ministack, height=14)
 )
 
 tab_RRS[, "Reproducible Code \n& Verification"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_OC, ministack_html, height=14)
+  sapply(tab_RRS$RRS_OC, ministack, height=14)
 )
 
 
@@ -268,17 +268,18 @@ datatable(
 ## Designs & Samples
 
 What types of samples were involved? What types of data were collected?
+The bars represent the number of publications with that sample and data type.
 
 :::: {.columns}
 ::: {.column width="45%"}
 ```{r}
 #| results: asis
 
-horizontal_bar_chart(c(1, 1, 1), colors = brewer.pal(3, "Set1"), 300, 80, labels=c(
+horizontal_bar_chart(c(10, 10, 10), max_value=10, colors = brewer.pal(3, "Set1"), 300, 80, labels=c(
 "Students", 
 "General population", 
 "Specific target population" 
-)) |> HTML()
+), show_x_label = FALSE) |> HTML()
 ```
 :::
 
@@ -290,7 +291,7 @@ horizontal_bar_chart(c(1, 1, 1), colors = brewer.pal(3, "Set1"), 300, 80, labels
 ```{r}
 #| results: asis
 
-horizontal_bar_chart(c(1, 1, 1, 1, 1), colors = brewer.pal(5, "Set2"), 300, 130, labels=c("Questionnaire", "Behavioral", "Physiological","Interviews / Content Data / Content Coding", "Meta Analysis")) |> HTML()
+horizontal_bar_chart(c(10, 10, 10, 10, 10), max_value = 10, colors = brewer.pal(5, "Set2"), 330, 130, labels=c("Questionnaire", "Behavioral", "Physiological","Interviews / Content Data / Content Coding", "Meta Analysis"), show_x_label = FALSE) |> HTML()
 ```
 :::
 ::::
@@ -325,7 +326,7 @@ for (i in 1:nrow(tab_samples)) {
 
   Sample_Type_count <- table(Sample_Type_collapsed, useNA="no") |> as.vector()
   
-  tab_samples$sample_type[i] <- horizontal_bar_chart(Sample_Type_count, colors = brewer.pal(3, "Set1"), 120, 40)
+  tab_samples$sample_type[i] <- horizontal_bar_chart(Sample_Type_count, colors = brewer.pal(3, "Set1"), width=120, height=60)
   
   
   # Types of data
@@ -335,7 +336,8 @@ for (i in 1:nrow(tab_samples)) {
   df <- add_variables(df, c("P_Data_Type_QuestionnaireSelfreport", "P_Data_Type_QuestionnaireOtherreport", "P_Data_Type_Behavioral", "P_Data_Type_Physiological", "P_Data_Type_Interviews", "P_Data_Type_ContentData", "P_Data_Type_Coding", "P_Data_Type_MetaAnalysis", "P_Data_Type_OtherType"), default=FALSE)
 
   data_type_list <- c(
-    "Questionnaire" = sum(df |> select(contains("Questionnaire")), na.rm=TRUE),
+    # Do not double count self and other reports
+    "Questionnaire" = sum(df$P_Data_Type_QuestionnaireSelfreport | df$P_Data_Type_QuestionnaireOtherreport, na.rm=TRUE),
     "Behavioral" = sum(df |> select(contains("Behavioral")), na.rm=TRUE),
     "Physiological" = sum(df |> select(contains("Physiological")), na.rm=TRUE),
     "Interviews/Content Data/Content Coding" = sum(df |> select(contains(c("Interviews", "ContentData", "Coding"))), na.rm=TRUE),
@@ -343,7 +345,7 @@ for (i in 1:nrow(tab_samples)) {
   )
   
   tab_samples$data_type[i] <- horizontal_bar_chart(
-    data_type_list, colors = brewer.pal(5, "Set2"), 120, 65)
+    data_type_list, colors = brewer.pal(5, "Set2"), width=120, height=80)
 }
 
 
@@ -352,7 +354,7 @@ for (i in 1:nrow(tab_samples)) {
 datatable(
   tab_samples, 
   escape=FALSE, 
-  width = "600px",
+  width = "700px",
   class = 'compact',
   options = list(
     pageLength = 5, 
@@ -381,7 +383,11 @@ tab_impact <- data.frame(
   applicant = overview_tab$names
 )
 
-tab_impact$BIP_n_papers_top10 = sapply(applicant_list, function(x) x$BIP_n_papers_top10)
+tab_impact$BIP_n_papers_top10 = paste0(
+  sapply(applicant_list, function(x) x$BIP_n_papers_top10),
+   " of ",
+  sapply(applicant_list, function(x) x$impact_pubs |> nrow())
+)
 
 tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(0))
 
@@ -401,7 +407,7 @@ tab_impact$highest_citation_count =
 datatable(
   tab_impact, 
   escape=FALSE, 
-  width = "600px",
+  width = "750px",
   class = 'compact',
   options = list(
     pageLength = 5, 
@@ -439,3 +445,12 @@ ggplot(tab_combi, aes(x=RRS_overall, y=mean_FNCS)) +
 ## Session info
 
 `r paste0("*Analysis date: ", format(Sys.time(), tz = "UTC", usetz = TRUE) |> as.character(), ". RESQUER package version: ", packageVersion("RESQUER") |> as.character(), "; Version of overview sheet: 0.1.0*")`
+
+```{r}
+#| results: asis
+
+if (use_cache) {
+  cat(paste0("*Using cached results (date of analysis: ", format(store$date_analysis, tz = "UTC", usetz = TRUE), ").*\n"))
+}
+```
+

@@ -7,3 +7,4 @@ _test
 ^pkgdown$
 ^\.github$
 .code-workspace
+_archive

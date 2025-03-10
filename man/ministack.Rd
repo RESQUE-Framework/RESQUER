@@ -2,12 +2,14 @@
 % Please edit documentation in R/sparkcharts.R
 \name{ministack}
 \alias{ministack}
-\title{Create a mini horizontal stacked bar chart}
+\title{Create a mini horizontal stacked bar chart in pure HTML}
 \usage{
 ministack(
   value,
   breaks = c(0.15, 0.3),
-  colors = c("red", "#f7cf07", "#3af72c")
+  colors = c("red", "#f7cf07", "#3af72c"),
+  width = 120,
+  height = 12
 )
 }
 \arguments{
@@ -16,12 +18,16 @@ ministack(
 \item{breaks}{numeric vector specifying the break points for coloring the gauge steps (must be two elements)}
 
 \item{colors}{character vector specifying the colors for each step in the gauge (must be three elements)}
+
+\item{width}{Width in pixels}
+
+\item{height}{Height in pixels}
 }
 \value{
-a plotly object representing the mini gauge plot
+a HTML string representing the mini gauge plot
 }
 \description{
-This function creates a mini horizontal stacked bar chart using the plotly package. The gauge represents a value within a range, divided into color-coded steps and highlighting a threshold value.
+This function creates a mini horizontal stacked bar chart in pure HTML/CSS. The scale represents a value within a range, divided into color-coded steps and highlighting a threshold value.
 }
 \examples{
 ministack(0.25)

@@ -87,10 +87,11 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   # Check % of missing indicators (or even completely empty publications)
   # Later, we exclude publications with too many missings from the analysis
+  # Flag all-empty applicants
   # ------------------------------------
 
   applicant$indicators$ind_missing <- get_missing(applicant$indicators)
-
+  applicant$all_empty <- all(applicant$indicators$ind_missing > .95)
 
   # Fix some logical dependencies:
   # ------------------------------------
@@ -345,72 +346,94 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Call BIP! API for impact measures
   #----------------------------------------------------------------
 
-  applicant$BIP <- get_BIP(dois=applicant$impact_pubs$dois_normalized, verbose=verbose)
-  applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
-  applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
+  if (nrow(applicant$impact_pubs) > 0) {
+    applicant$BIP <- get_BIP(dois=applicant$impact_pubs$dois_normalized, verbose=verbose)
+    applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
+    applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
+  } else {
+    applicant$BIP <- NA
+    applicant$BIP_n_papers <- NA
+    applicant$BIP_n_papers_top10 <- NA
+  }
+
 
   #----------------------------------------------------------------
   # Retrieve submitted works from OpenAlex
   #----------------------------------------------------------------
 
+  if (nrow(applicant$impact_pubs) > 0) {
     OAlex_papers <- oa_fetch(entity = "works", doi = normalize_dois(applicant$impact_pubs$doi))
 
-  #cat(paste0(nrow(OAlex_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
+    #cat(paste0(nrow(OAlex_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
 
-  if (nrow(OAlex_papers) < nrow(applicant$impact_pubs)) {
-    note <- paste0(
-      '## The following papers could *not* be retrieved by openAlex:\n\n',
-      all_pubs[!all_pubs$doi %in% OAlex_papers$doi, ] %>%
-        select(Title, Year, DOI, P_TypePublication)
-    )
-    warning(note)
-    applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
+    if (nrow(OAlex_papers) < nrow(applicant$impact_pubs)) {
+      note <- paste0(
+        '## The following papers could *not* be retrieved by openAlex:\n\n',
+        all_pubs[!all_pubs$doi %in% OAlex_papers$doi, ] %>%
+          select(Title, Year, DOI, P_TypePublication)
+      )
+      warning(note)
+      applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
+    }
+
+    OAlex_papers$n_authors <- sapply(OAlex_papers$author, nrow)
+
+    OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (> 15 co-authors)"))
+
+    applicant$OAlex_papers <- OAlex_papers
+    rm(OAlex_papers)
+  } else {
+    applicant$OAlex_papers <- NA
   }
-
-  OAlex_papers$n_authors <- sapply(OAlex_papers$author, nrow)
-
-  OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (> 15 co-authors)"))
-
-  applicant$OAlex_papers <- OAlex_papers
-  rm(OAlex_papers)
 
   #----------------------------------------------------------------
   # Get FNCS
   #----------------------------------------------------------------
 
-  c_counts_psy_2001_2023 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2023.RDS", package="RESQUER"))
-  fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2023, verbose=FALSE)
-  applicant$FNCS <- fncs
-
+  if (nrow(applicant$impact_pubs) > 0) {
+    c_counts_psy_2001_2023 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2023.RDS", package="RESQUER"))
+    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2023, verbose=FALSE)
+    applicant$FNCS <- fncs
+  } else {
+    applicant$FNCS <- NA
+  }
 
   #----------------------------------------------------------------
   # Get TOP factor of the publication venues
   #----------------------------------------------------------------
 
-  TOP <- read.csv(system.file("extdata", "top-factor.csv", package="RESQUER"))
+  if (nrow(applicant$impact_pubs) > 0) {
+    TOP <- read.csv(system.file("extdata", "top-factor.csv", package="RESQUER"))
 
-  applicant$TOP_journals <- TOP %>%
-    select(issn=Issn, Journal, Total) %>%
-    filter(issn %in% applicant$OAlex_papers$issn_l)
+    applicant$TOP_journals <- TOP %>%
+      select(issn=Issn, Journal, Total) %>%
+      filter(issn %in% applicant$OAlex_papers$issn_l)
+    rm(TOP)
+  } else {
+    applicant$TOP_journals <- NA
+  }
 
-  rm(TOP)
 
   #----------------------------------------------------------------
   # Compute Relative Rigor Score RRS
   #----------------------------------------------------------------
 
-  applicant$RRS <- compute_RRS(applicant)
+  if (nrow(applicant$impact_pubs) > 0) {
+    applicant$RRS <- compute_RRS(applicant)
 
-  # merge RRS scores into the other objects
-  applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by="doi")
-  applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by="doi")
-  applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by="doi")
+    # merge RRS scores into the other objects
+    applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by="doi")
+    applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by="doi")
+    applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by="doi")
+  } else {
+    applicant$RRS <- NA
+  }
 
   #----------------------------------------------------------------
   # Get internationalization and interdisciplinarity scores
   #----------------------------------------------------------------
 
-  if (!is.null(applicant$meta$OA_author_id) & !is.na(applicant$meta$OA_author_id)) {
+  if (!is.null(applicant$meta$OA_author_id) & !is.na(applicant$meta$OA_author_id) & (nrow(applicant$impact_pubs) > 0)) {
     nw <- get_network(works=applicant$OAlex_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
 
     applicant$internationalization <- list(

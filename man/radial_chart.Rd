@@ -7,7 +7,6 @@
 radial_chart(
   values,
   colors = NULL,
-  full_radius = TRUE,
   width = 300,
   height = 300,
   border_width = 1,

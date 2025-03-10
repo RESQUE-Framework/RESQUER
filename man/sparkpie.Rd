@@ -9,9 +9,9 @@ sparkpie(values, colors = NA, ...)
 \arguments{
 \item{values}{Absolute numbers.}
 
-\item{...}{Additional arguments passed to the \code{sparkline} function.}
+\item{colors}{Overwrite the default colors with a vector of hex color values. Must have the same length as \code{values}.}
 
-\item{sliceColors}{Overwrite the default colors with a vector of hex color values. Must have the same length as \code{values}.}
+\item{...}{Additional arguments passed to the \code{sparkline} function.}
 }
 \description{
 The default colors are grey (for not applicable in the first value slot) and then a color ramp from red to green

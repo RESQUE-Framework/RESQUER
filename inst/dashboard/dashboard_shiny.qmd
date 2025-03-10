@@ -599,19 +599,19 @@ tableOutput('HI_papers_table')
 
 ```{r prereg}
 #| context: server
-
-output$prereg <- renderPlotly({
-  prereg_tab <- table(applicant()$rigor_pubs$P_Preregistration2) |> as.data.frame() %>%
-    mutate(perc = round(Freq*100/sum(Freq)))
-  
-  # give missing categories a minimal width to make them visible
-  #prereg_tab$perc[prereg_tab$perc == 0] <- 0.2
-  
-  BC_h(
-    cat_labels=prereg_tab$Var1,
-    values=prereg_tab$Freq,
-    colors=c("#eeeeee", "#FED976", "#90c916", "#008000"), rev=TRUE)
-})
+# TODO: Create html/CSS version of this plotoutput$prereg <- renderPlotly({
+#   prereg_tab <- table(applicant()$rigor_pubs$P_Preregistration2) |> as.data.frame() %>%
+#     mutate(perc = round(Freq*100/sum(Freq)))
+#   
+#   # give missing categories a minimal width to make them visible
+#   #prereg_tab$perc[prereg_tab$perc == 0] <- 0.2
+#   
+# 
+# #   BC_h(
+# #     cat_labels=prereg_tab$Var1,
+# #     values=prereg_tab$Freq,
+# #     colors=c("#eeeeee", "#FED976", "#90c916", "#008000"), rev=TRUE)
+# })
 ```
 ```{r prereg_plot}
 #| title: "Was the research preregistered / a registered report?"
@@ -625,20 +625,22 @@ plotlyOutput('prereg')
 ```{r prereg_repl}
 #| context: server
 
-output$prereg_repl <- renderPlotly({
-  if (!is.null(applicant()$rigor_pubs$P_PreregisteredReplication)) {
-  
-  repl_tab <- table(applicant()$rigor_pubs$replication) |> as.data.frame() %>%
-    mutate(perc = round(Freq*100/sum(Freq)))
-  
-  # TODO: rev does not work yet
-  BC_h(
-    cat_labels=repl_tab$Var1,
-    values=repl_tab$Freq,
-    colors=c("#eeeeee", "#FED976", "#90c916", rev=TRUE)
-  )
-  }
-})
+# TODO: Create html/CSS version of this plot
+# output$prereg_repl <- renderPlotly({
+#   if (!is.null(applicant()$rigor_pubs$P_PreregisteredReplication)) {
+#   
+#   repl_tab <- table(applicant()$rigor_pubs$replication) |> as.data.frame() %>%
+#     mutate(perc = round(Freq*100/sum(Freq)))
+#   
+#   # TODO: rev does not work yet
+#   
+#   # BC_h(
+#   #   cat_labels=repl_tab$Var1,
+#   #   values=repl_tab$Freq,
+#   #   colors=c("#eeeeee", "#FED976", "#90c916", rev=TRUE)
+#   # )
+#   }
+# })
 ```
 ```{r prereg_repl_plot}
 #| title: "Preregistered replication attempt"

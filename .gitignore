@@ -53,3 +53,6 @@ inst/dashboard/dashboard_shiny_files
 
 *.code-workspace
 docs
+
+_archive
+

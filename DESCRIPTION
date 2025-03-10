@@ -1,6 +1,6 @@
 Package: RESQUER
 Title: Enrich, analyse and visualize data from the RESQUE rating scheme
-Version: 0.6.5
+Version: 0.6.6
 Authors@R: 
     person("Felix D.", "Schönbrodt", , "felix.schoenbrodt@psy.lmu.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-8282-3910"))
@@ -20,7 +20,6 @@ Imports:
   plyr,
   tidyr,
   ggplot2,
-  plotly,
   curl,
   magrittr,
   openalexR (>= 1.3.0),
