@@ -6,7 +6,7 @@
 \usage{
 waffle_html(
   values,
-  max_values = 10,
+  max_value = 10,
   rows = 1,
   colors = c("#1da412", "#1da412", "#c51819", "#C7C7C7"),
   width_px = 120,
@@ -15,6 +15,8 @@ waffle_html(
 }
 \arguments{
 \item{values}{A numeric vector of specifying the counts of waffle blocks}
+
+\item{max_value}{A numeric scalar indicating the maximum number of waffle blocks (so that multiple displays have the same size). If any element of \code{values} exceeds \code{max_value}, a warning is issued and \code{max_value} is updated to the maximum value found. Defaults to 10.}
 
 \item{rows}{An integer specifying the number of rows in the Waffle plot}
 

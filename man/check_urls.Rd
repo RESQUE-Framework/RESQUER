@@ -4,10 +4,12 @@
 \alias{check_urls}
 \title{Check URLs in Text for Validity}
 \usage{
-check_urls(text)
+check_urls(text, tout = 5)
 }
 \arguments{
 \item{text}{A character string containing potential URLs to be checked.}
+
+\item{tout}{The timeout, defaults to 5 seconds}
 }
 \value{
 A data frame with the following columns:

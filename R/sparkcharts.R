@@ -4,7 +4,7 @@
 #'
 #' The default colors are grey (for not applicable in the first value slot) and then a color ramp from red to green
 #' @param values Absolute numbers.
-#' @param sliceColors Overwrite the default colors with a vector of hex color values. Must have the same length as `values`.
+#' @param colors Overwrite the default colors with a vector of hex color values. Must have the same length as `values`.
 #' @param ... Additional arguments passed to the `sparkline` function.
 #' @importFrom sparkline sparkline
 #' @importFrom grDevices colorRampPalette
@@ -27,123 +27,6 @@ sparkpie <- function(values, colors=NA, ...) {
 
 
 
-#' Create a mini gauge plot
-#'
-#' This function creates a mini gauge plot using the plotly package. The gauge represents a value within a range, divided into color-coded steps and highlighting a threshold value.
-#'
-#' @param value numeric value to be represented on the gauge (must be between 0 and 1)
-#' @param breaks numeric vector specifying the break points for coloring the gauge steps (must be two elements)
-#' @param colors character vector specifying the colors for each step in the gauge (must be three elements)
-#' @return a plotly object representing the mini gauge plot
-#' @import plotly
-#' @export
-#' @examples
-#' minigauge(0.25)
-minigauge <- function(value, breaks=c(.15, .30), colors=c("red", "#f7cf07", "#3af72c")) {
-  plot_ly(
-  type = "indicator",
-  mode = "gauge",
-  value = value,
-  gauge = list(
-    axis = list(
-      range = list(0, 1),
-      visible = FALSE
-    ),
-    bar = list(
-      thickness = 0.2,
-      color = "rgba(0.2,0.2,0.2,1)"
-    ),
-    steps = list(
-      list(range = c(0, breaks[1]), color = colors[1]),
-      list(range = c(breaks[1], breaks[2]), color = colors[2]),
-      list(range = c(breaks[2], 1), color = colors[3])
-    ),
-    threshold = list(
-      line = list(color = "black", width = 5),    # Increased width from 2 to 4
-      thickness = 1.5,                            # Increased thickness from 0.5 to 0.8
-      value = value
-    ),
-    bgcolor = "white",
-    borderwidth = 1,
-    bordercolor = "#bbb"
-  ),
-  width = 80,
-  height = 30
-) %>% layout(
-  margin = list(l = 0, r = 0, t = 0, b = 0),
-  paper_bgcolor = "rgba(0,0,0,0)",
-  showlegend = FALSE
-)
-}
-
-
-#' Create a mini horizontal stacked bar chart
-#'
-#' This function creates a mini horizontal stacked bar chart using the plotly package. The gauge represents a value within a range, divided into color-coded steps and highlighting a threshold value.
-#'
-#' @param value numeric value to be represented on the gauge (must be between 0 and 1)
-#' @param breaks numeric vector specifying the break points for coloring the gauge steps (must be two elements)
-#' @param colors character vector specifying the colors for each step in the gauge (must be three elements)
-#' @return a plotly object representing the mini gauge plot
-#' @import plotly
-#' @export
-#' @examples
-#' ministack(0.25)
-ministack <- function(value, breaks=c(.15, .30), colors=c("red", "#f7cf07", "#3af72c")) {
-  plot_ly(width = 120, height = 30) %>%
-  config(displayModeBar = FALSE) %>%
-  # Add an invisible dummy trace to avoid warnings
-  add_trace(
-    x = 0,
-    y = 0,
-    type = "scatter",
-    mode = "markers",
-    marker = list(opacity = 0)
-  ) %>%
-  layout(
-    shapes = list(
-      # Red segment: from 0 to 0.15
-      list(
-        type = "rect",
-        x0 = 0, x1 = breaks[1],
-        y0 = 0.2, y1 = 0.8,
-        fillcolor = RED,
-        line = list(width = 0)
-      ),
-      # Yellow segment: from 0.15 to 0.30
-      list(
-        type = "rect",
-        x0 = breaks[1], x1 = breaks[2],
-        y0 = 0.2, y1 = 0.8,
-        fillcolor = YELLOW,
-        line = list(width = 0)
-      ),
-      # Green segment: from 0.30 to 1.0
-      list(
-        type = "rect",
-        x0 = breaks[2], x1 = 1.0,
-        y0 = 0.2, y1 = 0.8,
-        fillcolor = GREEN,
-        line = list(width = 0)
-      ),
-      # Triangle indicator at value pointing downward
-      list(
-        type = "path",
-        # The triangle is defined with a horizontal base from (0.38,0.65) to (0.46,0.65)
-        # and the tip at (0.42,0.6), so the triangle points down.
-        path = paste0("M ", value-0.03,",0.65 L ", value+0.03, ",0.65 L ", value, ",0.4 Z"),
-        fillcolor = "black",
-        line = list(color = "black")
-      )
-    ),
-    # Hide the axes for a clean look
-    xaxis = list(range = c(0, 1), showgrid = FALSE, zeroline = FALSE, visible = FALSE),
-    yaxis = list(range = c(0, 1), showgrid = FALSE, zeroline = FALSE, visible = FALSE),
-    margin = list(l = 5, r = 5, t = 5, b = 5),
-    paper_bgcolor = "white"
-  )
-}
-
 
 
 #' Create a mini horizontal stacked bar chart in pure HTML
@@ -153,11 +36,13 @@ ministack <- function(value, breaks=c(.15, .30), colors=c("red", "#f7cf07", "#3a
 #' @param value numeric value to be represented on the gauge (must be between 0 and 1)
 #' @param breaks numeric vector specifying the break points for coloring the gauge steps (must be two elements)
 #' @param colors character vector specifying the colors for each step in the gauge (must be three elements)
+#' @param width Width in pixels
+#' @param height Height in pixels
 #' @return a HTML string representing the mini gauge plot
 #' @export
 #' @examples
-#' ministack_html(0.25)
-ministack_html <- function(
+#' ministack(0.25)
+ministack <- function(
     value,
     breaks = c(0.15, 0.30),
     colors = c("red", "#f7cf07", "#3af72c"),
@@ -169,7 +54,7 @@ ministack_html <- function(
   w1 <- (breaks[1] - 0)        * width
   w2 <- (breaks[2] - breaks[1]) * width
   w3 <- (1        - breaks[2]) * width
-  # Vertical positioning for the colored bar (just like y0=0.2 to y1=0.8 in Plotly)
+  # Vertical positioning for the colored bar
   bar_top    <- 0.2 * height      # 20% down
   bar_height <- 0.6 * height      # 60% tall
 
@@ -254,6 +139,7 @@ ministack_html <- function(
 #' a kable.
 #'
 #' @param values A numeric vector of specifying the counts of waffle blocks
+#' @param max_value A numeric scalar indicating the maximum number of waffle blocks (so that multiple displays have the same size). If any element of \code{values} exceeds \code{max_value}, a warning is issued and \code{max_value} is updated to the maximum value found. Defaults to 10.
 #' @param rows An integer specifying the number of rows in the Waffle plot
 #' @param colors A character vector containing colors for each category
 #'              (default: c('green', 'green', 'red', 'grey')) for categories "yes",
@@ -270,16 +156,16 @@ ministack_html <- function(
 #' @export
 waffle_html <- function(
     values,
-    max_values = 10,
+    max_value = 10,
     rows = 1,
     colors = c("#1da412", "#1da412", "#c51819", "#C7C7C7"),
     width_px = 120,
     gap_px = 2
 ) {
   # Validate inputs
-  if(sum(values) > max_values) {
-    max_values <- sum(values)
-    warning(paste0("More values provided than `max_values`. Increasing `max_values` to ", sum(values)))
+  if(sum(values) > max_value) {
+    max_value <- sum(values)
+    warning(paste0("More values provided than `max_value`. Increasing `max_value` to ", sum(values)))
   }
 
   if(length(values) > length(colors)) {
@@ -287,7 +173,7 @@ waffle_html <- function(
   }
 
   # Calculate number of columns
-  cols <- max_values / rows
+  cols <- max_value / rows
 
   # Calculate the block size to ensure squares
   # First calculate block width based on container width and gaps
@@ -318,7 +204,7 @@ waffle_html <- function(
   }
 
   # Add invisible blocks to fill remaining space
-  remaining_blocks <- max_values - block_count
+  remaining_blocks <- max_value - block_count
   if(remaining_blocks > 0) {
     for(i in 1:remaining_blocks) {
       html <- paste0(html, '    <div style="width: ', block_width, 'px; height: ', block_width,
@@ -385,7 +271,6 @@ get_color <- function(values) {
 radial_chart <- function(
     values,
     colors = NULL,
-    full_radius = TRUE,
     width = 300,
     height = 300,
     border_width = 1,
@@ -405,7 +290,7 @@ radial_chart <- function(
 
   # Generate default colors if none provided
   if (is.null(colors)) {
-    colors <- colors_100[round(values)]
+    colors <- get_color(round(values))
   } else if (sector_count != length(colors)) {
     stop("The number of provided colors does not match the number of sectors.")
   }
@@ -444,13 +329,7 @@ radial_chart <- function(
     start_angle <- start_angle_deg * pi / 180
     end_angle <- end_angle_deg * pi / 180
 
-    # Calculate sector radius based on the value (percentage filled)
-    if (full_radius == FALSE) {
-      sector_radius <- max_radius * (values[i] / 100)
-    } else {
-      sector_radius <- max_radius
-    }
-
+    sector_radius <- max_radius
 
     # If sector_radius is too small, skip this sector
     if (sector_radius < 1) next
@@ -529,12 +408,12 @@ radial_chart <- function(
 #' @param outer_width Circle radius in pixels.
 #' @param value A value between 0 and 1 (which then is transformed into %)
 #' @param colors A vector of four colors, from innermost to outermost color
-#' @param weight A vector of 4 numbers specifying the relative weight of each layer.
+#' @param weights A vector of 4 numbers specifying the relative weight of each layer.
 #'        The weights are normalized to percentages automatically.
 #'        Default is c(1, 1, 1, 1) which gives equal 25% spacing.
 #' @param sharp_boundaries Whether to create sharp color transitions (TRUE) or smooth blends (FALSE)
 #' @export
-circle_layer_html <- function(value, colors, outer_width = 60,
+circle_layer <- function(value, colors, outer_width = 60,
                               weights = c(1, 1, 1, 1), sharp_boundaries = FALSE) {
 
   # Ensure we have 4 weights
@@ -620,132 +499,197 @@ circle_layer_html <- function(value, colors, outer_width = 60,
 }
 
 
-# circle_layer_html(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 4)) |> cat()
-# circle_layer_html(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 10, 1, 10), sharp_boundaries = FALSE) |> cat()
+# circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 4)) |> cat()
+# circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 10, 1, 10), sharp_boundaries = FALSE) |> cat()
 
 
 
 
-#' Create a minimal horizontal bar chart with inline CSS and labels inside bars
+
+#' Create a Horizontal Bar Chart in HTML
 #'
-#' @param values Numeric vector of values representing bar lengths (max norm is 10)
-#' @param colors Character vector of colors for each bar (same length as values)
-#' @param width Overall width of the chart in pixels
-#' @param height Overall height of the chart in pixels
-#' @param labels Optional character vector of labels for each bar (same length as values)
+#' Generates an HTML snippet representing a horizontal bar chart. Each bar's length is proportional to its corresponding value relative to a maximum value, and each bar is filled with a specified color. Optionally, labels can be placed on the bars, and an x-axis displaying the scale can be shown.
 #'
-#' @return HTML string representing the horizontal bar chart with inline styles
+#' @param values A numeric vector of values representing the lengths of the bars.
+#' @param colors A character vector of colors (in any valid CSS format) for each bar. Must be the same length as \code{values}.
+#' @param max_value A numeric scalar indicating the maximum value for scaling the bars. If any element of \code{values} exceeds \code{max_value}, a warning is issued and \code{max_value} is updated to the maximum value found. Defaults to 10.
+#' @param width An integer specifying the overall width (in pixels) of the chart container. Defaults to 140.
+#' @param height An integer specifying the overall height (in pixels) of the chart container. Defaults to 60.
+#' @param labels An optional character vector of labels to display on top of each bar. If provided, its length must match that of \code{values}. Defaults to \code{NULL}.
+#' @param show_x_label Logical indicating whether to display the x-axis labels (showing 0 and \code{max_value}) below the bars. Defaults to \code{TRUE}.
+#'
+#' @return A character string containing HTML code that renders the horizontal bar chart.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example with labels and custom colors:
+#'   values <- c(3, 7, 5)
+#'   colors <- c("#FF5733", "#33FF57", "#3357FF")
+#'   labels <- c("Low", "Medium", "High")
+#'   html_chart <- horizontal_bar_chart(values, colors, max_value = 10,
+#'                                      width = 140, height = 60,
+#'                                      labels = labels, show_x_label = TRUE)
+#'   cat(html_chart)
+#' }
+#'
 #' @export
-horizontal_bar_chart <- function(values, colors, width = 500, height = 300, labels = NULL) {
-  # Input validation
+horizontal_bar_chart <- function(values,
+                                 colors,
+                                 max_value = 10,
+                                 width = 140,
+                                 height = 60,
+                                 labels = NULL,
+                                 show_x_label = TRUE) {
+  # Validate inputs
   if (length(values) != length(colors)) {
     stop("values and colors must have the same length")
   }
-
   if (!is.null(labels) && length(labels) != length(values)) {
     stop("If provided, labels must have the same length as values")
   }
-
-  # Normalize values using a fixed maximum of 10
-  normalized_values <- (values / 10) * (width * 0.9)  # 90% of width for a value of 10
-
-  # Calculate bar height and spacing
-  n_bars <- length(values)
-  bar_height <- (height * 0.8) / n_bars
-  bar_spacing <- (height * 0.2) / (n_bars + 1)
-
-  # Calculate appropriate font size (approximately 70% of bar height)
-  font_size <- round(bar_height * 0.7)
-
-  # Outer container style with 5px padding
-  outer_container_style <- paste0(
-    "padding:5px; ",
-    "display:inline-block;"
-  )
-
-  # Container style
-  container_style <- paste0(
-    "width:", width, "px; ",
-    "height:", height, "px; ",
-    "position:relative; ",
-    "font-family:Arial, sans-serif; ",
-    "padding:10px;",
-    "display:flex; flex-direction:column; justify-content:center;"
-  )
-
-  # Bar container style (each bar's outer div)
-  bar_style <- paste0(
-    "height:", bar_height, "px; ",
-    "margin-bottom:", bar_spacing, "px; ",
-    "position:relative; ",
-    "display:flex; ",
-    "align-items:center;"
-  )
-
-  # Label style - with font-size proportional to bar height
-  label_style <- paste0(
-    "position:absolute; ",
-    "left:10px; ",        # Small gap from the left edge of the bar
-    "top:50%; ",
-    "transform:translateY(-50%); ",
-    "font-size:", font_size, "px; ",
-    "line-height:", font_size, "px; ",
-    "white-space:nowrap; ",
-    "z-index:2; ",         # Ensure label appears above both bars
-    "color:black; "        # Default text color
-  )
-
-  # Bar fill style base for the colored bar (will be layered above the shadow)
-  bar_fill_style_base <- "position:relative; height:100%; display:inline-block; z-index:1;"
-
-  # Shadow bar style (absolute within bar container)
-  shadow_width <- width * 0.9  # Fixed width corresponding to a value of 10
-  shadow_bar_style <- paste0(
-    "position:absolute; top:0; left:0; height:100%; width:", shadow_width, "px; background-color:#EEEEEE; z-index:0;"
-  )
-
-  # Start building HTML
-  html <- paste0('<div style="', outer_container_style, '">',
-                 '<div style="', container_style, '">')
-
-  # Add bars
-  for (i in 1:n_bars) {
-    bar_fill_style <- paste0(bar_fill_style_base, " width:", normalized_values[i], "px; background-color:", colors[i], ";")
-
-    bar_html <- paste0(
-      '  <div style="', bar_style, '">',
-      '<div style="', shadow_bar_style, '"></div>',
-      '<div style="', bar_fill_style, '">',
-      if (!is.null(labels)) paste0('<div style="', label_style, '">', labels[i], '</div>') else "",
-      '</div>',
-      '</div>'
-    )
-    html <- paste0(html, "\n", bar_html)
+  if (max(values) > max_value) {
+    warning(paste0("Longer bars than max_value detected; increasing max_value to ", max(values)))
+    max_value <- max(values)
   }
 
-  # Close container div
-  html <- paste0(html, '\n</div>\n</div>')
+  n_bars <- length(values)
 
+  # --- Outer container ---
+  # display:inline-block so it can fit inside a table cell.
+  # box-sizing:border-box so width/height includes padding.
+  outer_style <- paste0(
+    "display:inline-block; ",
+    "width:", width, "px; ",
+    "height:", height, "px; ",
+    "font-family:Arial, sans-serif; ",
+    "box-sizing:border-box; ",
+    "padding:5px; ",
+    # Remove overflow:hidden or reduce it if you need to see everything
+    # but keep it if you really want to clip any overflow
+    "overflow:hidden;"
+  )
+
+  # --- Decide how much space to reserve for axis row ---
+  axis_height <- if (show_x_label) 12 else 0
+
+  # The bars container will occupy (height - padding - axis) in vertical space
+  # We used 5px top + 5px bottom padding = 10 total
+  bars_container_height <- height - 10 - axis_height
+  if (bars_container_height < 1) {
+    bars_container_height <- 1  # fallback
+  }
+
+  # --- Layout for bars container ---
+  bars_container_style <- paste0(
+    "display:flex; flex-direction:column; ",
+    # Align them from the top so none get clipped
+    "justify-content:flex-start; ",
+    "height:", bars_container_height, "px; ",
+    "width:100%; ",
+    "box-sizing:border-box;"
+  )
+
+  # --- Compute each bar’s height + spacing ---
+  # Suppose we want a small margin between bars (2px). We need to fit
+  # all bars plus (n_bars-1)*2px inside bars_container_height.
+  # So bar_height = (bars_container_height - 2*(n_bars-1)) / n_bars
+  margin_bottom <- 2
+  total_margin <- margin_bottom * (n_bars - 1)
+  bar_height <- (bars_container_height - total_margin) / n_bars
+  if (bar_height < 1) {
+    bar_height <- 1  # minimal height if space is tight
+  }
+
+  # --- Compute fill fraction for each bar ---
+  fractions <- values / max_value
+
+  # Start building HTML
+  html <- paste0("<div style='", outer_style, "'>")
+
+  # Bars container
+  html <- paste0(html, "<div style='", bars_container_style, "'>")
+
+  # Generate each bar
+  for (i in seq_len(n_bars)) {
+    # A parent div for the gray "shadow" plus the colored fill
+    bar_container_style <- paste0(
+      "position:relative; ",
+      "background-color:#EEEEEE; ",
+      "width:100%; ",
+      "height:", bar_height, "px; ",
+      # add bottom margin except on last bar
+      if (i < n_bars) paste0("margin-bottom:", margin_bottom, "px;")
+    )
+
+    # The colored fill as a percentage
+    fill_width_percent <- fractions[i] * 100
+    fill_style <- paste0(
+      "background-color:", colors[i], "; ",
+      "width:", fill_width_percent, "%; ",
+      "height:100%;"
+    )
+
+    # Optional label *on top of* the bar
+    label_html <- ""
+    if (!is.null(labels)) {
+      label_style <- paste0(
+        "position:absolute; ",
+        "left:10px; ",
+        "top:50%; ",
+        "transform:translateY(-50%); ",
+        "font-size:", max(1, round(bar_height * 0.6)), "px; ",
+        "color:black; ",
+        "white-space:nowrap;"
+      )
+      label_html <- paste0("<div style='", label_style, "'>", labels[i], "</div>")
+    }
+
+    # Combine bar + fill + label
+    bar_html <- paste0(
+      "<div style='", bar_container_style, "'>",
+      "<div style='", fill_style, "'></div>",
+      label_html,
+      "</div>"
+    )
+    html <- paste0(html, bar_html)
+  }
+
+  # Close the bars container
+  html <- paste0(html, "</div>")
+
+  # Axis row at the bottom (no absolute positioning).
+  if (show_x_label) {
+    axis_style <- paste0(
+      "display:flex; ",
+      "justify-content:space-between; ",
+      "font-size:9px; ",
+      "color:#444444; ",
+      "margin-top:2px; ",    # a little gap above the axis
+      "height:", axis_height - 2, "px; ",
+      "align-items:flex-end;"
+    )
+    axis_html <- paste0(
+      "<div style='", axis_style, "'>",
+      "<span>0</span>",
+      "<span>", max_value, "</span>",
+      "</div>"
+    )
+    html <- paste0(html, axis_html)
+  }
+
+  # Close the outer
+  html <- paste0(html, "</div>")
   return(html)
 }
 
 
-# Example usage:
-# values <- c(45, 23, 67, 12, 39)
-# colors <- c("#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff")
-# labels <- c("Category A", "Category B", "Category C", "Category D", "Category E")
-#
-# chart_html <- horizontal_bar_chart(values, colors, 600, 300, labels)
-#
-# # Save to file
-# writeLines(chart_html, "bar_chart.html")
-#
-# # To display in RStudio viewer:
-# htmltools::html_print(htmltools::HTML(chart_html))
 
-# Example usage:
+
 # values <- c(45, 23, 67, 12, 39)
 # colors <- c("#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff")
 # labels <- c("Category A", "Category B", "Category C", "Category D", "Category E")
 #
-# horizontal_bar_chart(c(1, 1, 2, 3, 10), colors, 120, 20) |> htmltools::HTML() |> htmltools::html_print()
+# horizontal_bar_chart(c(1, 1, 2, 3, 20), colors, 20, 20, labels=labels) |> htmltools::HTML() |> htmltools::html_print()
+# horizontal_bar_chart(c(1, 4, 2, 10, 6), colors, max_value = 10, width = 120, height = 65) |> htmltools::HTML() |> htmltools::html_print()
+
+# horizontal_bar_chart(c(0,0, 3), colors = brewer.pal(3, "Set1"), width=120, height=60) |> htmltools::HTML() |> htmltools::html_print()
