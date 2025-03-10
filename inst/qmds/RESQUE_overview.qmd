@@ -147,7 +147,7 @@ if (is.null(params$json_path)) {
 overview_tab <- data.frame(
   names = sapply(applicant_list, function(x) x$meta$LastName),
   academic_age = sapply(applicant_list, function(x) x$meta$AcademicAge),
-  analysed_outputs = sapply(applicant_list, function(x) x$pubs |> nrow())
+  analysed_outputs = sapply(applicant_list, function(x) x$impact_pubs |> nrow())
 )
 
 datatable(
@@ -310,7 +310,7 @@ for (i in 1:nrow(tab_samples)) {
   #------------------------------------------
   
   Sample_Type <- factor(
-    x = na.omit(applicant_list[[i]]$pubs$P_Sample),
+    x = na.omit(applicant_list[[i]]$rigor_pubs$P_Sample),
     levels = c("MostlyPsychStudents", "MostlyStudents", "General", "Specific", "Rare")
   )
   
@@ -331,7 +331,7 @@ for (i in 1:nrow(tab_samples)) {
   # Types of data
   #------------------------------------------
   
-  df <- applicant_list[[i]]$pubs |> select(contains("P_Data_Type_"))
+  df <- applicant_list[[i]]$rigor_pubs |> select(contains("P_Data_Type_"))
   df <- add_variables(df, c("P_Data_Type_QuestionnaireSelfreport", "P_Data_Type_QuestionnaireOtherreport", "P_Data_Type_Behavioral", "P_Data_Type_Physiological", "P_Data_Type_Interviews", "P_Data_Type_ContentData", "P_Data_Type_Coding", "P_Data_Type_MetaAnalysis", "P_Data_Type_OtherType"), default=FALSE)
 
   data_type_list <- c(
@@ -429,7 +429,8 @@ ggplot(tab_combi, aes(x=RRS_overall, y=mean_FNCS)) +
     segment.size=0.1
   ) + 
   theme_bw() +
-  xlab("Overall Rigor Score (higher ist better)") + ylab("Mean Citation Score (higher ist better)")
+  xlab("Overall Rigor Score (higher ist better)") + ylab("Mean Citation Score (higher ist better)") +
+  scale_x_continuous(limits = c(0, max(tab_combi$RRS_overall, na.rm = TRUE)*1.1))  # Ensure that x-axis starts at 0
 ```
 
 

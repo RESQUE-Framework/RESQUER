@@ -338,7 +338,7 @@ textOutput('vb_topFactor_text')
 #| context: server
 
 output$journal_list_output <- function(){
-  jt <- table(applicant()$all_papers$so)
+  jt <- table(applicant()$OAlex_papers$so)
   jt2 <- jt[order(jt, names(jt))]
   journal_list <- paste0(names(jt2), collapse=", ")
   journal_list
@@ -406,8 +406,8 @@ tableOutput('ref_table_output')
 #| context: server
 
 output$team_science_output <- function(){
-  team_tab <- table(applicant()$all_papers$team_category) |> as.data.frame()
-  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant()$all_papers)), "%")
+  team_tab <- table(applicant()$OAlex_papers$team_category) |> as.data.frame()
+  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant()$OAlex_papers)), "%")
   colnames(team_tab) <- c("Team category", "Frequency", "%")
   kable(team_tab, align=c("l", "r", "r")) %>%
     kable_styling(font_size = 14, bootstrap_options = c("striped", "hover"))
@@ -601,7 +601,7 @@ tableOutput('HI_papers_table')
 #| context: server
 
 output$prereg <- renderPlotly({
-  prereg_tab <- table(applicant()$pubs$P_Preregistration2) |> as.data.frame() %>%
+  prereg_tab <- table(applicant()$rigor_pubs$P_Preregistration2) |> as.data.frame() %>%
     mutate(perc = round(Freq*100/sum(Freq)))
   
   # give missing categories a minimal width to make them visible
@@ -626,9 +626,9 @@ plotlyOutput('prereg')
 #| context: server
 
 output$prereg_repl <- renderPlotly({
-  if (!is.null(applicant()$pubs$P_PreregisteredReplication)) {
+  if (!is.null(applicant()$rigor_pubs$P_PreregisteredReplication)) {
   
-  repl_tab <- table(applicant()$pubs$replication) |> as.data.frame() %>%
+  repl_tab <- table(applicant()$rigor_pubs$replication) |> as.data.frame() %>%
     mutate(perc = round(Freq*100/sum(Freq)))
   
   # TODO: rev does not work yet

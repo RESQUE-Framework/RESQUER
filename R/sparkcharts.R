@@ -349,14 +349,14 @@ get_color <- function(values) {
 
   my_pal <- gradient_n_pal(
     colours = c("#c51819", "#f7cf07", "#f7cf07", "#3af72c", "#3af72c"),
-    values = c(0, 0.15, 0.30, 0.4, 0.6, 1)
+    values = c(0, 0.08, 0.20, 0.35, 0.6, 1)
   )
 
   # Generate a vector of colors for 101 steps
   colors_101 <- my_pal(seq(0, 1, length.out = 101))
 
   # Visualize the palette:
-  #barplot(rep(1, 100), col = colors_101, border = NA, space = 0, axes = FALSE)
+  # barplot(rep(1, 100), col = colors_101, border = NA, space = 0, axes = FALSE)
 
   colors_101[round(values*100)+1]
 }

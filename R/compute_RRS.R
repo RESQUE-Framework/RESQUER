@@ -16,7 +16,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   sectors <- match.arg(sectors, choices=c("weighted", "equal"))
 
   # Which outputs should be scored? At the moment, only publications
-  score_list <- applicant$scores$scores[applicant$indicators$P_Suitable == "Yes"]
+  score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE]
   NaNs <- sapply(score_list, "[[", "relative_score")
   n_scorable <- sum(!is.nan(NaNs))
 
@@ -55,7 +55,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
     ) %>%
     arrange(output)
 
-  RRS_by_paper_overall$doi <- normalize_dois(applicant$pubs$doi[RRS_by_paper_overall$output])
+  RRS_by_paper_overall$doi <- normalize_dois(applicant$rigor_pubs$doi)
   RRS_by_paper_overall <- RRS_by_paper_overall %>% relocate(doi) %>% select(-output)
 
   # each row is one publication; show sector scores
@@ -71,7 +71,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
     pivot_wider(names_from=category, values_from=rel_score) %>%
     arrange(output)
 
-  RRS_by_paper_sector$doi <- normalize_dois(applicant$pubs$doi[RRS_by_paper_sector$output])
+  RRS_by_paper_sector$doi <- normalize_dois(applicant$rigor_pubs$doi)
   RRS_by_paper_sector <- RRS_by_paper_sector %>% relocate(doi) %>% select(-output)
 
   # merge the sector and the overall scores
@@ -122,16 +122,13 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
     )
   }
 
-
-applicant$indicators$Year[applicant$indicators$P_Suitable == "Yes"] |> as.numeric()
-
   return(list(
     overall_score = overall_score,
     paper_scores = RRS_by_paper,
     n_papers = nrow(RRS_by_paper),
     sector_scores = RRS_by_category,
     radar_dat = radar_dat,
-    publication_years = applicant$indicators$Year[applicant$indicators$P_Suitable == "Yes"] |> as.numeric()
+    publication_years = applicant$rigor_pubs$Year |> as.numeric()
   ))
 }
 

@@ -15,6 +15,8 @@ params:
 ```{r setup0}
 #| include: false
 
+# "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
+
 library(knitr)
 library(kableExtra)
 
@@ -109,6 +111,18 @@ kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:"
 This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially. No bonus points have been assigned to the theory indicators yet, and also not to some other indicators of sample characteristics.
 :::
 
+```{r show preprocessing_notes}
+#| results: asis
+
+if (any(applicant$preprocessing_notes != "")) {
+  cat(paste0(
+    "::: {.callout-note title='Preprocessing Notes'}\n",
+    paste0("- ", applicant$preprocessing_notes, collapse="\n"), 
+    "\n:::\n\n"))
+}
+```
+
+
 Some parts of this profile are purely descriptive. For example, it is summarized the type of participant samples, or whether researchers predominantly work with psychophysiological data or rather focus on questionnaire studies. 
 
 Other parts contain an evaluative aspect: For example, research that is reproducible, which allows independent auditing because it provides open data and scripts is, *ceteris paribus*, better than research that does not have these aspects. Research outputs with these objective quality criteria of methodological rigor can gain "bonus points" which are summed across all provided research outputs and contribute to the [Rigor Profile Overview](#rigor-profile-overview).
@@ -183,25 +197,14 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r teamscience}
 #| results: "asis"
 
-cat(paste0(nrow(applicant$all_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
+cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
 
-if (nrow(applicant$all_papers) < nrow(applicant$pubs)) {
-  cat('\n::: {.callout-caution collapse="true"}\n
-## The following papers could *not* be retrieved by openAlex:\n\n')
-  applicant$pubs[!applicant$pubs$dois_normalized %in% applicant$all_papers$doi, ] %>% 
-    select(Title, Year, doi=dois_normalized, P_TypePublication) %>% 
-    kable() %>% 
-    print()
+applicant$OAlex_papers$n_authors <- sapply(applicant$OAlex_papers$author, nrow)
 
-  cat("\n:::\n")
-}
+applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
 
-applicant$all_papers$n_authors <- sapply(applicant$all_papers$author, nrow)
-
-applicant$all_papers$team_category <- cut(applicant$all_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
-
-team_tab <- table(applicant$all_papers$team_category) |> as.data.frame()
-team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$all_papers)), "%")
+team_tab <- table(applicant$OAlex_papers$team_category) |> as.data.frame()
+team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$OAlex_papers)), "%")
 colnames(team_tab) <- c("Team category", "Frequency", "%")
 ```
 
@@ -212,18 +215,17 @@ kable(team_tab, align=c("l", "r", "r"))
 ## Types of research data
 
 <!-- 
-TODO: This does not work without Simualted data.
+TODO: This does not work without Simulated data.
 
-The applicant submitted r sum(is.na(applicant$pubs$P_Data_Source_Simulated) | !applicant$pubs$P_Data_Source_Simulated) papers with empirical data. 
+The applicant submitted r sum(is.na(applicant$rigor_pubs$P_Data_Source_Simulated) | !applicant$rigor_pubs$P_Data_Source_Simulated) papers with empirical data. 
 -->
 
 ```{r datatypes}
 #| results: asis
 
-#applicant$pubs |> select(contains("P_Data_Source"))
 
 get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
-  df <- applicant$pubs |> select(contains(selector))
+  df <- applicant$rigor_pubs |> select(contains(selector))
 
   tab <- data.frame(
     c1 = colnames(df) |> str_replace(selector, "") |> unCamel0(),
@@ -242,11 +244,11 @@ get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
 # for some reason, you need to explicitly set the table.attr when you use `results: asis`
 get_data_types(selector="P_Data_Type_") |> kable(table.attr = "class='table table-sm table-striped small'") 
 
-if (any(applicant$pubs$P_Data_Type_Behavioral, na.rm = TRUE)) {
+if (any(applicant$rigor_pubs$P_Data_Type_Behavioral, na.rm = TRUE)) {
   cat("\n\n### ⤷ Types of behavioral data\n\n")
   get_data_types("P_Data_TypeBehavioral_") |> kable(table.attr = "class='table table-sm table-striped small'")  
 }
-if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
+if (any(applicant$rigor_pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
   cat("\n\n### ⤷ Types of physiological data\n\n")
   get_data_types(selector="P_Data_TypePhysiological_") |> kable(table.attr = "class='table table-sm table-striped small'")
 }
@@ -258,13 +260,13 @@ if (any(applicant$pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
 
 ```{r ensure_compatibility}
 # Compatibility with old versions:
-if (!"P_Sample" %in% names(applicant$pubs)) {applicant$pubs$P_Sample <- NA}
-if (!"P_Sample_CrossCultural" %in% names(applicant$pubs)) {applicant$pubs$P_Sample_CrossCultural <- NA}
-applicant$pubs$P_Sample[is.na(applicant$pubs$P_Sample)] <- FALSE
+if (!"P_Sample" %in% names(applicant$rigor_pubs)) {applicant$rigor_pubs$P_Sample <- NA}
+if (!"P_Sample_CrossCultural" %in% names(applicant$rigor_pubs)) {applicant$rigor_pubs$P_Sample_CrossCultural <- NA}
+applicant$rigor_pubs$P_Sample[is.na(applicant$rigor_pubs$P_Sample)] <- FALSE
 ```
 
 
-Type of population/sample and cultural background for the `r sum(applicant$pubs$P_Data_Source_NewOwn & applicant$pubs$P_Sample != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
+Type of population/sample and cultural background for the `r sum(applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Sample != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
 
 ```{r}
 #| fig-width: 6
@@ -273,7 +275,7 @@ Type of population/sample and cultural background for the `r sum(applicant$pubs$
 #| out-height: auto
 
 Sample_Type <- factor(
-  x = na.omit(applicant$pubs$P_Sample),
+  x = na.omit(applicant$rigor_pubs$P_Sample),
   levels = c("MostlyPsychStudents", "MostlyStudents", "General", "Specific", "Rare"),
   labels = c("(Predominantly) psychology students", 
              "(Predominantly) students, interdisciplinary", 
@@ -286,7 +288,7 @@ Sample_Type <- factor(
 
 df <- data.frame(
   Sample_Type = Sample_Type, 
-  Sample_CrossCultural = factor(applicant$pubs$P_Sample_CrossCultural, levels=c("NotApplicable", "SingleCulture", "MultipleCultures"), labels=c("Not applicable", "Single cultural or ethnic background", "Multiple cultural or ethnic backgrounds"))
+  Sample_CrossCultural = factor(applicant$rigor_pubs$P_Sample_CrossCultural, levels=c("NotApplicable", "SingleCulture", "MultipleCultures"), labels=c("Not applicable", "Single cultural or ethnic background", "Multiple cultural or ethnic backgrounds"))
 )
 
 df <- na.omit(df)
@@ -316,14 +318,14 @@ ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
 ```{r}
 #| results: asis
 
-if (any(!is.na(applicant$pubs$P_Sample_RareOther))) {
+if (any(!is.na(applicant$rigor_pubs$P_Sample_RareOther))) {
   res <- "**Rare samples used in studies:**\n\n"
   
-  rare_sample_position <- which(!is.na(applicant$pubs$P_Sample_RareOther))
+  rare_sample_position <- which(!is.na(applicant$rigor_pubs$P_Sample_RareOther))
   for (i in rare_sample_position) {
-    res <- paste0(res, "- ", applicant$pubs$P_Sample_RareOther[i], "\n")
-    if (!is.na(applicant$pubs$P_SampleSize[i])) {
-      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
+    res <- paste0(res, "- ", applicant$rigor_pubs$P_Sample_RareOther[i], "\n")
+    if (!is.na(applicant$rigor_pubs$P_SampleSize[i])) {
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$rigor_pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
     } else {
       res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")
     }
@@ -345,11 +347,11 @@ if (any(!is.na(applicant$pubs$P_Sample_RareOther))) {
 #| out-height: auto
 
 df <- data.frame(
-  Longitudinal_Type = factor(x = applicant$pubs$P_Longitudinal,
+  Longitudinal_Type = factor(x = applicant$rigor_pubs$P_Longitudinal,
     levels = c("Longitudinal", "Crosssectional"),
     labels = c("Longitudinal", "Cross-sectional")
     ),
-  DesignExperimental_Type  = factor(applicant$pubs$P_DesignExperimental,
+  DesignExperimental_Type  = factor(applicant$rigor_pubs$P_DesignExperimental,
       levels=c("Observational", "Experimental"),
       labels=c("Observational", "Experimental"))
 )
