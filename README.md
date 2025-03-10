@@ -42,3 +42,11 @@ quarto_serve(system.file("dashboard/dashboard_shiny.qmd", package="RESQUER"))
 ```
 
 
+## Some internal documentation (needs to be properly documented)
+
+- `$indicators` contains all data (also publications without any data).
+  - `$impact_pubs` is a subset of `indicators`: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers were a manual processing was requested)
+  - `$OAlex_papers` is the same set as `$impact_pubs`, but contains the full OA information
+    - `$rigor_pubs` is a subset of `$impact_pubs`: contains all publications that are eligible for the rigor score and other descriptives (i.e., papers with sufficient indicator information)
+    
+
