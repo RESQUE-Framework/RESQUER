@@ -302,8 +302,8 @@ heatmap_data <- df %>%
 
 ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
   geom_tile() +
-  geom_text(aes(label = n), color="#EFEFEF") +  
-  scale_fill_gradient(low = "white", high = "#444444") +
+  geom_text(aes(label = n), color="#FFFFFF") +  
+  scale_fill_gradient(low = "#DDDDDD", high = "darkblue") +
   theme_minimal() +
   labs(x = "", y = "") +
   theme(legend.position = "none") +
@@ -366,8 +366,8 @@ heatmap_data <- df %>%
 
 ggplot(heatmap_data, aes(x = Longitudinal_Type, y = DesignExperimental_Type, fill = n)) +
   geom_tile() +
-  geom_text(aes(label = n), color="#EFEFEF") +  
-  scale_fill_gradient(low = "white", high = "#444444") +
+  geom_text(aes(label = n), color="#FFFFFF") +  
+  scale_fill_gradient(low = "#dddddd", high = "darkblue") +
   theme_minimal() +
   labs(x = "", y = "") +
   theme(legend.position = "none") +
@@ -414,11 +414,13 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 
 ## Overview of open research practices
 
+*Move your mouse over the circles to see the exact values.*
+
 <div style="text-align: center;">
 
-| Open Data Available | Preregistration available | Open Material available | Open Code available | Correctness of computational results has been independently verified
+| Open Data Available | Open Material available | Preregistration available | Reproducible Code & Verification available | Correctness of computational results has been independently verified
 |-|-|-|-|-
-| `r sparkpie(applicant$OS_pie$OpenData)`  | `r sparkpie(applicant$OS_pie$Prereg, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))`| `r sparkpie(applicant$OS_pie$OpenMaterial)` | `r sparkpie(applicant$OS_pie$OpenCode)` | `r sparkpie(applicant$OS_pie$Repro)`  
+| `r sparkpie(applicant$OS_pie$OpenData)`  | `r sparkpie(applicant$OS_pie$OpenMaterial)` | `r sparkpie(applicant$OS_pie$Prereg, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))`| `r sparkpie(applicant$OS_pie$OpenCode)` | `r sparkpie(applicant$OS_pie$Repro)`  
 
 </div>
 

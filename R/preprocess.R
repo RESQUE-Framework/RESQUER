@@ -328,14 +328,14 @@ preprocess <- function(applicant, verbose=FALSE) {
   applicant$impact_pubs <- applicant$indicators |> filter(impact_pub == TRUE)
 
 
-  if (sum(applicant$indicators$rigor_pub) > 0) {
-    note <- paste0(sum(applicant$indicators$rigor_pub), " publication(s) were removed from the rigor score computations because no indicators were provided.")
+  if (sum(!applicant$indicators$rigor_pub) > 0) {
+    note <- paste0(sum(!applicant$indicators$rigor_pub), " publication(s) were removed from the rigor score computations because no indicators were provided.")
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }
 
-  if (sum(applicant$indicators$impact_pub) > 0) {
-    note <- paste0(sum(applicant$indicators$impact_pub), " publication(s) were removed from the impact table because no indicators were provided and no manual processing was requested.")
+  if (sum(!applicant$indicators$impact_pub) > 0) {
+    note <- paste0(sum(!applicant$indicators$impact_pub), " publication(s) were removed from the impact table because no indicators were provided and no manual processing was requested.")
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }

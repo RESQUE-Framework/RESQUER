@@ -169,15 +169,15 @@ datatable(
 
 ## Research Transparency
 
-You can click on the arrows in each column header (<img src="img/DT_arrows.png" />) to sort by the Rigor Score of the column.
+You can click on the arrows in each column header (<img src="img/DT_arrows.png" />) to sort by the respective Rigor Score.
 
-The Overall Rigor Score covers current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
+The Overall Rigor Score reflects current best practices, many of which are not yet widely adopted in the research community. As a result, even high-quality papers may receive relatively modest scores. Based on preliminary evaluation studies, the following rough benchmarks can be used to interpret the scores:
 
-  - 10-20% can be considered average
-  - 30% is very good
-  - \>40% is excellent.
+  - 10-20%: Average
+  - 30%: Very good
+  - \>40%: Excellent.
 
-*(Note: The Overall Rigor Score reported here is only based on the four transparency categories, excluding ***Theorizing***. Therefore it can differ from the Overall Score in the individual report.)*
+*(Note: The Overall Rigor Score presented here is based solely on the four transparency categories, excluding Theorizing. As a result, it may differ from the Overall Score in individual reports.)*
 
 ::: {.callout-note collapse="true" title="How to read the small charts"}
 
@@ -343,7 +343,7 @@ for (i in 1:nrow(tab_samples)) {
   )
   
   tab_samples$data_type[i] <- horizontal_bar_chart(
-    data_type_list, colors = brewer.pal(5, "Set2"), 120, 40)
+    data_type_list, colors = brewer.pal(5, "Set2"), 120, 65)
 }
 
 
