@@ -6,11 +6,10 @@
 <url><loc>https://resque-framework.github.io/RESQUER/articles/index.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/authors.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/index.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/BC_h.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/add_variables.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/check_urls.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/circle_layer_html.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/circle_layer.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/compute_RRS.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/credit_barchart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/evaluate_condition_in_context.html</loc></url>
@@ -26,9 +25,7 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_reference_list.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/horizontal_bar_chart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/index.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/minigauge.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/ministack.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/ministack_html.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/preprocess.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/radial_chart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/read_RESQUE.html</loc></url>
