@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,6 +75,20 @@
 <pre><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/quarto-dev/quarto-r" class="external-link">quarto</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://resque-framework.github.io/RESQUER/">RESQUER</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://quarto-dev.github.io/quarto-r/reference/quarto_serve.html" class="external-link">quarto_serve</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"dashboard/dashboard_shiny.qmd"</span>, package<span class="op">=</span><span class="st">"RESQUER"</span><span class="op">)</span><span class="op">)</span></span></code></pre>
+</div>
+<div class="section level2">
+<h2 id="some-internal-documentation-needs-to-be-properly-documented">Some internal documentation (needs to be properly documented)<a class="anchor" aria-label="anchor" href="#some-internal-documentation-needs-to-be-properly-documented"></a>
+</h2>
+<ul><li>
+<code>$indicators</code> contains all data (also publications without any data).<ul>
+<li>
+<code>$impact_pubs</code> is a subset of <code>indicators</code>: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers were a manual processing was requested)</li>
+<li>
+<code>$OAlex_papers</code> is the same set as <code>$impact_pubs</code>, but contains the full OA information<ul><li>
+<code>$rigor_pubs</code> is a subset of <code>$impact_pubs</code>: contains all publications that are eligible for the rigor score and other descriptives (i.e., papers with sufficient indicator information)</li></ul>
+</li>
+</ul>
+</li></ul>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
