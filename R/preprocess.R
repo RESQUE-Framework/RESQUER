@@ -369,7 +369,7 @@ preprocess <- function(applicant, verbose=FALSE) {
     if (nrow(OAlex_papers) < nrow(applicant$impact_pubs)) {
       note <- paste0(
         '## The following papers could *not* be retrieved by openAlex:\n\n',
-        all_pubs[!all_pubs$doi %in% OAlex_papers$doi, ] %>%
+        applicant$impact_pubs[!applicant$impact_pubs$doi %in% OAlex_papers$doi, ] %>%
           select(Title, Year, DOI, P_TypePublication)
       )
       warning(note)
