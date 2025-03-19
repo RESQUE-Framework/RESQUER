@@ -65,6 +65,18 @@ cut2 <- function(x, breaks) {
   }
 }
 
+
+index_to_letters <- function(index) {
+  letters <- LETTERS
+  result <- character(0)
+  while (index > 0) {
+    remainder <- (index - 1) %% 26
+    result <- paste0(letters[remainder + 1], result)
+    index <- (index - remainder - 1) %/% 26
+  }
+  return(result)
+}
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -123,6 +135,12 @@ if (is.null(params$json_path)) {
         # print(paste0("Reading file #", i))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)
         applicant_list[[i]] <- preprocess(applicant=R, verbose=FALSE)
+        
+        if (params$anonymous == TRUE) {
+          applicant_list[[i]]$meta$LastName <- index_to_letters(i)
+          applicant_list[[i]]$meta$FirstName <- ""
+          applicant_list[[i]]$meta$FullName <- index_to_letters(i)
+        }
     }
     
     # `store` stores more meta-information on the analysis
@@ -373,7 +391,7 @@ datatable(
 ::: {.callout-note collapse="true" title="How to interpret the indices"}
 
 - **# of papers in top-10% of popularity**: How many papers are ranked in the top 10%, according to a popularity metric based on the AttentionRank algorithm. [This captures *current* impact dynamics (and less so "historical" citations of old papers).]{style="background: #f4fbc6;"}
-- **mean FNCS**: The median of field- and age-normalized citation scores: The FNCS is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publications (on average) got cited twice as much as comparable publications. [This captures *cumulative* impact (across all papers, and also across all years of publication activity).]{style="background: #f4fbc6;"}
+- **mean FNCS**: The median of field- and age-normalized citation scores: The FNCS is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publications (on average) got cited twice as much as comparable publications. [This captures *cumulative* impact (across all papers, and also across all years of publication activity).]{style="background: #f4fbc6;"}. The background color of the cell indicates the lower 25% (red), middle 50% (yellow) or top 25% (green) of the applicant field.
 - **Highest citation count of a single paper**: The citation count (and publication year) of the single paper with the most citations.
 
 :::
@@ -383,13 +401,31 @@ tab_impact <- data.frame(
   applicant = overview_tab$names
 )
 
-tab_impact$BIP_n_papers_top10 = paste0(
-  sapply(applicant_list, function(x) x$BIP_n_papers_top10),
-   " of ",
-  sapply(applicant_list, function(x) x$impact_pubs |> nrow())
-)
+# tab_impact$BIP_n_papers_top10 = paste0(
+#   sapply(applicant_list, function(x) x$BIP_n_papers_top10),
+#    " of ",
+#   sapply(applicant_list, function(x) x$impact_pubs |> nrow())
+# )
+
+top10 <- sapply(applicant_list, function(x) x$BIP_n_papers_top10)
+non_top10 <- sapply(applicant_list, function(x) x$impact_pubs |> nrow()) - top10
+
+tab_impact$BIP_n_papers_top10 <- ""
+
+for (i in 1:nrow(tab_impact)) {
+  tab_impact$BIP_n_papers_top10[i] <- waffle_html(
+    values = c(top10[i], non_top10[i]),
+    max_value = 10, rows = 1,
+    #colors = c("#fff614", "#C7C7C7"),
+    emojis = c("⭐️", "▢"),
+    width_px = 120, gap_px = 2
+  )
+}
 
 tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(0))
+
+# for chosing the background color:
+mean_FNCS_quantiles <- quantile(tab_impact$mean_FNCS, probs = c(0.25, 0.75))
 
 tab_impact$highest_citation_count = 
   sapply(applicant_list, function(x) {
@@ -416,8 +452,13 @@ datatable(
     columnDefs = list(list(width = 'auto', targets = '_all')),
     dom = 't', 
     paging = FALSE),
-  colnames=c("Applicant", "# of papers in top-10% of popularity", "mean FNCS", "Highest citation count of a single paper")
-)
+  colnames=c("Applicant", "# of papers in top-10% of popularity", "mean FNCS", "Highest citation count of a single paper")) %>%
+  formatStyle(
+    'mean_FNCS',
+    backgroundColor = styleInterval(
+      mean_FNCS_quantiles, c('#fbe3cc', '#fbf9cc', '#daf9d7')
+    )
+  )
 ```
 
 

@@ -422,9 +422,16 @@ preprocess <- function(applicant, verbose=FALSE) {
     applicant$RRS <- compute_RRS(applicant)
 
     # merge RRS scores into the other objects
-    applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by="doi")
-    applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by="doi")
-    applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by="doi")
+    if (!is.na(applicant$RRS$overall_score)) {
+      applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by="doi")
+      applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by="doi")
+      applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by="doi")
+    } else {
+      applicant$RRS <- NA
+      applicant$indicators$RRS_overall <- NA
+      applicant$rigor_pubs$RRS_overall <- NA
+      applicant$impact_pubs$RRS_overall <- NA
+    }
   } else {
     applicant$RRS <- NA
   }

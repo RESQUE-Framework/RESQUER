@@ -133,10 +133,10 @@ ministack <- function(
 }
 
 
-#' Generate an HTML <img> tag embedding a Waffle plot using R
+#' Generate an HTML <div> tag embedding a Waffle plot using R with optional emoji support
 #'
 #' This is a workaround to embed small waffle plots in a sparkline style into
-#' a kable.
+#' a kable. Now supports displaying custom emojis instead of colored blocks.
 #'
 #' @param values A numeric vector of specifying the counts of waffle blocks
 #' @param max_value A numeric scalar indicating the maximum number of waffle blocks (so that multiple displays have the same size). If any element of \code{values} exceeds \code{max_value}, a warning is issued and \code{max_value} is updated to the maximum value found. Defaults to 10.
@@ -146,12 +146,19 @@ ministack <- function(
 #'              "partial", "no", "notApplicable" (implicitly merging "yes" and "partial").
 #' @param width_px An integer specifying the width of the output image in pixels
 #' @param gap_px The gap between blocks in pixels
+#' @param emojis A character vector of emojis to use instead of colored blocks. If NULL (default), regular colored blocks are used.
+#' @param font_size_px An integer specifying the font size for emojis in pixels. Only used if emojis are provided.
 #'
-#' @return A character string containing an HTML <img> tag embedding the Waffle plot
+#' @return A character string containing an HTML string representing the waffle plot
 #'
 #' @examples
+#' # Standard colored blocks
 #' values <- c(10, 20, 15)
 #' waffle_html(values = values)
+#'
+#' # Using emojis instead
+#' values <- c(3, 7)
+#' waffle_html(values = values, emojis = c("⭐️", "▢"))
 #'
 #' @export
 waffle_html <- function(
@@ -160,7 +167,9 @@ waffle_html <- function(
     rows = 1,
     colors = c("#1da412", "#1da412", "#c51819", "#C7C7C7"),
     width_px = 120,
-    gap_px = 2
+    gap_px = 2,
+    emojis = NULL,
+    font_size_px = 20
 ) {
   # Validate inputs
   if(sum(values) > max_value) {
@@ -168,64 +177,98 @@ waffle_html <- function(
     warning(paste0("More values provided than `max_value`. Increasing `max_value` to ", sum(values)))
   }
 
-  if(length(values) > length(colors)) {
-    stop("Not enough colors provided for the number of values")
-  }
+  # Check if using emojis or colored blocks
+  using_emojis <- !is.null(emojis)
 
-  # Calculate number of columns
-  cols <- max_value / rows
+  if(using_emojis) {
+    if(length(values) > length(emojis)) {
+      stop("Not enough emojis provided for the number of values")
+    }
 
-  # Calculate the block size to ensure squares
-  # First calculate block width based on container width and gaps
-  block_width <- (width_px - (gap_px * (cols - 1))) / cols
+    # For emojis, we'll use a simple string concatenation approach instead of flexbox
+    result <- ""
 
-  # Recalculate actual container width and height
-  actual_width <- (block_width * cols) + (gap_px * (cols - 1))
-  actual_height <- (block_width * rows) + (gap_px * (rows - 1))
-
-  # Start HTML output - add a wrapper div with top and bottom margin
-  html <- paste0('<div style="margin: ', gap_px, 'px 0;">\n')
-
-  # Add the flex container
-  html <- paste0(html, '  <div style="display: flex; flex-wrap: wrap; width: ', actual_width, 'px; height: ', actual_height, 'px; gap: ', gap_px, 'px;">\n')
-
-  # Counter for blocks
-  block_count <- 0
-
-  # Add colored blocks for each value
-  for(i in 1:length(values)) {
-    if (values[i] > 0) {
-      for(j in 1:values[i]) {
-        html <- paste0(html, '    <div style="width: ', block_width, 'px; height: ', block_width,
-                       'px; background-color: ', colors[i], '; margin: 0; padding: 0;"></div>\n')
-        block_count <- block_count + 1
+    # Add emojis for each value
+    for (i in 1:length(values)) {
+      if (values[i] > 0) {
+        for (j in 1:values[i]) {
+          result <- paste0(result, emojis[i])
+        }
       }
     }
-  }
 
-  # Add invisible blocks to fill remaining space
-  remaining_blocks <- max_value - block_count
-  if(remaining_blocks > 0) {
-    for(i in 1:remaining_blocks) {
-      html <- paste0(html, '    <div style="width: ', block_width, 'px; height: ', block_width,
-                     'px; background-color: transparent; margin: 0; padding: 0;"></div>\n')
+    # Add empty blocks for remaining space
+    remaining_blocks <- max_value - sum(values)
+    if (remaining_blocks > 0) {
+      # If the last value has an emoji, use that for empty spaces (typically "▢")
+      empty_emoji <- if(length(emojis) > 0) emojis[length(emojis)] else "▢"
+      for (i in 1:remaining_blocks) {
+        result <- paste0(result, empty_emoji)
+      }
     }
+
+    # Wrap in a span with appropriate font size
+    html <- paste0('<span style="font-size: ', font_size_px, 'px;">', result, '</span>')
+    return(html)
+
+  } else {
+    # Original block-based implementation for colored blocks
+    # Calculate number of columns
+    cols <- max_value / rows
+
+    # Calculate the block size to ensure squares
+    # First calculate block width based on container width and gaps
+    block_width <- (width_px - (gap_px * (cols - 1))) / cols
+
+    # Recalculate actual container width and height
+    actual_width <- (block_width * cols) + (gap_px * (cols - 1))
+    actual_height <- (block_width * rows) + (gap_px * (rows - 1))
+
+    # Start HTML output - add a wrapper div with top and bottom margin
+    html <- paste0('<div style="margin: ', gap_px, 'px 0;">\n')
+
+    # Add the flex container
+    html <- paste0(html, '  <div style="display: flex; flex-wrap: wrap; width: ',
+                   actual_width, 'px; height: ', actual_height, 'px; gap: ', gap_px, 'px;">\n')
+
+    # Counter for blocks
+    block_count <- 0
+
+    # Add colored blocks for each value
+    for(i in 1:length(values)) {
+      if (values[i] > 0) {
+        for(j in 1:values[i]) {
+          html <- paste0(html, '    <div style="width: ', block_width, 'px; height: ', block_width,
+                         'px; background-color: ', colors[i], '; margin: 0; padding: 0;"></div>\n')
+          block_count <- block_count + 1
+        }
+      }
+    }
+
+    # Add invisible blocks to fill remaining space
+    remaining_blocks <- max_value - block_count
+    if(remaining_blocks > 0) {
+      for(i in 1:remaining_blocks) {
+        html <- paste0(html, '    <div style="width: ', block_width, 'px; height: ', block_width,
+                       'px; background-color: transparent; margin: 0; padding: 0;"></div>\n')
+      }
+    }
+
+    # Close the flex container
+    html <- paste0(html, '  </div>\n')
+
+    # Close the wrapper div
+    html <- paste0(html, '</div>')
+
+    return(html)
   }
-
-  # Close the flex container
-  html <- paste0(html, '  </div>\n')
-
-  # Close the wrapper div
-  html <- paste0(html, '</div>')
-
-  return(html)
 }
 
 
 
 
 
-#' Convert RRS values to green-red color colding (vectorized)
+#' Convert RRS values to green-red color coding (vectorized)
 #'
 #' TODO: Provide breakpoints as parameters
 #' @param values RRS values (ranging from 0 to 1)

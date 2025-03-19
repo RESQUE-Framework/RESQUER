@@ -450,7 +450,7 @@ The radar chart with the **Relative Rigor Score** helps you to see how many qual
 
 ```{r Radarchart}
 #| fig.width=8
-if (!applicant$all_empty) {
+if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
   RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
 }
 ```
