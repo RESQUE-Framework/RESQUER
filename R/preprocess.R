@@ -3,7 +3,7 @@
 # indicator values at all (e.g., if you do a bulk import via ORCID, and do not
 # enter any indicators)
 get_missing <- function(pub) {
-  # select relevant columns (some are prepopulated by default)
+  # select relevant columns (some are prepopulated with values by default, they never contain missings)
   pub_red <- pub |>
     select(contains("P_"), -contains("P_TypeMethod"), -P_Suitable, -contains("P_CRediT"), -P_TopPaper_Select)
 
@@ -37,6 +37,7 @@ get_missing <- function(pub) {
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 # applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json")
+# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_röseler.json")
 
 preprocess <- function(applicant, verbose=FALSE) {
 
@@ -324,6 +325,12 @@ preprocess <- function(applicant, verbose=FALSE) {
       rigor_pub = type == "Publication" & P_Suitable == "Yes" & ind_missing < .95,
       impact_pub = type == "Publication" & (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
     )
+
+  # TODO: Semi-hotfix: As P_IndependentVerification might often be removed, set it to NA if it is missing
+  # Should be done for all central variables?
+  if (!"P_IndependentVerification" %in% colnames(applicant$indicators)) {
+    applicant$indicators$P_IndependentVerification <- NA
+  }
 
   applicant$rigor_pubs  <- applicant$indicators |> filter(rigor_pub == TRUE)
   applicant$impact_pubs <- applicant$indicators |> filter(impact_pub == TRUE)

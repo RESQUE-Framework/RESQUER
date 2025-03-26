@@ -16,6 +16,7 @@ format:
       gutter-width: 1.5rem
 params:
   json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+  anonymous: true
   clear_cache: false
 ---
 

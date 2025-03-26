@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.0.json"
 ---
 
 
@@ -85,15 +85,27 @@ if (is.na(applicant$meta$ORCID)) {
 
 ```{r overview_table}
 overview_tab <- data.frame(
-  col1 = c("Name", "Analysis date", "Academic age (years since PhD, minus child care etc.)", "# of analysed outputs", "Package version"),
+  col1 = c("Name", "Analysis date", "Academic age (years since PhD, minus child care etc.)", "# of analysed outputs"),
   col2 = c(
     applicant$meta$FullName, 
     as.Date(applicant$meta$date_analysis) |> as.character(), 
     paste0(applicant$meta$AcademicAge, " (PhD: ", applicant$meta$YearPhD, "; subtracted years: ", applicant$meta$AcademicAgeBonus, ")"),
-    nrow(applicant$indicators),
-    packageVersion("RESQUER") |> as.character()
+    nrow(applicant$indicators)
   )
 )
+
+# add all extra variable that have been added to core-meta to the table
+# ------------------------------------------------------------
+extra_meta <- names(applicant$meta)
+
+# remove unnecessary variables
+extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis")]
+
+for (i in extra_meta) {
+  overview_tab <- rbind(overview_tab, c(i, applicant$meta[i] |> as.character()))
+}
+
+
 # Apply dark grey text color to all cells
 overview_tab[] <- lapply(overview_tab, function(x) {
   cell_spec(x, color = "darkgrey")
@@ -418,6 +430,9 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 
 *Move your mouse over the circles to see the exact values.*
 
+<!-- TODO: remove the empty circle of "Correctness of computational results..." if this is empty
+-->
+
 <div style="text-align: center;">
 
 | Open Data Available | Open Material available | Preregistration available | Reproducible Code & Verification available | Correctness of computational results has been independently verified
@@ -724,6 +739,11 @@ if (length(colnames_with_NotApplicable) > 0) {
 }
 ```
 
+---
+
+*RESQUER package version: `r packageVersion("RESQUER") |> as.character()`*
+
+---
 
 
 
