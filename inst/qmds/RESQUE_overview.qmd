@@ -15,6 +15,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
+  anonymous: true
   clear_cache: false
 ---
 
