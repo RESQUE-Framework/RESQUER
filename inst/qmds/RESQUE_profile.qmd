@@ -408,9 +408,19 @@ if (!all(applicant$credit$Degree == "NoRole")) {
 # Contributorship profile (CRediT roles)
 
 Based on ", nrow(applicant$indicators), " submitted publications, this is the self-reported contributorship profile:  
+
+::: {.panel-tabset}
+
+## Full CRediT profile
 "))
   
-  credit_barchart(applicant$credit, ordered=FALSE)  
+  credit_barchart(applicant$credit, ordered=FALSE) |> print()
+  
+  cat("\n\n## Compact CRediT profile\n")
+  
+  credit_barchart(applicant$credit, ordered=FALSE, compact=TRUE)  |> print()
+  
+  cat("\n:::")
   
 } else {
   cat("
@@ -420,7 +430,6 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
   hideCRediT <- TRUE
 }
 ```
-
 
 
 # Indicators of Research Transparency and Reproducibility

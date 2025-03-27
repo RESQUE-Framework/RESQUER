@@ -267,6 +267,26 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   applicant$credit$Role_ordered <- factor(applicant$credit$Role, levels = rev(rownames(applicant$credit_ordered)))
 
+  # for the compact display: group factor levels
+
+  applicant$credit <- applicant$credit %>%
+    mutate(Role_collapsed = fct_recode(Role,
+       "Analysis" = "Data Curation",
+       "Analysis" = "Formal Analysis",
+       "Analysis" = "Investigation",
+       "Analysis" = "Methodology",
+       "Analysis" = "Software",
+       "Conceptualization" = "Conceptualization",
+       "Writing" = "Visualization",
+       "Writing" = "Writing: Original draft",
+       "Writing" = "Writing: Review & Editing",
+       "Administration" = "Funding Acquisition",
+       "Administration" = "Project Administration",
+       "Administration" = "Resources",
+       "Administration" = "Supervision",
+       "Administration" = "Validation"
+    ))
+
   # The "CRediT involvement" categories
   # ---------------------------------------------------------------------
   # TODO: Refactor into function
