@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparkcharts.R
 \name{get_color}
 \alias{get_color}
-\title{Convert RRS values to green-red color colding (vectorized)}
+\title{Convert RRS values to green-red color coding (vectorized)}
 \usage{
 get_color(values)
 }

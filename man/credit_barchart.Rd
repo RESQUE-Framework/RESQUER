@@ -4,12 +4,14 @@
 \alias{credit_barchart}
 \title{Display a barchart with CRediT roles}
 \usage{
-credit_barchart(credit_dat, ordered = FALSE)
+credit_barchart(credit_dat, ordered = FALSE, compact = FALSE)
 }
 \arguments{
 \item{credit_dat}{The raw data in the format of the \code{applicant()$credit} field. This is a data frame with two relevant columns: \code{Role} (the CRediT role) and \code{Degree} (one of "Lead", "Equal", "Support", "NoRole", or "not applicable"). Roles can appear multiple times (e.g., for multiple papers) and will be aggregated in the plot.}
 
 \item{ordered}{If \code{FALSE}, keep alphabetical order. If \code{TRUE}, sort by strongest contribution.}
+
+\item{compact}{If \code{FALSE}, show all 14 roles. If \code{TRUE}, aggregate the 14 roles into 4 categories.}
 }
 \description{
 Display a barchart with CRediT roles
