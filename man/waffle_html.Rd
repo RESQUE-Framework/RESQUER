@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparkcharts.R
 \name{waffle_html}
 \alias{waffle_html}
-\title{Generate an HTML \if{html}{\out{<img>}} tag embedding a Waffle plot using R}
+\title{Generate an HTML \if{html}{\out{<div>}} tag embedding a Waffle plot using R with optional emoji support}
 \usage{
 waffle_html(
   values,
@@ -10,7 +10,9 @@ waffle_html(
   rows = 1,
   colors = c("#1da412", "#1da412", "#c51819", "#C7C7C7"),
   width_px = 120,
-  gap_px = 2
+  gap_px = 2,
+  emojis = NULL,
+  font_size_px = 20
 )
 }
 \arguments{
@@ -27,16 +29,25 @@ waffle_html(
 \item{width_px}{An integer specifying the width of the output image in pixels}
 
 \item{gap_px}{The gap between blocks in pixels}
+
+\item{emojis}{A character vector of emojis to use instead of colored blocks. If NULL (default), regular colored blocks are used.}
+
+\item{font_size_px}{An integer specifying the font size for emojis in pixels. Only used if emojis are provided.}
 }
 \value{
-A character string containing an HTML \if{html}{\out{<img>}} tag embedding the Waffle plot
+A character string containing an HTML string representing the waffle plot
 }
 \description{
 This is a workaround to embed small waffle plots in a sparkline style into
-a kable.
+a kable. Now supports displaying custom emojis instead of colored blocks.
 }
 \examples{
+# Standard colored blocks
 values <- c(10, 20, 15)
 waffle_html(values = values)
+
+# Using emojis instead
+values <- c(3, 7)
+waffle_html(values = values, emojis = c("⭐️", "▢"))
 
 }

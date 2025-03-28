@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.0.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
 ---
 
 
