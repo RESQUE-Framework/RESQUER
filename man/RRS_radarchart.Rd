@@ -6,18 +6,16 @@
 \usage{
 RRS_radarchart(
   RRS,
-  title = "",
   overall_score = FALSE,
   minimal = FALSE,
-  show.legend = TRUE,
+  show.legend = FALSE,
   show.n_pub = TRUE,
+  show.years = TRUE,
   base_size = 14
 )
 }
 \arguments{
 \item{RRS}{The output from the \code{compute_RRS} function.}
-
-\item{title}{The main title for the plot.}
 
 \item{overall_score}{Show the overall score in the plot?}
 
@@ -27,7 +25,11 @@ RRS_radarchart(
 
 \item{show.n_pub}{Show the number of publication on which the chart is based?}
 
+\item{show.years}{Show a mini histogram to the right with the publication years?}
+
 \item{base_size}{Base font size}
+
+\item{title}{The main title for the plot.}
 }
 \value{
 A radar chart visualizing the rigor profile for the applicant, showing the distribution of scores across different dimensions.
@@ -45,7 +47,7 @@ radar_dat <- data.frame(
   xend = 1:5,
   xmid=0:4 + 0.5
 )
-RRS <- list(radar_dat=radar_dat, overall_score=0.5, n_papers=4)
+RRS <- list(radar_dat=radar_dat, overall_score=0.5, n_papers=4, publication_years=c(2004, 2007, 2015, 2015))
 RRS_radarchart(RRS)
 
 }

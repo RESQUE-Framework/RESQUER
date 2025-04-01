@@ -51,7 +51,7 @@ dat1 <- tibble(
   xmid = (xstart + xend)/2
 )
 RRS <- list(radar_dat=dat1, overall_score=TRUE, n_papers=10)
-RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE)
+RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE, show.years = FALSE)
 ```
 
 
@@ -73,7 +73,7 @@ dat1 <- tibble(
   xmid = (xstart + xend)/2
 )
 RRS <- list(radar_dat=dat1, overall_score=TRUE, n_papers=10)
-RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE)
+RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE, show.years = FALSE)
 ```
 
 ## "Demonstrating expertise: A lot of potential that has been realized"
@@ -94,7 +94,7 @@ dat1 <- tibble(
   xmid = (xstart + xend)/2
 )
 RRS <- list(radar_dat=dat1, overall_score=TRUE, n_papers=10)
-RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE)
+RRS_radarchart(RRS, show.legend = FALSE, show.n_pub = FALSE, show.years = FALSE)
 ```
 
 

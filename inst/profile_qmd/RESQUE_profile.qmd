@@ -9,7 +9,7 @@ format:
 params:
   FullName: "Max Mustermann Demoprofile"
   json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
-  show_inter: false
+  show_inter: true
 ---
 
 
@@ -38,6 +38,13 @@ knit_hooks$set(kable = function(x, options) {
   kable(x, format = "html") %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 })
+
+RED <- "#e4090c"
+DARKRED <- "#c51819"
+YELLOW <- "#f7cf07"
+GREEN <- "#3af72c"
+DARKGREEN <- "#1da412"
+LIGHTGREY <- "#e8e8e8"
 ```
 
 
@@ -66,7 +73,7 @@ library(knitr)
 library(openalexR)
 library(tibble)
 library(OAmetrics)
-library(sparkline)
+library(DT)
 
 if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
@@ -435,42 +442,106 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 
 # Indicators of Research Transparency and Reproducibility
 
-
-## Overview of open research practices
-
-*Move your mouse over the circles to see the exact values.*
-
-<!-- TODO: remove the empty circle of "Correctness of computational results..." if this is empty
--->
-
-<div style="text-align: center;">
-
-| Open Data Available | Open Material available | Preregistration available | Reproducible Code & Verification available | Correctness of computational results has been independently verified
-|-|-|-|-|-
-| `r sparkpie(applicant$OS_pie$OpenData)`  | `r sparkpie(applicant$OS_pie$OpenMaterial)` | `r sparkpie(applicant$OS_pie$Prereg, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))`| `r sparkpie(applicant$OS_pie$OpenCode)` | `r sparkpie(applicant$OS_pie$Repro)`  
-
-</div>
-
-*Red = not available; shades of green = available to increasing degree; grey = not applicable*
-
-
-## Rigor profile overview
-
 ::: {.callout-note title="Methods: Computation of the relative rigor score" collapse="true"}
 The relative rigor score (RRS) is computed as a “percentage of maximal points” (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
 :::
 
-::: {.callout-note title="How to read the relative rigor score" collapse="true"}
+The following charts are based on `r nrow(applicant$rigor_pubs)` scoreable publications.
+
+**What is a "good" Relative Rigor Score?**
+
+The RESQUE indicators cover current best practices, which often are not yet used broadly. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
+
+- 10-20% can be considered average
+- 30% is very good
+- \>40% is excellent.
+
+
+::: {.callout-note collapse="true" title="How to read the small charts"}
+
+- *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
+- *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
+
+![](img/Overview_chart_explanation1.png){width=450}
+:::
+
+```{r overview_transparency}
+
+tab_RRS <- data.frame(FullName=applicant$meta$FullName)
+
+tab_RRS$RRS_overall = applicant$RRS$overall_score
+
+tab_RRS$RRS_OD = applicant$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score)
+tab_RRS$RRS_OM = applicant$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score)
+tab_RRS$RRS_PreReg = applicant$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score)
+tab_RRS$RRS_OC = applicant$RRS$sector_scores %>% filter(str_detect(category, "Reproducible Code")) %>% pull(rel_score)
+
+tab_RRS[, "Relative Rigor Score"] <- NA
+RRS_vec <- c(
+  tab_RRS$RRS_OD,
+  tab_RRS$RRS_OM,
+  tab_RRS$RRS_PreReg,
+  tab_RRS$RRS_OC)
+
+RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
+tab_RRS[1, "Relative Rigor Score"] <- circle_layer(
+    value = tab_RRS$RRS_overall[1], 
+    colors = get_color(RRS_vec_sorted), 
+    weights = applicant$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
+    outer_width = 60)
+
+
+tab_RRS[, "Open Data"] <- paste(
+  applicant$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+  sapply(tab_RRS$RRS_OD, ministack, height=14)
+)
+
+
+tab_RRS[, "Open Material"] <- paste(
+  applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+  sapply(tab_RRS$RRS_OM, ministack, height=14)
+)
+
+tab_RRS[, "Preregistration"] <- paste(
+  applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(),
+  sapply(tab_RRS$RRS_PreReg, ministack, height=14)
+)
+
+if (all(is.na(applicant$rigor_pubs$P_IndependentVerification))) {
+  code_heading <- "Reproducible Code"
+} else {
+  code_heading <- "Reproducible Code \n& Verification"
+}
+tab_RRS[, code_heading] <- paste(
+  applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+  sapply(tab_RRS$RRS_OC, ministack, height=14)
+)
+
+
+
+# dom = 't', # Removes "Show X entries" and search bar
+# The RRS_* columns are needed for sorting, but should not be displayed
+datatable(
+  tab_RRS[, 7:11], 
+  escape=FALSE, 
+  rownames=FALSE,
+  width = '100%',
+  options = list(
+    ordering = FALSE,
+    #scrollCollapse = TRUE,
+    dom = 't', 
+    scrollX = FALSE)
+)
+```
+
+
+::: {.callout-note title="How to read the radar chart" collapse="true"}
 The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality.
 The radar chart with the **Relative Rigor Score** helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
 
 - The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If many indicators are flagged as "not applicable", then the maximal points get reduced and the sector gets more narrow.
 - The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
 - The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
-- The indicators cover current best practices, which often are not used broadly yet in the community. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
-  - 10-20% can be considered average
-  - 30% is very good
-  - \>40% is excellent.
 :::
 
 ```{r Radarchart}
@@ -479,6 +550,8 @@ if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
   RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
 }
 ```
+
+
 
 
 

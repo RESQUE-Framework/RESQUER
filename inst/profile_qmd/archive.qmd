@@ -1,0 +1,19 @@
+---
+title: "archive"
+output: html_document
+---
+
+
+# the old pie charts
+
+<div style="text-align: center;">
+
+| Open Data Available | Open Material available | Preregistration available | Reproducible Code & Verification available | Correctness of computational results has been independently verified
+|-|-|-|-|-
+| `r sparkpie(applicant$OS_pie$OpenData)`  | `r sparkpie(applicant$OS_pie$OpenMaterial)` | `r sparkpie(applicant$OS_pie$Prereg, sliceColors=c("#EEEEEE", "red", "#00FF00", "#00FF00"))`| `r sparkpie(applicant$OS_pie$OpenCode)` | `r sparkpie(applicant$OS_pie$Repro)`  
+
+</div>
+
+*Red = not available; shades of green = available to increasing degree; grey = not applicable*
+
+

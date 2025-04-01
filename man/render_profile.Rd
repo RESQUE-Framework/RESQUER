@@ -2,7 +2,7 @@
 % Please edit documentation in R/render_profile.R
 \name{render_profile}
 \alias{render_profile}
-\title{Render an HTML or PDF profile of a single applicant}
+\title{Render an HTML profile of a single applicant}
 \usage{
 render_profile(json_path, show_inter = TRUE, output_file = NA, template = NA)
 }
@@ -11,7 +11,7 @@ render_profile(json_path, show_inter = TRUE, output_file = NA, template = NA)
 
 \item{show_inter}{Show/hide the section on internationality and interdisciplinarity}
 
-\item{output_file}{The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.}
+\item{output_file}{The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename and stores it in the same folder as the source json file.}
 
 \item{template}{The path to the .Rmd file with the profile. If set to \code{NA}(default), the package's built-in profile is used.}
 }
@@ -19,5 +19,5 @@ render_profile(json_path, show_inter = TRUE, output_file = NA, template = NA)
 The path to the rendered file
 }
 \description{
-Render an HTML or PDF profile of a single applicant
+Render an HTML profile of a single applicant
 }

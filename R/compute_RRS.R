@@ -37,7 +37,13 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   scores_all$category <- NA
   scores_all$category[str_detect(scores_all$indicator, "Data")] <- "Open Data"
   scores_all$category[str_detect(scores_all$indicator, "Prereg")] <- "Preregistration"
-  scores_all$category[str_detect(scores_all$indicator, "ReproducibleScripts|IndependentVerification")] <- "Reproducible Code \n& Verification"
+
+  if (all(str_detect(scores_all$indicator, "Verification")==FALSE)) {
+    scores_all$category[str_detect(scores_all$indicator, "ReproducibleScripts")] <- "Reproducible Code"
+  } else {
+    scores_all$category[str_detect(scores_all$indicator, "ReproducibleScripts|IndependentVerification")] <- "Reproducible Code \n& Verification"
+  }
+
   scores_all$category[str_detect(scores_all$indicator, "Theorizing")] <- "Theorizing"
   scores_all$category[str_detect(scores_all$indicator, "OpenMaterials")] <- "Open Materials"
 
