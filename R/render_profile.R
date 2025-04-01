@@ -1,6 +1,7 @@
 #' Render an HTML or PDF profile of a single applicant
 #'
 #' @param json_path The path to the applicant's JSON file
+#' @param show_inter Show/hide the section on internationality and interdisciplinarity
 #' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.
 #' @param template The path to the .Rmd file with the profile. If set to `NA`(default), the package's built-in profile is used.
 #' @return The path to the rendered file
@@ -8,11 +9,11 @@
 #' @importFrom quarto quarto_render
 #' @importFrom jsonlite read_json
 #'
-render_profile <- function(json_path, output_file = NA, template = NA) {
+render_profile <- function(json_path, show_inter=TRUE, output_file = NA, template = NA) {
 
   # Path to the qmd template
   if (is.na(template)) {
-    template <- system.file("qmds", "RESQUE_profile.qmd", package = "RESQUER")
+    template <- system.file("profile_qmd", "RESQUE_profile.qmd", package = "RESQUER")
   }
 
   old_wd <- getwd()
@@ -40,8 +41,10 @@ render_profile <- function(json_path, output_file = NA, template = NA) {
                     execute_dir = temp_dir,
                     execute_params = list(
                       FullName = FullName,
-                      json_path = full_json_path)
+                      json_path = full_json_path,
+                      show_inter = show_inter
                     )
+                  )
 
   setwd(old_wd)
 

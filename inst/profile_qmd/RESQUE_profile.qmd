@@ -9,6 +9,7 @@ format:
 params:
   FullName: "Max Mustermann Demoprofile"
   json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
+  show_inter: false
 ---
 
 
@@ -626,20 +627,15 @@ if (nrow(low_impact) > 0) {
 :::
 
 
-# Internationality and Interdisciplinarity
 
-::: {.callout-note title="Methods: Computation of Internationality and Interdisciplinarity" collapse="true"}
-The analysis is only based on the submitted publications (not the entire publication list) of the applicant. Publication and co-author data is retrieved from the OpenAlex data base. Note that preprints are not indexed by OpenAlex and therefore do not contribute to this analysis.
+<!-- Conditionally render the section on interdisciplinarity -->
+```{r inter_section}
+#| eval: !expr length(applicant$internationalization) > 1 & params$show_inter == TRUE
+#| results: asis
 
-- *Internationality*: All co-authors are retrieved from OpenAlex with their current affiliation. The index is measured by Pielou's Evenness Index (Pielou 1966) of the country codes of all co-authors. It considers the 10 most frequent country codes.
-- *Interdisciplinarity* is measured by the Evenness Index of the fields (as classified by OpenAlex) of the publications. It considers the 6 most frequent fields.
+system.file("profile_qmd/Inter_intro.md", package="RESQUER") |>
+  readLines() |> paste(collapse = "\n") |> cat()
 
-The evenness indexes are normalized to a scale from 0 (no diversity, everything is one category) to 1 (maximum diversity, all categories are equally represented). It is computed as a normalized Shannon entropy.
-:::
-
-
-
-```{r compute_internationality_index}
 if (!is.na(applicant$internationalization$international_evenness)) {
   n_subfields <- min(nrow(applicant$interdisciplinarity$subfields_tab), 6)
 
@@ -662,11 +658,6 @@ if (!is.na(applicant$interdisciplinarity$interdisc_evenness)) {
   interdisciplinarity_string <- "Interdisciplinarity could not be computed."
 }
 
-```
-
-
-```{r}
-#| results: asis
 
 if (!is.na(applicant$internationalization$international_evenness)) {
 cat(paste0('

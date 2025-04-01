@@ -1,13 +1,3 @@
-<!-- Conditionally render the section on interdisciplinarity -->
-```{r hide_inter_section}
-#| results: asis
-
-if (length(applicant$internationalization) > 1) {
-readLines(system.file("qmds/Inter_intro.md", package="RESQUER"))
-}
-```
-
-
 # Internationality and Interdisciplinarity
 
 ::: {.callout-note title="Methods: Computation of Internationality and Interdisciplinarity" collapse="true"}
