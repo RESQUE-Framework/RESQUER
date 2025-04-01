@@ -29,6 +29,7 @@ Imports:
   janitor,
   quarto,
   sparkline,
+  patchwork,
   OAmetrics (>= 0.3.1)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

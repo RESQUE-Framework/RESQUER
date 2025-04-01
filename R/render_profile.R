@@ -1,8 +1,8 @@
-#' Render an HTML or PDF profile of a single applicant
+#' Render an HTML profile of a single applicant
 #'
 #' @param json_path The path to the applicant's JSON file
 #' @param show_inter Show/hide the section on internationality and interdisciplinarity
-#' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.
+#' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename and stores it in the same folder as the source json file.
 #' @param template The path to the .Rmd file with the profile. If set to `NA`(default), the package's built-in profile is used.
 #' @return The path to the rendered file
 #' @export
