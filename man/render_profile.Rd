@@ -4,10 +4,12 @@
 \alias{render_profile}
 \title{Render an HTML or PDF profile of a single applicant}
 \usage{
-render_profile(json_path, output_file = NA, template = NA)
+render_profile(json_path, show_inter = TRUE, output_file = NA, template = NA)
 }
 \arguments{
 \item{json_path}{The path to the applicant's JSON file}
+
+\item{show_inter}{Show/hide the section on internationality and interdisciplinarity}
 
 \item{output_file}{The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename.}
 
