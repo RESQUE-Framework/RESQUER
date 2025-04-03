@@ -108,7 +108,7 @@ overview_tab <- data.frame(
 extra_meta <- names(applicant$meta)
 
 # remove unnecessary variables
-extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis")]
+extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis", "MeritStatement")]
 
 for (i in extra_meta) {
   overview_tab <- rbind(overview_tab, c(i, applicant$meta[i] |> as.character()))
@@ -158,7 +158,7 @@ We took care not to systematically disadvantage certain fields or research style
 <div style="font-size:90%; background:#fffce6; ">
 ```{r}
 #| results: asis
-cat(applicant$meta$P_MeritStatement)
+cat(applicant$meta$MeritStatement)
 ```
 </div>
 
