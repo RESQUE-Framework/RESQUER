@@ -3,7 +3,7 @@
 #' @param json_path The path to the applicant's JSON file
 #' @param show_inter Show/hide the section on internationality and interdisciplinarity
 #' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename and stores it in the same folder as the source json file.
-#' @param template The path to the .Rmd file with the profile. If set to `NA`(default), the package's built-in profile is used.
+#' @param template The path to the .qmd file with the profile. If set to `NA`(default), the package's built-in profile is used.
 #' @return The path to the rendered file
 #' @export
 #' @importFrom quarto quarto_render
@@ -21,8 +21,12 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
   temp_dir <- paste0(tempdir(), "/RESQUEPROFILE")
   if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
 
-  # copy template to the temp_dir, render there
+  # copy template and extra files to the temp_dir, render there
   file.copy(template, temp_dir)
+
+  dir.create(paste0(temp_dir, "/assets"), recursive = TRUE, showWarnings = FALSE)
+  list.files(paste0(dirname(template), "/assets"), recursive = TRUE, full.names = TRUE) |>
+    file.copy(paste0(temp_dir, "/assets"), overwrite = TRUE)
 
   # get name of applicant:
   js <- read_json(json_path, simplifyVector = TRUE)

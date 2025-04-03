@@ -13,7 +13,7 @@ render_profile(json_path, show_inter = TRUE, output_file = NA, template = NA)
 
 \item{output_file}{The file name (optionally including a path) of the output report. If NA, it uses the last name from the applicant plus the current date-time as filename and stores it in the same folder as the source json file.}
 
-\item{template}{The path to the .Rmd file with the profile. If set to \code{NA}(default), the package's built-in profile is used.}
+\item{template}{The path to the .qmd file with the profile. If set to \code{NA}(default), the package's built-in profile is used.}
 }
 \value{
 The path to the rendered file
