@@ -11,7 +11,8 @@ RRS_radarchart(
   show.legend = FALSE,
   show.n_pub = TRUE,
   show.years = TRUE,
-  base_size = 14
+  base_size = 14,
+  scale = "area"
 )
 }
 \arguments{
@@ -29,7 +30,7 @@ RRS_radarchart(
 
 \item{base_size}{Base font size}
 
-\item{title}{The main title for the plot.}
+\item{scale}{Should the sectors be filled in a \code{"linear"} way (i.e., 50\% is 50\% of the radial height), or to the \code{"area"} (i.e., 50\% is 50\% of the area). Default = \code{"area"}.}
 }
 \value{
 A radar chart visualizing the rigor profile for the applicant, showing the distribution of scores across different dimensions.
@@ -42,12 +43,13 @@ radar_dat <- data.frame(
   dimension = c("Open Data", "Open Materials", "Preregistration",
     "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
   max_points = rep(10, 5),
-  rel_score=c(0.5, 0.3, 0.1, 0.6, 0.2),
+  rel_score=c(1, 0.75, 0.5, 0.25, 0.1),
   xstart = 0:4,
   xend = 1:5,
   xmid=0:4 + 0.5
 )
 RRS <- list(radar_dat=radar_dat, overall_score=0.5, n_papers=4, publication_years=c(2004, 2007, 2015, 2015))
 RRS_radarchart(RRS)
+RRS_radarchart(RRS, scale="linear")
 
 }

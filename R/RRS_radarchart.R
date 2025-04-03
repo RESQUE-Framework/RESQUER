@@ -9,6 +9,7 @@
 #' @param show.legend Show the legend to the right?
 #' @param show.years Show a mini histogram to the right with the publication years?
 #' @param show.n_pub Show the number of publication on which the chart is based?
+#' @param scale Should the sectors be filled in a `"linear"` way (i.e., 50% is 50% of the radial height), or to the `"area"` (i.e., 50% is 50% of the area). Default = `"area"`.
 #'
 #' @return A radar chart visualizing the rigor profile for the applicant, showing the distribution of scores across different dimensions.
 #'
@@ -22,20 +23,21 @@
 #'   dimension = c("Open Data", "Open Materials", "Preregistration",
 #'     "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
 #'   max_points = rep(10, 5),
-#'   rel_score=c(0.5, 0.3, 0.1, 0.6, 0.2),
+#'   rel_score=c(1, 0.75, 0.5, 0.25, 0.1),
 #'   xstart = 0:4,
 #'   xend = 1:5,
 #'   xmid=0:4 + 0.5
 #' )
 #' RRS <- list(radar_dat=radar_dat, overall_score=0.5, n_papers=4, publication_years=c(2004, 2007, 2015, 2015))
 #' RRS_radarchart(RRS)
+#' RRS_radarchart(RRS, scale="linear")
 #'
 #' @importFrom ggplot2 ggplot geom_rect coord_polar geom_hline geom_text xlab ylab ggtitle scale_x_continuous scale_y_continuous theme_void guides scale_fill_brewer
 #' @importFrom dplyr %>%
 #' @importFrom scales brewer_pal
 #'
 #' @export
-RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=FALSE, show.n_pub=TRUE, show.years=TRUE, base_size=14) {
+RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=FALSE, show.n_pub=TRUE, show.years=TRUE, base_size=14, scale="area") {
 
   # Standardized and categorized rigor scores:
   # TODO: Standarize within category, not over all
@@ -45,8 +47,15 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
   #  labels=c("low50", "top50", "top20", "top10"))
 
   # p1: Radar chart
+
+  # transform to scale to area
+  RRS$radar_dat$rel_score2 <- RRS$radar_dat$rel_score
+  if (scale=="area") {
+    RRS$radar_dat$rel_score2 <- sqrt(RRS$radar_dat$rel_score)
+  }
+
   p1 <- RRS$radar_dat %>% ggplot() +
-    geom_rect(aes(xmin = xstart, xmax = xend, ymin = 0, ymax = rel_score, fill = dimension), show.legend = show.legend) +
+    geom_rect(aes(xmin = xstart, xmax = xend, ymin = 0, ymax = rel_score2, fill = dimension), show.legend = show.legend) +
     coord_polar("x", start = 0) +
     xlab("") + ylab("") +
     scale_x_continuous(labels = NULL, breaks = NULL) +
@@ -57,7 +66,7 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
 
   if (!minimal) {
     p1 <- p1 +
-      geom_rect(aes(xmin = xstart, xmax = xend, ymin = rel_score, ymax = 1), fill = "#EFEFEF", color = "#DEDEDE") +
+      geom_rect(aes(xmin = xstart, xmax = xend, ymin = rel_score2, ymax = 1), fill = "#EFEFEF", color = "#DEDEDE") +
       guides(fill = guide_legend("Rigor Domain")) +
       scale_fill_brewer(palette = "Set3") +
       geom_text(aes(x = xmid, y = 1, label = dimension), vjust = 0, hjust = 0.5, size = base_size / 5)

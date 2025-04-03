@@ -7,7 +7,7 @@ format:
     toc: true
     toc-location: left
     df-print: paged
-    css: overview_styles.css
+    css: assets/overview_styles.css
     page-layout: full
     grid:
       sidebar-width: 250px
@@ -15,10 +15,11 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+  json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
   anonymous: true
   clear_cache: false
 ---
+
 
 ```{r setup0}
 #| include: false
@@ -112,14 +113,14 @@ Theory_norms <- c(.1, .2)
 #| results: "asis"
 
 
-#params$json_path = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+#params$json_folder = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
 
-if (is.null(params$json_path)) {
+if (is.null(params$json_folder)) {
   # TODO: Load demo profiles if no folder with jsons is provided
   #applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 } else {
   
-  cache_file <- paste0(params$json_path, "/applicant_data.RData")
+  cache_file <- paste0(params$json_folder, "/applicant_data.RData")
   
   # Check if a cached, pre-computed file exists
   if (file.exists(cache_file)) {
@@ -128,7 +129,7 @@ if (is.null(params$json_path)) {
   } else {
     use_cache <- FALSE
     # Read all jsons in that folder
-    json_files <- list.files(params$json_path, pattern="*.json", full.names=TRUE)
+    json_files <- list.files(params$json_folder, pattern="*.json", full.names=TRUE)
     
     applicant_list <- list()
     
@@ -136,12 +137,6 @@ if (is.null(params$json_path)) {
         # print(paste0("Reading file #", i))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)
         applicant_list[[i]] <- preprocess(applicant=R, verbose=FALSE)
-        
-        if (params$anonymous == TRUE) {
-          applicant_list[[i]]$meta$LastName <- index_to_letters(i)
-          applicant_list[[i]]$meta$FirstName <- ""
-          applicant_list[[i]]$meta$FullName <- index_to_letters(i)
-        }
     }
     
     # `store` stores more meta-information on the analysis
@@ -150,6 +145,14 @@ if (is.null(params$json_path)) {
     )
     
     save(applicant_list, store, file=cache_file)
+  }
+  
+  if (params$anonymous == TRUE) {
+    for (i in 1:length(applicant_list)) {
+      applicant_list[[i]]$meta$LastName <- index_to_letters(i)
+      applicant_list[[i]]$meta$FirstName <- ""
+      applicant_list[[i]]$meta$FullName <- index_to_letters(i)
+    }
   }
   
 }
@@ -188,7 +191,7 @@ datatable(
 
 ## Research Transparency
 
-You can click on the arrows in each column header (<img src="img/DT_arrows.png" />) to sort by the respective Rigor Score.
+You can click on the arrows in each column header (<img src="assets/DT_arrows.png" />) to sort by the respective Rigor Score.
 
 The Overall Rigor Score reflects current best practices, many of which are not yet widely adopted in the research community. As a result, even high-quality papers may receive relatively modest scores. Based on preliminary evaluation studies, the following rough benchmarks can be used to interpret the scores:
 
@@ -203,7 +206,7 @@ The Overall Rigor Score reflects current best practices, many of which are not y
 - *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
 - *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
 
-![](img/Overview_chart_explanation1.png){width=450}
+![](assets/Overview_chart_explanation1.png){width=450}
 :::
 
 ```{r overview_table2b}

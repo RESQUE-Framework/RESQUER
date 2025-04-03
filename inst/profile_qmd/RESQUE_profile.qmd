@@ -17,6 +17,7 @@ params:
 #| include: false
 
 # "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
+# "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
 
 library(knitr)
 library(kableExtra)
@@ -462,7 +463,7 @@ The RESQUE indicators cover current best practices, which often are not yet used
 - *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
 - *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
 
-![](img/Overview_chart_explanation1.png){width=450}
+![](assets/Overview_chart_explanation1.png){width=450}
 :::
 
 ```{r overview_transparency}
@@ -706,7 +707,7 @@ if (nrow(low_impact) > 0) {
 #| eval: !expr length(applicant$internationalization) > 1 & params$show_inter == TRUE
 #| results: asis
 
-system.file("profile_qmd/Inter_intro.md", package="RESQUER") |>
+system.file("profile_qmd/assets/Inter_intro.md", package="RESQUER") |>
   readLines() |> paste(collapse = "\n") |> cat()
 
 if (!is.na(applicant$internationalization$international_evenness)) {
