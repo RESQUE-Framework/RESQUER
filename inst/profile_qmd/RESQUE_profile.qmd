@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_kaiser_merged.json"
   show_inter: true
 ---
 
@@ -108,7 +108,7 @@ overview_tab <- data.frame(
 extra_meta <- names(applicant$meta)
 
 # remove unnecessary variables
-extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis", "MeritStatement")]
+extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis", "MeritStatement", "P_MeritStatement")]
 
 for (i in extra_meta) {
   overview_tab <- rbind(overview_tab, c(i, applicant$meta[i] |> as.character()))
@@ -153,14 +153,16 @@ We took care not to systematically disadvantage certain fields or research style
 :::
 
 
-## Overall Merit Statement
-
-<div style="font-size:90%; background:#fffce6; ">
-```{r}
+<!-- Conditionally render the section on Overall Merit Statement -->
+```{r OverallMeritStatement}
+#| eval: !expr is.null(applicant$meta$MeritStatement) == FALSE
 #| results: asis
+
+cat('## Overall Merit Statement
+<div style="font-size:90%; background:#fffce6; ">\n')
 cat(applicant$meta$MeritStatement)
+cat("\n</div>\n")
 ```
-</div>
 
 
 ## Submitted research outputs
