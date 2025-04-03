@@ -1,3 +1,19 @@
+get_directory <- function(path) {
+  info <- file.info(path)
+
+  if (is.na(info$isdir)) {
+    stop("Path does not exist.")
+  }
+
+  if (!info$isdir) {
+    warning("The path points to a file. Returning its containing directory.")
+    return(dirname(path))
+  }
+
+  return(normalizePath(path, mustWork = TRUE))
+}
+
+
 #' Render an HTML overview of multiple applicants
 #'
 #' @param json_folder The path to a folder with multiple JSON files
@@ -23,7 +39,7 @@ render_overview <- function(json_folder, output_file = NA, template = NA, anonym
   }
 
   old_wd <- getwd()
-  full_json_folder <- normalizePath(json_folder)
+  full_json_folder <- get_directory(json_folder)
   temp_dir <- paste0(tempdir(), "/RESQUEOVERVIEW")
   if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
 
