@@ -15,7 +15,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+  json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt"
   anonymous: true
   clear_cache: false
 ---
@@ -221,7 +221,7 @@ tab_RRS$RRS_overall = sapply(applicant_list, function(x) {
 tab_RRS$RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score))
 tab_RRS$RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score))
 tab_RRS$RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score))
-tab_RRS$RRS_OC = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Reproducible Code \n& Verification") %>% pull(rel_score))
+tab_RRS$RRS_OC = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(str_detect(category, "Reproducible Code")) %>% pull(rel_score))
 
 tab_RRS[, "Overall Rigor"] <- NA
 for (i in 1:nrow(tab_RRS)) {
@@ -256,7 +256,12 @@ tab_RRS[, "Preregistration"] <- paste(
   sapply(tab_RRS$RRS_PreReg, ministack, height=14)
 )
 
-tab_RRS[, "Reproducible Code \n& Verification"] <- paste(
+if (all(is.na(applicant_list[[1]]$rigor_pubs$P_IndependentVerification))) {
+  code_heading <- "Reproducible Code"
+} else {
+  code_heading <- "Reproducible Code \n& Verification"
+}
+tab_RRS[, code_heading] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
   sapply(tab_RRS$RRS_OC, ministack, height=14)
 )
@@ -278,7 +283,7 @@ datatable(
       list(targets = "Open Data", orderData = 3),  # Sort OD by RRS_OD (which is the 5th column)
       list(targets = "Open Material", orderData = 4),
       list(targets = "Preregistration", orderData = 5),
-      list(targets = "Reproducible Code \n& Verification", orderData = 6),  
+      list(targets = code_heading, orderData = 6),  
       
       list (targets = c(2:6), visible = FALSE) # Hide numeric sorting columns
     ))
