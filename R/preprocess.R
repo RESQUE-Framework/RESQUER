@@ -385,11 +385,27 @@ preprocess <- function(applicant, verbose=FALSE) {
 
 
   #----------------------------------------------------------------
-  # Retrieve submitted works from OpenAlex
+  # Retrieve submitted works from OpenAlex (with error handling)
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0) {
-    OAlex_papers <- oa_fetch(entity = "works", doi = normalize_dois(applicant$impact_pubs$doi))
+    # Safely fetch works; catch API errors or empty responses
+    fetch_res <- tryCatch(
+      oa_fetch(entity = "works", doi = normalize_dois(applicant$impact_pubs$doi)),
+      error = function(e) {
+        warning("OpenAlex API request failed: ", conditionMessage(e))
+        return(NULL)
+      }
+    )
+    if (is.null(fetch_res) || nrow(fetch_res) == 0) {
+      # No data fetched, skip OpenAlex metrics
+      applicant$OAlex_papers <- NA
+      applicant$preprocessing_notes <- c(
+        applicant$preprocessing_notes,
+        "OpenAlex fetch failed or returned no records; team size and impact metrics unavailable."
+      )
+    } else {
+      OAlex_papers <- fetch_res
 
     #cat(paste0(nrow(OAlex_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
 
@@ -403,12 +419,30 @@ preprocess <- function(applicant, verbose=FALSE) {
       applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
     }
 
-    OAlex_papers$n_authors <- sapply(OAlex_papers$author, nrow)
+    # Determine author list column (author or authorships) and compute number of authors
+    if ("author" %in% names(OAlex_papers)) {
+      author_list <- OAlex_papers$author
+    } else if ("authorships" %in% names(OAlex_papers)) {
+      author_list <- OAlex_papers$authorships
+    } else {
+      author_list <- rep(list(NA), nrow(OAlex_papers))
+    }
+    # Compute number of authors per paper; if structure unexpected, return NA
+    n_authors <- vapply(author_list, function(x) {
+      if (is.data.frame(x)) nrow(x) else NA_integer_
+    }, integer(1))
+    OAlex_papers$n_authors <- n_authors
+    # Categorize team sizes
+    OAlex_papers$team_category <- cut(n_authors,
+                                      breaks = c(0, 1, 5, 15, Inf),
+                                      labels = c("Single authored",
+                                                 "Small team (<= 5 co-authors)",
+                                                 "Large team (6-15 co-authors)",
+                                                 "Big Team (> 15 co-authors)"))
 
-    OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (> 15 co-authors)"))
-
-    applicant$OAlex_papers <- OAlex_papers
-    rm(OAlex_papers)
+      applicant$OAlex_papers <- OAlex_papers
+      rm(OAlex_papers)
+    }
   } else {
     applicant$OAlex_papers <- NA
   }
@@ -417,9 +451,27 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get FNCS
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
-    c_counts_psy_2001_2023 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2023.RDS", package="RESQUER"))
-    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2023, verbose=FALSE)
+  #----------------------------------------------------------------
+  # Get Field- and age-normalized citation scores (FNCS)
+  # Only if OAlex data is available
+  if (nrow(applicant$impact_pubs) > 0 &&
+      is.data.frame(applicant$OAlex_papers) &&
+      "doi" %in% names(applicant$OAlex_papers) &&
+      nrow(applicant$OAlex_papers) > 0) {
+    c_counts_psy_2001_2023 <- readRDS(
+      file = system.file("ref_set_psy/c_counts_psy_2001_2023.RDS", package="RESQUER")
+    )
+    fncs <- tryCatch(
+      FNCS(
+        dois = applicant$OAlex_papers$doi,
+        ref_set = c_counts_psy_2001_2023,
+        verbose = FALSE
+      ),
+      error = function(e) {
+        warning("FNCS computation failed: ", conditionMessage(e))
+        return(NA)
+      }
+    )
     applicant$FNCS <- fncs
   } else {
     applicant$FNCS <- NA
@@ -429,11 +481,18 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get TOP factor of the publication venues
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
-    TOP <- read.csv(system.file("extdata", "top-factor.csv", package="RESQUER"))
-
+  #----------------------------------------------------------------
+  # Get TOP factor of the publication venues
+  # Only if OAlex data is available
+  if (nrow(applicant$impact_pubs) > 0 &&
+      is.data.frame(applicant$OAlex_papers) &&
+      "issn_l" %in% names(applicant$OAlex_papers)) {
+    TOP <- read.csv(
+      system.file("extdata", "top-factor.csv", package="RESQUER"),
+      stringsAsFactors = FALSE
+    )
     applicant$TOP_journals <- TOP %>%
-      select(issn=Issn, Journal, Total) %>%
+      select(issn = Issn, Journal, Total) %>%
       filter(issn %in% applicant$OAlex_papers$issn_l)
     rm(TOP)
   } else {
@@ -467,19 +526,46 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get internationalization and interdisciplinarity scores
   #----------------------------------------------------------------
 
-  if (!is.null(applicant$meta$OA_author_id) & !is.na(applicant$meta$OA_author_id) & (nrow(applicant$impact_pubs) > 0)) {
-    nw <- get_network(works=applicant$OAlex_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
-
+  #----------------------------------------------------------------
+  # Get internationalization and interdisciplinarity scores (network)
+  #----------------------------------------------------------------
+  if (!is.null(applicant$meta$OA_author_id) && !is.na(applicant$meta$OA_author_id) && (nrow(applicant$impact_pubs) > 0)) {
+    # Wrap network computation to avoid errors if expected columns missing
+    nw <- tryCatch(
+      get_network(works = applicant$OAlex_papers,
+                  author.id = applicant$meta$OA_author_id,
+                  min_coauthorships = 1,
+                  verbose = FALSE),
+      error = function(e) {
+        warning("Could not compute network metrics: ", e$message)
+        # Return NA for all expected fields
+        list(
+          international_evenness = NA,
+          country_codes_repeated = NA,
+          internationalization_string = NA,
+          n_coauthors_international = NA,
+          n_coauthors_same_country = NA,
+          interdisc_evenness = NA,
+          primary_fields_tab_reduced = NA,
+          subfields_tab = NA,
+          topics_tab = NA,
+          interdisc_string = NA
+        )
+      }
+    )
+    # Populate internationalization
     applicant$internationalization <- list(
       international_evenness = nw$international_evenness,
       country_codes_repeated = nw$country_codes_repeated,
       internationalization_string = nw$internationalization_string,
       n_coauthors_international = nw$n_coauthors_international,
       n_coauthors_same_country = nw$n_coauthors_same_country,
-      perc_international = (nw$n_coauthors_international*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round(),
-      perc_same_country = (nw$n_coauthors_same_country*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round()
-
+      perc_international = round(nw$n_coauthors_international * 100 /
+                                 (nw$n_coauthors_international + nw$n_coauthors_same_country)),
+      perc_same_country = round(nw$n_coauthors_same_country * 100 /
+                             (nw$n_coauthors_international + nw$n_coauthors_same_country))
     )
+    # Populate interdisciplinarity
     applicant$interdisciplinarity <- list(
       interdisc_evenness = nw$interdisc_evenness,
       primary_fields_tab_reduced = nw$primary_fields_tab_reduced,
@@ -487,8 +573,8 @@ preprocess <- function(applicant, verbose=FALSE) {
       topics_tab = nw$topics_tab,
       interdisc_string = nw$interdisc_string
     )
-
   } else {
+    # No OA author ID or no impact publications: fill with NA
     applicant$internationalization <- list(
       international_evenness = NA,
       country_codes_repeated = NA,
@@ -497,7 +583,6 @@ preprocess <- function(applicant, verbose=FALSE) {
       n_coauthors_same_country = NA,
       perc_international = NA,
       perc_same_country = NA
-
     )
     applicant$interdisciplinarity <- list(
       interdisc_evenness = NA,
