@@ -21,3 +21,14 @@ The path to the rendered file
 \description{
 Render an HTML profile of a single applicant
 }
+\examples{
+\dontrun{
+# Render single profile
+render_profile("path_to_file/resque_Einstein.json")
+
+# Render all profiles in a folder
+for (f in list.files("path_to_folder", pattern="resque_.*\\\\.json", full.names = TRUE)) {
+ render_profile(f)
+}
+}
+}

@@ -26,10 +26,31 @@ library(RESQUER)
 # `outfile` also contains the path to the rendered file
 json_path = "resque_123456.json"
 outfile <- render_profile(json_path)
+
+# You can also render multiple profiles in a loop:
+for (f in list.files("path_to_folder", pattern="resque_.*\\.json", full.names = TRUE)) {
+ render_profile(f)
+}
+```
+
+## How to create an overview of multiple candidates (html file):
+
+You need [Quarto](https://quarto.org/docs/get-started/) installed on your system.
+The `render_overview()` function creates an overview of multiple candidates in a single html file.
+
+```
+library(quarto)
+library(RESQUER)
+
+# The rendered html file is created in the same folder as the input json files.
+# `outfile` also contains the path to the rendered file
+folder_path = "/path/to/json/folder"
+outfile <- render_overview(folder_path)
 ```
 
 
-## How to preview the interactive dashboard (Shiny App):
+
+## How to preview the interactive dashboard (Shiny App): THIS IS A WORK IN PROGRESS AND PROBABLY NOT WORKING
 
 For the interactive dashboard, you need [Quarto](https://quarto.org/docs/get-started/) installed on your system.
 
@@ -46,7 +67,7 @@ quarto_serve(system.file("dashboard/dashboard_shiny.qmd", package="RESQUER"))
 
 - `$indicators` contains all data (also publications without any data).
   - `$impact_pubs` is a subset of `indicators`: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers were a manual processing was requested)
-  - `$OAlex_papers` is the same set as `$impact_pubs`, but contains the full OA information
+  - `$OAlex_papers` is the same set as `$impact_pubs`, but contains the full OpenAlex information
     - `$rigor_pubs` is a subset of `$impact_pubs`: contains all publications that are eligible for the rigor score and other descriptives (i.e., papers with sufficient indicator information)
     
 
