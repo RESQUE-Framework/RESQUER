@@ -157,8 +157,7 @@ ministack <- function(
 #' waffle_html(values = values)
 #'
 #' # Using emojis instead
-#' values <- c(3, 7)
-#' waffle_html(values = values, emojis = c("⭐️", "▢"))
+#' waffle_html(values = c(3, 7), emojis = c("\u2B50\uFE0F", "\u25A2"))
 #'
 #' @export
 waffle_html <- function(
@@ -200,8 +199,8 @@ waffle_html <- function(
     # Add empty blocks for remaining space
     remaining_blocks <- max_value - sum(values)
     if (remaining_blocks > 0) {
-      # If the last value has an emoji, use that for empty spaces (typically "▢")
-      empty_emoji <- if(length(emojis) > 0) emojis[length(emojis)] else "▢"
+      # If the last value has an emoji, use that for empty spaces (typically an empty square)
+      empty_emoji <- if(length(emojis) > 0) emojis[length(emojis)] else "\u25A2"
       for (i in 1:remaining_blocks) {
         result <- paste0(result, empty_emoji)
       }
@@ -632,7 +631,7 @@ horizontal_bar_chart <- function(values,
     "box-sizing:border-box;"
   )
 
-  # --- Compute each bar’s height + spacing ---
+  # --- Compute each bar's height + spacing ---
   # Suppose we want a small margin between bars (2px). We need to fit
   # all bars plus (n_bars-1)*2px inside bars_container_height.
   # So bar_height = (bars_container_height - 2*(n_bars-1)) / n_bars

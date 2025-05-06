@@ -28,7 +28,8 @@
 #'   xend = 1:5,
 #'   xmid=0:4 + 0.5
 #' )
-#' RRS <- list(radar_dat=radar_dat, overall_score=0.5, n_papers=4, publication_years=c(2004, 2007, 2015, 2015))
+#' RRS <- list(radar_dat=radar_dat, overall_score=0.5, n_papers=4,
+#'           publication_years=c(2004, 2007, 2015, 2015))
 #' RRS_radarchart(RRS)
 #' RRS_radarchart(RRS, scale="linear")
 #'

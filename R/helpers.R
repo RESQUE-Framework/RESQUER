@@ -10,6 +10,12 @@ add_variables <- function(df, varnames, default=NA) {
   df
 }
 
+
+NA2FALSE <- function(x) {
+  x[is.na(x)] <- FALSE
+  x
+}
+
 #' Replaces CamelCase in a vector with spaces between words
 #' @param x A character vector which should be uncameled.
 #' @import stringr
