@@ -30,6 +30,7 @@ get_missing <- function(pub) {
 #' @importFrom openalexR oa_fetch
 #' @importFrom utils URLencode
 #' @importFrom lubridate year
+#' @importFrom forcats fct_recode
 #' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network
 #' @export
 
@@ -86,6 +87,22 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   applicant$indicators$replication <- factor(applicant$indicators$P_PreregisteredReplication, levels=c("NotApplicable", "No", "Yes"), labels=c("not<br>applicable", "No", "Yes"))
 
+
+  # clean the dois:
+  applicant$indicators$doi <- normalize_dois(applicant$indicators$DOI)
+  applicant$indicators$doi_links_md <- paste0("[", applicant$indicators$doi, "](", applicant$indicators$doi, ")")
+
+  applicant$indicators$title_links_html <- paste0("<a href='", applicant$indicators$doi, "'>", applicant$indicators$Title, "</a>")
+
+  # add/fix the P_TopPaper_Select column
+  if (!is.null(applicant$indicators$P_TopPaper_Select)) {
+    applicant$indicators$P_TopPaper_Select[is.na(applicant$indicators$P_TopPaper_Select)] <- FALSE
+  } else {
+    applicant$indicators$P_TopPaper_Select <- FALSE
+  }
+
+
+
   # Check % of missing indicators (or even completely empty publications)
   # Later, we exclude publications with too many missings from the analysis
   # Flag all-empty applicants
@@ -105,9 +122,15 @@ preprocess <- function(applicant, verbose=FALSE) {
   # (users cannot enter stuff in these fields, as they are hidden when
   # P_Data_Source_ReuseOther == "ReuseOther")
 
-  applicant$indicators <- add_variables(applicant$indicators, c(
+  data_sources <- c(
     "P_Data_Source_ReuseOther", "P_Data_Source_NewOwn", "P_Data_Source_ReuseOwn",
-    "P_Data_Source_ReuseCompilation", "P_Data_Source_Simulated"), default=FALSE)
+    "P_Data_Source_ReuseCompilation", "P_Data_Source_Simulated")
+  applicant$indicators <- add_variables(applicant$indicators, data_sources, default=FALSE)
+
+  # Set NAs to FALSE
+  for (d in data_sources) {
+    applicant$indicators[, d] <- NA2FALSE(applicant$indicators[, d])
+  }
 
 
   pure_reuse_other <- applicant$indicators$P_Data_Source_ReuseOther == TRUE &
@@ -236,17 +259,7 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   # TODO: Add for other Identifiers
 
-  # clean the dois:
-  applicant$indicators$doi <- normalize_dois(applicant$indicators$DOI)
-  applicant$indicators$doi_links_md <- paste0("[", applicant$indicators$doi, "](", applicant$indicators$doi, ")")
 
-  applicant$indicators$title_links_html <- paste0("<a href='", applicant$indicators$doi, "'>", applicant$indicators$Title, "</a>")
-
-  if (!is.null(applicant$indicators$P_TopPaper_Select)) {
-    applicant$indicators$P_TopPaper_Select[is.na(applicant$indicators$P_TopPaper_Select)] <- FALSE
-  } else {
-    applicant$indicators$P_TopPaper_Select <- FALSE
-  }
 
 
   # CRediT preprocessing

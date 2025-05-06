@@ -47,7 +47,6 @@ values <- c(10, 20, 15)
 waffle_html(values = values)
 
 # Using emojis instead
-values <- c(3, 7)
-waffle_html(values = values, emojis = c("⭐️", "▢"))
+waffle_html(values = c(3, 7), emojis = c("\u2B50\uFE0F", "\u25A2"))
 
 }
