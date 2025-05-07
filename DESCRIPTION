@@ -1,9 +1,13 @@
 Package: RESQUER
 Title: Enrich, analyse and visualize data from the RESQUE rating scheme
-Version: 0.7.5
-Authors@R: 
+Version: 0.7.6
+Date: 2025-05-07
+Authors@R: c(
     person("Felix D.", "Schönbrodt", , "felix.schoenbrodt@psy.lmu.de", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-8282-3910"))
+           comment = c(ORCID = "0000-0002-8282-3910")),
+    person("Alp Kaan", "Aksu", , "hi@alpkaanaksu.com", role = c("aut", "ctb"),
+           comment = c(ORCID = "0009-0007-7165-430X"))
+    )
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
