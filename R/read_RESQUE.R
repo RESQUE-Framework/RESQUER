@@ -56,8 +56,6 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
   #dat <- unCamel(dat, "P_TypePublication")
   #dat <- unCamel(dat, "P_ReproducibleScripts")
 
-  dat$dois_normalized <- OAmetrics::normalize_dois(dat$DOI)
-
   #-----------------------------------------------------------------
   # CRediT
 

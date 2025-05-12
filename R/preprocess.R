@@ -58,7 +58,7 @@ preprocess <- function(applicant, verbose=FALSE) {
     applicant$meta$YearPhD <- NA
   }
   if (!is.null(applicant$meta$AcademicAgeBonus)) {
-    applicant$meta$AcademicAgeBonus <- as.numeric(applicant$meta$AcademicAgeBonus)
+    applicant$meta$AcademicAgeBonus <- smart_as_numeric(applicant$meta$AcademicAgeBonus)
     if (is.na(applicant$meta$AcademicAgeBonus)) applicant$meta$AcademicAgeBonus <- 0
   } else {
     applicant$meta$AcademicAgeBonus <- 0
@@ -88,8 +88,39 @@ preprocess <- function(applicant, verbose=FALSE) {
   applicant$indicators$replication <- factor(applicant$indicators$P_PreregisteredReplication, levels=c("NotApplicable", "No", "Yes"), labels=c("not<br>applicable", "No", "Yes"))
 
 
+
+
+
+  #------------------------------------------------------------------------
   # clean the dois:
   applicant$indicators$doi <- normalize_dois(applicant$indicators$DOI)
+
+  # give a warning about non-doi entries (should be prevented by Collector app ...)
+  doi_url_regex_icase <- "(?i)\\bhttps://doi\\.org/10\\.\\d{4,9}/[-._;()/:A-Z0-9]+\\b"
+  applicant$indicators$valid_doi <- grepl(doi_url_regex_icase, applicant$indicators$doi, perl = TRUE)
+
+  if (any(applicant$indicators$valid_doi == FALSE)) {
+    note <- paste0(sum(applicant$indicators$valid_doi == FALSE), " publication(s) had an invalid doi. They will not show up in the impact table, but the rigor score still is computed.")
+    warning(note)
+    applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
+
+    # FIXME: Here I removed those publications
+    # # remove from all lists
+    # applicant$indicators <- applicant$indicators[applicant$valid_doi, ]
+    # applicant$scores$scores <- applicant$scores$scores[applicant$valid_doi]
+    #
+    # # recompute the overall RRS score
+    # max_scores <- sapply(applicant$scores$scores, function(x) x$max_score)
+    # valid_scores <- applicant$scores$scores[max_scores > 0]
+    #
+    # applicant$scores$overall_score = ifelse(
+    #   length(valid_scores) > 0,
+    #   mean(sapply(valid_scores, function(x) x$relative_score)),
+    #   NA)
+    #
+    # applicant$scores$scored_research_outputs <- length(valid_scores)
+  }
+
   applicant$indicators$doi_links_md <- paste0("[", applicant$indicators$doi, "](", applicant$indicators$doi, ")")
 
   applicant$indicators$title_links_html <- paste0("<a href='", applicant$indicators$doi, "'>", applicant$indicators$Title, "</a>")
@@ -356,10 +387,11 @@ preprocess <- function(applicant, verbose=FALSE) {
     mutate(
       # exclude fully empty publication records without indicator values (or only trivial information)
       rigor_pub = type == "Publication" & P_Suitable == "Yes" & ind_missing < .95,
-      impact_pub = type == "Publication" & (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
+      impact_pub = type == "Publication" &  valid_doi == TRUE & (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
     )
 
-  # TODO: Semi-hotfix: As P_IndependentVerification might often be removed, set it to NA if it is missing
+  # TODO: Semi-hotfix: As P_IndependentVerification might often be removed as an indicator,
+  # set it to NA if it is missing
   # Should be done for all central variables?
   if (!"P_IndependentVerification" %in% colnames(applicant$indicators)) {
     applicant$indicators$P_IndependentVerification <- NA
@@ -376,7 +408,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   }
 
   if (sum(!applicant$indicators$impact_pub) > 0) {
-    note <- paste0(sum(!applicant$indicators$impact_pub), " publication(s) were removed from the impact table because no indicators were provided and no manual processing was requested.")
+    note <- paste0(sum(!applicant$indicators$impact_pub), " publication(s) were removed from the impact table because (a) no indicators were provided and no manual processing was requested, or (b) no valid doi was provided.")
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }
@@ -387,7 +419,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0) {
-    applicant$BIP <- get_BIP(dois=applicant$impact_pubs$dois_normalized, verbose=verbose)
+    applicant$BIP <- get_BIP(dois=applicant$impact_pubs$doi, verbose=verbose)
     applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
     applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
   } else {
@@ -402,7 +434,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0) {
-    OAlex_papers <- oa_fetch(entity = "works", doi = normalize_dois(applicant$impact_pubs$doi))
+    OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi)
 
     #cat(paste0(nrow(OAlex_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
 
