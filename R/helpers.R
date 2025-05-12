@@ -70,3 +70,27 @@ get_indicators <- function(sc, pattern=".*") {
   rownames(res) <- NULL
   return(res[grepl(pattern, res$indicator), ])
 }
+
+
+# convert text into numeric, also recognizing German decimal commas
+smart_as_numeric <- function(x) {
+  nums <- vapply(x, function(z) {
+    z <- trimws(z)
+    # if it only has commas → assume comma = decimal
+    if (grepl("^[-0-9,]+$", z) && grepl(",", z) && !grepl("\\.", z)) {
+      z <- sub("^([-+])", "\\1", z)          # preserve sign
+      z <- gsub(",", ".", z, fixed = TRUE)
+      return(as.numeric(z))
+    }
+    # if it has both . and , we assume . is thousands sep, , is decimal
+    if (grepl("[0-9]\\.[0-9]{3}", z) && grepl(",", z)) {
+      z <- gsub("\\.", "", z)                # strip thousands
+      z <- gsub(",", ".", z, fixed = TRUE)  # decimal mark
+      return( as.numeric(z))
+    }
+    # otherwise fall back
+    suppressWarnings(as.numeric(z))
+  }, numeric(1))
+
+  unname(nums)
+}
