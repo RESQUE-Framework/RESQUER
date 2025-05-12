@@ -431,19 +431,28 @@ for (i in 1:nrow(tab_impact)) {
   )
 }
 
-tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(0))
+tab_impact$mean_FNCS = sapply(applicant_list, function(x) {
+  f <- x$FNCS
+  if (is.data.frame(f) && "FNCS" %in% names(f)) {
+    f <- f$FNCS
+  }
+  vals <- unlist(f)
+  m <- mean(vals, na.rm=TRUE)
+  round(m, 0)
+})
 
 # for chosing the background color:
-mean_FNCS_quantiles <- quantile(tab_impact$mean_FNCS, probs = c(0.25, 0.75))
+mean_FNCS_quantiles <- quantile(tab_impact$mean_FNCS, probs = c(0.25, 0.75), na.rm = TRUE)
 
 tab_impact$highest_citation_count = 
   sapply(applicant_list, function(x) {
-    top <- which.max(x$FNCS$cited_by_count)
-    paste0(
-      x$FNCS$cited_by_count[top], " (",
-      x$FNCS$publication_year[top],
-      ")"
-    )
+    f <- x$FNCS
+    if (is.data.frame(f) && all(c("cited_by_count", "publication_year") %in% names(f))) {
+      top <- which.max(f$cited_by_count)
+      paste0(f$cited_by_count[top], " (", f$publication_year[top], ")")
+    } else {
+      NA_character_
+    }
   })
       
 

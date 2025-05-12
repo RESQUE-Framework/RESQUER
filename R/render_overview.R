@@ -33,18 +33,26 @@ render_overview <- function(json_folder, output_file = NA, template = NA, anonym
   # json_folder = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
   # template="/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/overview_qmd/RESQUE_overview.qmd"
 
-  # Path to the qmd template
+  # Path to the qmd template: prefer local development file if present
   if (is.na(template)) {
-    template <- system.file("overview_qmd", "RESQUE_overview.qmd", package = "RESQUER")
+    dev_tmpl <- file.path("RESQUER", "inst", "overview_qmd", "RESQUE_overview.qmd")
+    if (file.exists(dev_tmpl)) {
+      template <- normalizePath(dev_tmpl, mustWork = TRUE)
+    } else {
+      template <- system.file("overview_qmd", "RESQUE_overview.qmd", package = "RESQUER")
+    }
   }
+  # Debug: show which template file is used and working directory
+  message("[render_overview] working directory: ", getwd())
+  message("[render_overview] using template: ", template)
 
   old_wd <- getwd()
   full_json_folder <- get_directory(json_folder)
   temp_dir <- paste0(tempdir(), "/RESQUEOVERVIEW")
   if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
 
-  # copy template and extra files to the temp_dir, render there
-  file.copy(template, temp_dir)
+  # copy template and extra files to the temp_dir, render there (overwrite stale copies)
+  file.copy(template, temp_dir, overwrite = TRUE)
 
   dir.create(paste0(temp_dir, "/assets"), recursive = TRUE, showWarnings = FALSE)
   list.files(paste0(dirname(template), "/assets"), recursive = TRUE, full.names = TRUE) |>
