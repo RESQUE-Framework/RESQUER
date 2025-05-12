@@ -26,6 +26,14 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
   if (is.na(template)) {
     template <- system.file("profile_qmd", "RESQUE_profile.qmd", package = "RESQUER")
   }
+  # Debug: confirm which template file is in use
+  message("[render_profile] Using template file: ", template)
+  if (!file.exists(template)) {
+    stop("[render_profile] ERROR: QMD template not found at: ", template)
+  }
+  # Preview first few lines of the template to verify patch
+  tmpl_preview <- readLines(template, n = 5, warn = FALSE)
+  message("[render_profile] Template preview (first 5 lines):\n", paste(tmpl_preview, collapse = "\n"))
 
   old_wd <- getwd()
   full_json_path <- normalizePath(json_path)
@@ -33,7 +41,8 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
   if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
 
   # copy template and extra files to the temp_dir, render there
-  file.copy(template, temp_dir)
+  # Copy the QMD template into a fresh render folder (overwrite any stale copy)
+  file.copy(template, temp_dir, overwrite = TRUE)
 
   dir.create(paste0(temp_dir, "/assets"), recursive = TRUE, showWarnings = FALSE)
   list.files(paste0(dirname(template), "/assets"), recursive = TRUE, full.names = TRUE) |>

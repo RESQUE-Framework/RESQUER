@@ -220,19 +220,41 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r teamscience}
 #| results: "asis"
 
-  cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
-  
-  applicant$OAlex_papers$n_authors <- sapply(applicant$OAlex_papers$author, nrow)
-  
-  applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
-  
-  team_tab <- table(applicant$OAlex_papers$team_category) |> as.data.frame()
-  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$OAlex_papers)), "%")
-  colnames(team_tab) <- c("Team category", "Frequency", "%")
+if (is.data.frame(applicant$OAlex_papers)) {
+  # how many publications were retrieved via OpenAlex
+  cat(paste0(nrow(applicant$OAlex_papers), " out of ",
+             sum(applicant$indicators$type == "Publication"),
+             " submitted publications could be automatically retrieved with OpenAlex.\n"))
+
+  if (nrow(applicant$OAlex_papers) > 0) {
+    # compute number of authors per paper
+    applicant$OAlex_papers$n_authors <- vapply(seq_len(nrow(applicant$OAlex_papers)), function(i) {
+      a <- applicant$OAlex_papers$author[[i]]
+      if (is.data.frame(a)) nrow(a) else if (is.list(a)) length(a) else NA_integer_
+    }, integer(1))
+
+    # categorize team size
+    applicant$OAlex_papers$team_category <- cut(
+      applicant$OAlex_papers$n_authors,
+      breaks = c(0, 1, 5, 15, Inf),
+      labels = c("Single authored", "Small team (<= 5 co-authors)",
+                 "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)")
+    )
+
+    # prepare table for display
+    team_tab <- table(applicant$OAlex_papers$team_category) |> as.data.frame()
+    team_tab$perc <- paste0(round(team_tab$Freq * 100 / nrow(applicant$OAlex_papers)), "%")
+    colnames(team_tab) <- c("Team category", "Frequency", "%")
+  }
+} else {
+  cat("No OpenAlex publication data available for this applicant.\n")
+}
 ```
 
 ```{r TS_showtable}
-kable(team_tab, align=c("l", "r", "r"))
+if (exists("team_tab")) {
+  kable(team_tab, align=c("l", "r", "r"))
+}
 ```
 
 ## Types of research data
@@ -620,13 +642,36 @@ pop_sel <- applicant$BIP %>%
 pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average"))
 pop_sel$pop_class <- NULL
 
-pop_sel <- pop_sel |> 
-  left_join(applicant$indicators %>% select(doi, Title = title_links_html, RRS_overall, CRediT_involvement, CRediT_involvement_roles, P_MeritStatement), by="doi") %>%
-  left_join(applicant$FNCS %>% select(doi, FNCS, FNPR), by="doi") %>%
-  relocate(Title) |> 
-  relocate(FNCS, .after = cc) |> 
-  relocate(FNPR, .after = FNCS) |> 
-  mutate(RRS_overall = paste0(round(RRS_overall*100), "%")) %>%
+pop_sel <- pop_sel |>
+  left_join(
+    applicant$indicators %>% select(
+      doi,
+      Title = title_links_html,
+      RRS_overall,
+      CRediT_involvement,
+      CRediT_involvement_roles,
+      P_MeritStatement
+    ),
+    by = "doi"
+  )
+
+# Join field-normalized citation scores if available
+if (is.data.frame(applicant$FNCS)) {
+  pop_sel <- pop_sel |>
+    left_join(
+      applicant$FNCS %>% select(doi, FNCS, FNPR),
+      by = "doi"
+    )
+} else {
+  pop_sel$FNCS <- NA_real_
+  pop_sel$FNPR <- NA_real_
+}
+
+pop_sel <- pop_sel |>
+  relocate(Title) |>
+  relocate(FNCS, .after = cc) |>
+  relocate(FNPR, .after = FNCS) |>
+  mutate(RRS_overall = paste0(round(RRS_overall * 100), "%")) |>
   arrange(Label, -FNCS)
 
 pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
@@ -655,9 +700,19 @@ pop_sel$doi <- NULL
 pop_sel$FNPR <- NULL # removed, because it is not always congruent with the popularity category; could be confusing
 
 # add some emojis:
-pop_sel$Title[pop_sel$Popularity == "Top 0.01%"] <- paste0("🚀", pop_sel$Title[which(pop_sel$Popularity == "Top 0.01%")])
-pop_sel$Title[pop_sel$Popularity == "Top 0.1%"] <- paste0("️🌟", pop_sel$Title[which(pop_sel$Popularity == "Top 0.1%")])
-pop_sel$Title[pop_sel$Popularity == "Top 1%"] <- paste0("️✨", pop_sel$Title[which(pop_sel$Popularity == "Top 1%")])
+## add some emojis safely
+idx <- which(pop_sel$Popularity == "Top 0.01%")
+if (length(idx) > 0) {
+  pop_sel$Title[idx] <- paste0("🚀", pop_sel$Title[idx])
+}
+idx <- which(pop_sel$Popularity == "Top 0.1%")
+if (length(idx) > 0) {
+  pop_sel$Title[idx] <- paste0("🌟", pop_sel$Title[idx])
+}
+idx <- which(pop_sel$Popularity == "Top 1%")
+if (length(idx) > 0) {
+  pop_sel$Title[idx] <- paste0("✨", pop_sel$Title[idx])
+}
 
 if (hideCRediT == "true") {
   pop_sel <- pop_sel[, 1:8]
