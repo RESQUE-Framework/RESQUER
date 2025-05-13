@@ -104,11 +104,19 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
   #------------------------------------------------------------------------
   # Year histogram
 
-  years <- RRS$publication_years
+  years <- na.omit(RRS$publication_years)
+
+  # Ensure middle year is a full year
+  median_year <- floor(median(years))
+
+  year_breaks <- c(min(years), median_year, max(years))
+  if (any(diff(year_breaks) <= 2)) {
+    year_breaks <- c(min(years), max(years))
+  }
 
   year_chart <- ggplot(data.frame(Year = years), aes(x = Year)) +
     geom_histogram(binwidth = 1, fill = "#4285F4", color = "white", alpha = 0.8) +
-    scale_x_continuous(breaks = c(min(years), median(years), max(years))) +
+    scale_x_continuous(breaks = year_breaks) +
     labs(
       title = "Years of publication",
       x = "",

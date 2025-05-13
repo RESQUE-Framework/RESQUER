@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
   show_inter: true
 ---
 
@@ -132,17 +132,6 @@ kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:"
 This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially. No bonus points have been assigned to the theory indicators yet, and also not to some other indicators of sample characteristics.
 :::
 
-```{r show preprocessing_notes}
-#| results: asis
-
-if (any(applicant$preprocessing_notes != "")) {
-  cat(paste0(
-    "::: {.callout-note title='Preprocessing Notes'}\n",
-    paste0("- ", applicant$preprocessing_notes, collapse="\n"), 
-    "\n:::\n\n"))
-}
-```
-
 
 Some parts of this profile are purely descriptive. For example, it is summarized the type of participant samples, or whether researchers predominantly work with psychophysiological data or rather focus on questionnaire studies. 
 
@@ -222,7 +211,8 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 
   cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
   
-  applicant$OAlex_papers$n_authors <- sapply(applicant$OAlex_papers$author, nrow)
+  # FIXME: move get_n_authors to OAmetrics and export
+  applicant$OAlex_papers$n_authors <- RESQUER:::get_n_authors(applicant$OAlex_papers)
   
   applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
   
@@ -493,9 +483,11 @@ tab_RRS[1, "Relative Rigor Score"] <- circle_layer(
     weights = applicant$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
     outer_width = 60)
 
+tab_RRS[1, "Relative Rigor Score"] |> htmltools::HTML() |> htmltools::html_print()
 
+# Here we have three "green" squares: Yes, Partial and Aggregate
 tab_RRS[, "Open Data"] <- paste(
-  applicant$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+  applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
   sapply(tab_RRS$RRS_OD, ministack, height=14)
 )
 
@@ -615,9 +607,15 @@ From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullNa
 #| results: asis
 
 pop_sel <- applicant$BIP %>% 
+  filter(is.na(msg)) |>    # is msg is NA, then there is no problem
   select(doi, "three_year_cc", cc,	pop_class)
+  
 
-pop_sel$Label <- factor(pop_sel$pop_class, levels=paste0("C", 1:5), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average"))
+# convert NA to an actual factor level
+levels(pop_sel$pop_class) <- c(levels(pop_sel$pop_class), "n.a.")
+pop_sel$pop_class[is.na(pop_sel$pop_class)] <- "n.a."
+
+pop_sel$Popularity <- factor(pop_sel$pop_class, levels=c(paste0("C", 1:5), "n.a."), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average", "n.a."))
 pop_sel$pop_class <- NULL
 
 pop_sel <- pop_sel |> 
@@ -627,11 +625,12 @@ pop_sel <- pop_sel |>
   relocate(FNCS, .after = cc) |> 
   relocate(FNPR, .after = FNCS) |> 
   mutate(RRS_overall = paste0(round(RRS_overall*100), "%")) %>%
-  arrange(Label, -FNCS)
+  arrange(Popularity, -FNCS)
 
 pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
 
-pop_sel$merit <- cell_spec(
+if (!all(is.na(pop_sel$P_MeritStatement))) {
+  pop_sel$merit <- cell_spec(
   ifelse(!is.na(pop_sel$P_MeritStatement) & pop_sel$P_MeritStatement != "",
 # Show Merit Statement as popover
     '<i class="bi bi-info-circle text-primary fs-5"></i>',
@@ -644,10 +643,19 @@ pop_sel$merit <- cell_spec(
 pop_sel$merit[is.na(pop_sel$P_MeritStatement) | pop_sel$P_MeritStatement == ""] <- cell_spec("(n.a.)",
   escape=FALSE, popover = NULL)
 
-# This has been added as a popover; column can now be deleted
-pop_sel$P_MeritStatement <- NULL
+  # This has been added as a popover; column can now be deleted
+  pop_sel$P_MeritStatement <- NULL
+  
+  colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles", "Merit Statement")
+} else {
+  # do not show merit statement col
+  # This has been added as a popover; column can now be deleted
+  pop_sel$P_MeritStatement <- NULL
+  
+  colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles")
+}
 
-colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles", "Merit Statement")
+
 
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
 pop_sel$FNPR <- paste0(round(pop_sel$FNPR*100, 1), "%")
@@ -697,7 +705,7 @@ if (nrow(low_impact) > 0) {
   kable(low_impact, escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
     footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
 } else {
-  cat("No publications submitted with popularity class 'Top 10%' or higher.")
+  cat("No publications submitted without citation metrics or average popularity class.")
 }
 ```
 :::
@@ -798,12 +806,14 @@ if (length(colnames_with_NotApplicable) > 0) {
        # add corresponding explanation
     cat(paste0("### ", i, "\n\n"))
     
-    NotAppl <- applicant$indicators[applicant$indicators[, i] == "NotApplicable", c("Title", "Year", "DOI", i, paste0(i, "_NAExplanation"))]
+    NotAppl <- applicant$indicators[applicant$indicators[, i] == "NotApplicable", c("Title", "Year", "doi", i, paste0(i, "_NAExplanation"))]
     NotAppl <- NotAppl[!is.na(NotAppl[, i]), ]
     rownames(NotAppl) <- NULL
     
-    NotAppl$Title <- paste0("[", NotAppl$Title, "](", NotAppl$DOI, ")")
-    NotAppl$DOI <- NULL
+    NotAppl$Title <- paste0("[", NotAppl$Title, "](", NotAppl$doi, ")")
+    NotAppl$doi <- NULL
+    NotAppl[, i] <- NULL
+    colnames(NotAppl)[3] <- "Why not applicable?"
     
      # beware: within for-loops, kable() needs an explicit `print`
     kable(NotAppl, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> print()
@@ -812,6 +822,58 @@ if (length(colnames_with_NotApplicable) > 0) {
   }
 } else {
   cat("**The applicant had no claims of non-applicability.**\n\n")
+}
+```
+
+
+
+# "Not suitable" justifications
+
+These were the justification, why papers have been flagged as "generally not suitable for the RESQUE scheme".
+These papers have been excluded from the rigor score computation, but not from the impact table.
+
+
+```{r}
+#| results='asis'
+
+# cols with "NotApplicable"
+cols_with_NotApplicable <- apply(applicant$indicators, 2, function(col) any(col == "NotApplicable")) |> na.omit()
+colnames_with_NotApplicable <- names(cols_with_NotApplicable)[cols_with_NotApplicable == TRUE]
+
+# remove one field: P_MultiStudy has no explanation if "not applicable" is selected
+colnames_with_NotApplicable <- colnames_with_NotApplicable[colnames_with_NotApplicable != "P_MultiStudy"]
+
+if (any(applicant$indicators$P_Suitable == "No")) {
+  cat("These are all claims of non-suitability from this applicant:\n\n")
+  
+    NotSuitableTab <- applicant$indicators[applicant$indicators$P_Suitable == "No", c("Title", "Year", "doi", "P_Suitable_Explanation")]
+    rownames(NotSuitableTab) <- NULL
+    
+    NotSuitableTab$Title <- paste0("[", NotSuitableTab$Title, "](", NotSuitableTab$doi, ")")
+    NotSuitableTab$doi <- NULL
+    colnames(NotSuitableTab)[3] <- "Why not suitable for RESQUE?"
+    
+     # beware: within for-loops, kable() needs an explicit `print`
+    kable(NotSuitableTab, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> print()
+
+
+} else {
+  cat("**The applicant had no claims of non-suitability.**\n\n")
+}
+```
+
+
+
+
+
+```{r show preprocessing_notes}
+#| results: asis
+
+if (any(applicant$preprocessing_notes != "")) {
+  cat(paste0(
+    "::: {.callout-note title='Preprocessing Notes'}\n",
+    paste0("- ", applicant$preprocessing_notes, collapse="\n"), 
+    "\n:::\n\n"))
 }
 ```
 
@@ -943,3 +1005,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 ```
+

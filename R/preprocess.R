@@ -12,6 +12,7 @@ get_missing <- function(pub) {
 }
 
 
+
 #' Preprocess and enrich the raw information from an applicant's JSON
 #'
 #' This function preprocesses the applicant data and enriches it with additional data.
@@ -434,7 +435,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0) {
-    OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi)
+    OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi, verbose=verbose)
 
     #cat(paste0(nrow(OAlex_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
 
@@ -448,7 +449,7 @@ preprocess <- function(applicant, verbose=FALSE) {
       applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
     }
 
-    OAlex_papers$n_authors <- sapply(OAlex_papers$author, nrow)
+    OAlex_papers$n_authors <- get_n_authors(OAlex_papers)
 
     OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (> 15 co-authors)"))
 
@@ -463,8 +464,8 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0) {
-    c_counts_psy_2001_2023 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2023.RDS", package="RESQUER"))
-    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2023, verbose=FALSE)
+    c_counts_psy_2001_2024 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2024.RDS", package="RESQUER"))
+    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2024, verbose=FALSE)
     applicant$FNCS <- fncs
   } else {
     applicant$FNCS <- NA
@@ -562,6 +563,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   OpenDataPie <- data.frame(
     notApplicable = sum(applicant$rigor_pubs$P_Data_Open == "NotApplicable", na.rm=TRUE),
     No = sum(applicant$rigor_pubs$P_Data_Open == "NotAvailable", na.rm=TRUE),
+    Aggregate = sum(applicant$rigor_pubs$P_Data_Open == "YesAggregate", na.rm=TRUE),
     Partial = sum(applicant$rigor_pubs$P_Data_Open == "YesParts", na.rm=TRUE),
     Yes = sum(applicant$rigor_pubs$P_Data_Open == "YesEntire", na.rm=TRUE)
   )

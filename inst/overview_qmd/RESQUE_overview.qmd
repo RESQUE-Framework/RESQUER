@@ -240,11 +240,11 @@ for (i in 1:nrow(tab_RRS)) {
 }
 
 
+# Here we have three "green" squares: Yes, Partial and Aggregate
 tab_RRS[, "Open Data"] <- paste(
-  lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
+  lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html, colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
   sapply(tab_RRS$RRS_OD, ministack, height=14)
 )
-
 
 tab_RRS[, "Open Material"] <- paste(
   lapply(applicant_list, function(x) {x$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
@@ -431,9 +431,9 @@ for (i in 1:nrow(tab_impact)) {
   )
 }
 
-tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(0))
+tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(1))
 
-# for chosing the background color:
+# for choosing the background color:
 mean_FNCS_quantiles <- quantile(tab_impact$mean_FNCS, probs = c(0.25, 0.75))
 
 tab_impact$highest_citation_count = 
@@ -485,7 +485,7 @@ ggplot(tab_combi, aes(x=RRS_overall, y=mean_FNCS)) +
     segment.size=0.1
   ) + 
   theme_bw() +
-  xlab("Overall Rigor Score (higher ist better)") + ylab("Mean Citation Score (higher ist better)") +
+  xlab("Overall Rigor Score (higher ist better)") + ylab("Mean FNCS (higher ist better)") +
   scale_x_continuous(limits = c(0, max(tab_combi$RRS_overall, na.rm = TRUE)*1.1))  # Ensure that x-axis starts at 0
 ```
 

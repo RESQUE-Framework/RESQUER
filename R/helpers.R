@@ -94,3 +94,20 @@ smart_as_numeric <- function(x) {
 
   unname(nums)
 }
+
+
+
+# robust function to get the number of authors from an OpenAlex record
+# FIXME: should move into OAmetrics
+
+get_n_authors <- function(OA_object) {
+  n_authors <- sapply(OA_object$author, nrow)
+
+  # find NULL entries
+  NULL_entries <- sapply(n_authors, is.null)
+  if (any(NULL_entries)) {
+    n_authors[NULL_entries] <- NA
+  }
+
+  return(n_authors |> unlist())
+}

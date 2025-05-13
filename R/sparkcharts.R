@@ -541,7 +541,8 @@ circle_layer <- function(value, colors, outer_width = 60,
 }
 
 
-# circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 4)) |> cat()
+# circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 4)) |> htmltools::HTML() |> htmltools::html_print()
+# circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 1, 1, 1)) |> htmltools::HTML() |> htmltools::html_print()
 # circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 10, 1, 10), sharp_boundaries = FALSE) |> cat()
 
 
