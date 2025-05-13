@@ -32,7 +32,7 @@ get_missing <- function(pub) {
 #' @importFrom utils URLencode
 #' @importFrom lubridate year
 #' @importFrom forcats fct_recode
-#' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network
+#' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network get_n_authors
 #' @export
 
 # For testing:

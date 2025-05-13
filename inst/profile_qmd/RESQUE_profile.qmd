@@ -211,8 +211,7 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 
   cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
   
-  # FIXME: move get_n_authors to OAmetrics and export
-  applicant$OAlex_papers$n_authors <- RESQUER:::get_n_authors(applicant$OAlex_papers)
+  applicant$OAlex_papers$n_authors <- get_n_authors(applicant$OAlex_papers)
   
   applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
   
