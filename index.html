@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,16 +101,18 @@
 <code>$indicators</code> contains all data (also publications without any data).
 <ul>
 <li>
-<code>$impact_pubs</code> is a subset of <code>indicators</code>: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers were a manual processing was requested)</li>
-<li>
-<code>$OAlex_papers</code> is the same set as <code>$impact_pubs</code>, but contains the full OpenAlex information
+<code>$impact_pubs</code> is a subset of <code>indicators</code>: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers were a manual processing was requested)
 <ul>
 <li>
-<code>$rigor_pubs</code> is a subset of <code>$impact_pubs</code>: contains all publications that are eligible for the rigor score and other descriptives (i.e., papers with sufficient indicator information)</li>
+<code>$OAlex_papers</code> is the same set as <code>$impact_pubs</code>, but contains the full OpenAlex information</li>
 </ul>
 </li>
+<li>
+<code>$rigor_pubs</code> is a subset of <code>$indicators</code>: contains all publications that are eligible for the rigor score and other descriptives (i.e., papers with sufficient indicator information)</li>
 </ul>
 </li>
+<li>There can be <code>impact_pubs</code> which are not <code>rigor_pubs</code>: E.g., opinion papers (which have impact metrics), but where no rigor score could be computed.</li>
+<li>There can be <code>rigor_pubs</code> which are not <code>impact_pubs</code>: E.g., submitted papers which have no doi (e.g., a paper on OSF; technically a preprint without a doi), but where a rigor could be computed.</li>
 </ul>
 </div>
 </div>
@@ -141,6 +143,7 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Felix D. Schönbrodt <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-8282-3910" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Alp Kaan Aksu <br><small class="roles"> Author, contributor </small> <a href="https://orcid.org/0009-0007-7165-430X" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
@@ -151,7 +154,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Felix D. Schönbrodt.</p>
+  <p>Developed by Felix D. Schönbrodt, Alp Kaan Aksu.</p>
 </div>
 
 <div class="pkgdown-footer-right">
