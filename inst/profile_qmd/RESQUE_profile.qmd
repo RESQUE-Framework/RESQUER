@@ -482,7 +482,7 @@ tab_RRS[1, "Relative Rigor Score"] <- circle_layer(
     weights = applicant$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
     outer_width = 60)
 
-tab_RRS[1, "Relative Rigor Score"] |> htmltools::HTML() |> htmltools::html_print()
+# tab_RRS[1, "Relative Rigor Score"] |> htmltools::HTML() |> htmltools::html_print()
 
 # Here we have three "green" squares: Yes, Partial and Aggregate
 tab_RRS[, "Open Data"] <- paste(
