@@ -61,7 +61,7 @@ get_reference_list <- function(works, alphabetical=TRUE, journal_name=FALSE, bul
       ifelse(journal_name, "", "<i>"),
       str_to_sentence(works[i, ]$display_name),
       ifelse(journal_name, "", "</i>"),
-      ifelse(journal_name, paste0("<i>", works[i, ]$so, "</i>"), ""),
+      ifelse(journal_name, paste0("<i>", works[i, ]$source_display_name, "</i>"), ""),
       ". <a href='", works[i, ]$doi, "'>", works[i, ]$doi, "</a>",
       ifelse(bullet, "</li>", "<br>")
     ))
