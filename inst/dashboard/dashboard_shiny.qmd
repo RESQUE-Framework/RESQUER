@@ -338,7 +338,7 @@ textOutput('vb_topFactor_text')
 #| context: server
 
 output$journal_list_output <- function(){
-  jt <- table(applicant()$OAlex_papers$so)
+  jt <- table(applicant()$OAlex_papers$source_display_name)
   jt2 <- jt[order(jt, names(jt))]
   journal_list <- paste0(names(jt2), collapse=", ")
   journal_list
