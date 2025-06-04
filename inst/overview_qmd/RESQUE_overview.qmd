@@ -15,7 +15,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt"
+  json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
   anonymous: true
   clear_cache: false
 ---

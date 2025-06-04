@@ -842,7 +842,7 @@ colnames_with_NotApplicable <- names(cols_with_NotApplicable)[cols_with_NotAppli
 # remove one field: P_MultiStudy has no explanation if "not applicable" is selected
 colnames_with_NotApplicable <- colnames_with_NotApplicable[colnames_with_NotApplicable != "P_MultiStudy"]
 
-if (any(applicant$indicators$P_Suitable == "No")) {
+if (any(applicant$indicators$P_Suitable == "No") & !is.null(applicant$indicators$P_Suitable_Explanation)) {
   cat("These are all claims of non-suitability from this applicant:\n\n")
   
     NotSuitableTab <- applicant$indicators[applicant$indicators$P_Suitable == "No", c("Title", "Year", "doi", "P_Suitable_Explanation")]
@@ -857,7 +857,7 @@ if (any(applicant$indicators$P_Suitable == "No")) {
 
 
 } else {
-  cat("**The applicant had no claims of non-suitability.**\n\n")
+  cat("**The applicant had no claims of non-suitability or gave no justification.**\n\n")
 }
 ```
 
