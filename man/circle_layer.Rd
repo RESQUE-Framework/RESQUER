@@ -2,7 +2,8 @@
 % Please edit documentation in R/sparkcharts.R
 \name{circle_layer}
 \alias{circle_layer}
-\title{Four layered circles}
+\title{Four layered circles, as a complex way to visualize 4 rigor score components
+as concentric rings.}
 \usage{
 circle_layer(
   value,

@@ -444,7 +444,8 @@ radial_chart <- function(
 
 
 
-#' Four layered circles
+#' Four layered circles, as a complex way to visualize 4 rigor score components
+#' as concentric rings.
 #'
 #' TODO: Provide color ramp breakpoints as parameters
 #' @param outer_width Circle radius in pixels.
@@ -546,6 +547,53 @@ circle_layer <- function(value, colors, outer_width = 60,
 # circle_layer(value=0.51, colors=c("#ff0000", "#00ff00", "#0000ff", "#ffff00"), weights=c(1, 10, 1, 10), sharp_boundaries = FALSE) |> cat()
 
 
+
+
+#' Solid circle with provided background color and centered value
+#'
+#' @param value Numeric between 0 and 1 (printed as a percentage)
+#' @param color Single CSS color string (e.g., "#ff0000" or "red")
+#' @param outer_width Circle diameter in pixels (default 60)
+#' @export
+circle_simple <- function(value, color = NA, outer_width = 60) {
+  if (is.na(color)) {
+    color <- get_color(value)
+  }
+
+  if (value < 0 | value > 1) stop("value must be between 0 and 1.")
+
+  value100 <- round(value * 100)
+
+  html <- sprintf('
+<div style="
+  width: %dpx;
+  height: %dpx;
+  border-radius: 50%%;
+  background-color: %s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+">
+  <span style="
+    color: white;
+    font-size: calc(%dpx * 0.35);
+    font-weight: bold;
+    text-shadow:
+      -1px -1px 0 black,
+       1px -1px 0 black,
+      -1px  1px 0 black,
+       1px  1px 0 black;
+  ">%s%%</span>
+</div>',
+                  outer_width, outer_width, color, outer_width, value100
+  )
+
+  html
+}
+
+
+# circle_simple(0.97, outer_width = 80) |> htmltools::HTML() |> htmltools::html_print()
 
 
 

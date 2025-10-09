@@ -36,6 +36,7 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
 
   # clean and create some fields
   meta$FullName <- paste0(meta$FirstName, " ", meta$LastName)
+  if (is.null(dat$Title)) dat$Title <- "NO_TITLE_RETRIEVED"
   dat$Title <- clean_title(dat$Title)
   dat$TitleLink <- paste0("[", dat$Title, "](", dat$DOI, ")")
 
