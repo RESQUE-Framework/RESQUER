@@ -437,7 +437,9 @@ preprocess <- function(applicant, verbose=FALSE) {
   if (nrow(applicant$impact_pubs) > 0) {
     OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi, verbose=verbose)
 
-    #cat(paste0(nrow(OAlex_papers), " out of ", nrow(all_pubs), " submitted publications could be automatically retrieved with openAlex.\n"))
+    if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(applicant$impact_pubs$doi), " submitted publications could be automatically retrieved with openAlex.\n"))
+
+    if (is.null(OAlex_papers)) {stop("Error: Could not retrieve data from OpenAlex.")}
 
     if (nrow(OAlex_papers) < nrow(applicant$impact_pubs)) {
       note <- paste0(
@@ -558,6 +560,8 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   #----------------------------------------------------------------
   # prepare all data for the open science sparkpie charts
+  # TODO: How to deal with arbitrary scoring categories that are defined in
+  # config.yaml?
   #----------------------------------------------------------------
 
   OpenDataPie <- data.frame(
@@ -571,8 +575,8 @@ preprocess <- function(applicant, verbose=FALSE) {
   OpenMaterialPie <- data.frame(
     notApplicable = sum(applicant$rigor_pubs$P_OpenMaterials == "NotApplicable", na.rm=TRUE),
     No = sum(applicant$rigor_pubs$P_OpenMaterials == "NotAvailable", na.rm=TRUE),
-    Partial = sum(applicant$rigor_pubs$P_OpenMaterials == "YesParts", na.rm=TRUE),
-    Yes = sum(applicant$rigor_pubs$P_OpenMaterials == "YesEntire", na.rm=TRUE)
+    Partial = sum(applicant$rigor_pubs$P_OpenMaterials %in% c("YesParts", "Minimal"), na.rm=TRUE),
+    Yes = sum(applicant$rigor_pubs$P_OpenMaterials %in% c("YesEntire", "Rich"), na.rm=TRUE)
   )
 
   OpenCodePie <- data.frame(

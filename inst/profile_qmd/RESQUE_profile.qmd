@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
+  json_path: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-08T07-03-47.json"
   show_inter: true
 ---
 
@@ -18,6 +18,9 @@ params:
 
 # "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
 # "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
+# "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-01T07-25-48.json"
+
+# params <- list(FullName="Max Mustermann Demoprofile", json_path="/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-08T07-03-47.json", show_inter=TRUE)
 
 library(knitr)
 library(kableExtra)
@@ -83,6 +86,7 @@ if (is.null(params$json_path)) {
   applicant_json <- read_RESQUE(file=params$json_path, verbose=FALSE)
 }
 
+options(openalexR.mailto = "felix.schoenbrodt@psy.lmu.de")
 applicant <- preprocess(applicant=applicant_json, verbose=FALSE)
 
 if (is.na(applicant$meta$ORCID)) {
@@ -461,62 +465,111 @@ The RESQUE indicators cover current best practices, which often are not yet used
 
 tab_RRS <- data.frame(FullName=applicant$meta$FullName)
 
-tab_RRS$RRS_overall = applicant$RRS$overall_score
+RRS_overall <- applicant$RRS$overall_score
 
-tab_RRS$RRS_OD = applicant$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score)
-tab_RRS$RRS_OM = applicant$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score)
-tab_RRS$RRS_PreReg = applicant$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score)
-tab_RRS$RRS_OC = applicant$RRS$sector_scores %>% filter(str_detect(category, "Reproducible Code")) %>% pull(rel_score)
+#+------ ALTERNATIVE APPROACH ------------
+
+# tab_RRS2 <- tab_RRS
+# 
+# score_cats <- applicant$RRS$sector_scores$category
+# 
+# score_cat_res <- 
+# for (score_cat in score_cats) {
+#   
+# }
+
+#+#+------ /ALTERNATIVE APPROACH ------------
+
+
+RRS_OD <- applicant$RRS$sector_scores %>%
+  filter(category == "Open Data") %>%
+  pull(rel_score) %>%
+  { if (length(.) == 0) NA else . }
+
+RRS_OM = applicant$RRS$sector_scores %>% 
+  filter(category == "Open Materials") %>% 
+  pull(rel_score) %>%
+  { if (length(.) == 0) NA else . }
+
+RRS_PreReg = applicant$RRS$sector_scores %>% 
+  filter(category == "Preregistration") %>% 
+  pull(rel_score) %>%
+  { if (length(.) == 0) NA else . }
+
+RRS_OC = applicant$RRS$sector_scores %>% 
+  filter(str_detect(category, "Reproducible Code")) %>% 
+  pull(rel_score) %>%
+  { if (length(.) == 0) NA else . }
+
+
+#TODO: generalize to any number of quality sectors.
+# Take the information on requested sectors from the config.yaml
 
 tab_RRS[, "Relative Rigor Score"] <- NA
 RRS_vec <- c(
-  tab_RRS$RRS_OD,
-  tab_RRS$RRS_OM,
-  tab_RRS$RRS_PreReg,
-  tab_RRS$RRS_OC)
+  RRS_OD,
+  RRS_OM,
+  RRS_PreReg,
+  RRS_OC)
 
-RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
-tab_RRS[1, "Relative Rigor Score"] <- circle_layer(
-    value = tab_RRS$RRS_overall[1], 
-    colors = get_color(RRS_vec_sorted), 
-    weights = applicant$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
-    outer_width = 60)
+# Original version with complex layer circle (which requires that all 4 OS scores are available)
+# RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
+# tab_RRS[1, "Relative Rigor Score"] <- circle_layer(
+#     value = RRS_overall[1], 
+#     colors = get_color(RRS_vec_sorted), 
+#     weights = applicant$RRS$sector_scores$max_points[order(RRS_vec, decreasing = TRUE)],
+#     outer_width = 60)
+
+tab_RRS[1, "Relative Rigor Score"] <- circle_simple(
+    value = RRS_overall[1], outer_width = 60)
 
 # tab_RRS[1, "Relative Rigor Score"] |> htmltools::HTML() |> htmltools::html_print()
 
-# Here we have three "green" squares: Yes, Partial and Aggregate
-tab_RRS[, "Open Data"] <- paste(
-  applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
-  sapply(tab_RRS$RRS_OD, ministack, height=14)
-)
+# Create the table with the visualizations:
+# 1. The waffle chart for each submitted publication
+# 2. Below that: The stacked bar chart with the triangle indicator of the score.
+
+if (!is.na(RRS_OD)) {
+  # Here we have three "green" squares: Yes, Partial and Aggregate
+  tab_RRS[, "Open Data"] <- paste(
+    applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
+    sapply(RRS_OD, ministack, height=14)
+  )
+}
 
 
-tab_RRS[, "Open Material"] <- paste(
-  applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
-  sapply(tab_RRS$RRS_OM, ministack, height=14)
-)
+if (!is.na(RRS_OM)) {
+  tab_RRS[, "Open Material"] <- paste(
+    applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+    sapply(RRS_OM, ministack, height=14)
+  )
+}
 
-tab_RRS[, "Preregistration"] <- paste(
-  applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(),
-  sapply(tab_RRS$RRS_PreReg, ministack, height=14)
-)
+if (!is.na(RRS_PreReg)) {
+  tab_RRS[, "Preregistration"] <- paste(
+    applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(),
+    sapply(RRS_PreReg, ministack, height=14)
+  )
+}
 
 if (all(is.na(applicant$rigor_pubs$P_IndependentVerification))) {
   code_heading <- "Reproducible Code"
 } else {
   code_heading <- "Reproducible Code \n& Verification"
 }
-tab_RRS[, code_heading] <- paste(
-  applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
-  sapply(tab_RRS$RRS_OC, ministack, height=14)
-)
 
+if (!is.na(RRS_OC)) {
+  tab_RRS[, code_heading] <- paste(
+    applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+    sapply(RRS_OC, ministack, height=14)
+  )
+}
 
 
 # dom = 't', # Removes "Show X entries" and search bar
 # The RRS_* columns are needed for sorting, but should not be displayed
 datatable(
-  tab_RRS[, 7:11], 
+  tab_RRS[, -1], 
   escape=FALSE, 
   rownames=FALSE,
   width = '100%',
@@ -655,7 +708,6 @@ pop_sel$merit[is.na(pop_sel$P_MeritStatement) | pop_sel$P_MeritStatement == ""] 
 }
 
 
-
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
 pop_sel$FNPR <- paste0(round(pop_sel$FNPR*100, 1), "%")
 pop_sel$doi <- NULL
@@ -666,8 +718,9 @@ pop_sel$Title[pop_sel$Popularity == "Top 0.01%"] <- paste0("🚀", pop_sel$Title
 pop_sel$Title[pop_sel$Popularity == "Top 0.1%"] <- paste0("️🌟", pop_sel$Title[which(pop_sel$Popularity == "Top 0.1%")])
 pop_sel$Title[pop_sel$Popularity == "Top 1%"] <- paste0("️✨", pop_sel$Title[which(pop_sel$Popularity == "Top 1%")])
 
-if (hideCRediT == "true") {
-  pop_sel <- pop_sel[, 1:8]
+# Remove columns Candidates' CRediT involvement	and Candidates' CRediT main roles if no CRediT roles have been provided.
+if (hideCRediT == TRUE) {
+  pop_sel <- pop_sel[, 1:6]
 }
 
 high_impact <- pop_sel[which(pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%")), ]
@@ -680,6 +733,7 @@ low_impact <- pop_sel[which(is.na(pop_sel$Popularity) | !pop_sel$Popularity %in%
 ::: {style="font-size: 80%;"}
 ```{r}
 #| results: asis
+
 
 if (nrow(high_impact) > 0) {
   

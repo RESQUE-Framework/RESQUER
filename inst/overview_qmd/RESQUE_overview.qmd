@@ -232,11 +232,13 @@ for (i in 1:nrow(tab_RRS)) {
     tab_RRS$RRS_OC[i])
   
   RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
-  tab_RRS[i, "Overall Rigor"] <- circle_layer(
-      value = tab_RRS$RRS_overall[i], 
-      colors = get_color(RRS_vec_sorted), 
-      weights = applicant_list[[i]]$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
-      outer_width = 60)
+  # tab_RRS[i, "Overall Rigor"] <- circle_layer(
+  #     value = tab_RRS$RRS_overall[i], 
+  #     colors = get_color(RRS_vec_sorted), 
+  #     weights = applicant_list[[i]]$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
+  #     outer_width = 60)
+  tab_RRS[i, "Overall Rigor"] <- circle_simple(
+      value = tab_RRS$RRS_overall[i], outer_width = 60)
 }
 
 
