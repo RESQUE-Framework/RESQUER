@@ -24,6 +24,9 @@ params:
 ```{r setup0}
 #| include: false
 
+# json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+# json_folder: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/testCases"
+
 library(knitr)
 library(kableExtra)
 library(RESQUER)
@@ -133,10 +136,14 @@ if (is.null(params$json_folder)) {
     
     applicant_list <- list()
     
+    options(openalexR.mailto = "felix@nicebread.de")
     for (i in 1:length(json_files)) {
         # print(paste0("Reading file #", i))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)
         applicant_list[[i]] <- preprocess(applicant=R, verbose=FALSE)
+        
+        # OpenAlex API rate limit max 10 requests every second - wait a little bit.
+        Sys.sleep(0.5)
     }
     
     # `store` stores more meta-information on the analysis
@@ -211,64 +218,12 @@ The Overall Rigor Score reflects current best practices, many of which are not y
 
 ```{r overview_table2b}
 
-tab_RRS <- data.frame(
-  applicant = overview_tab$names
-  )
+tab_RRS <- data.frame()
 
-tab_RRS$RRS_overall = sapply(applicant_list, function(x) {
-  sum(x$RRS$sector_scores$scores[1:4]) / sum(x$RRS$sector_scores$max_points[1:4])
-})
-tab_RRS$RRS_OD = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Data") %>% pull(rel_score))
-tab_RRS$RRS_OM = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Open Materials") %>% pull(rel_score))
-tab_RRS$RRS_PreReg = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(category == "Preregistration") %>% pull(rel_score))
-tab_RRS$RRS_OC = sapply(applicant_list, function(x) x$RRS$sector_scores %>% filter(str_detect(category, "Reproducible Code")) %>% pull(rel_score))
-
-tab_RRS[, "Overall Rigor"] <- NA
-for (i in 1:nrow(tab_RRS)) {
-  RRS_vec <- c(
-    tab_RRS$RRS_OD[i],
-    tab_RRS$RRS_OM[i],
-    tab_RRS$RRS_PreReg[i],
-    tab_RRS$RRS_OC[i])
-  
-  RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
-  # tab_RRS[i, "Overall Rigor"] <- circle_layer(
-  #     value = tab_RRS$RRS_overall[i], 
-  #     colors = get_color(RRS_vec_sorted), 
-  #     weights = applicant_list[[i]]$RRS$sector_scores$max_points[1:4][order(RRS_vec, decreasing = TRUE)],
-  #     outer_width = 60)
-  tab_RRS[i, "Overall Rigor"] <- circle_simple(
-      value = tab_RRS$RRS_overall[i], outer_width = 60)
+for (i in 1:length(applicant_list)) {
+  row <- get_RRS_tablerow(applicant_list[[i]], add_scores = TRUE)
+  tab_RRS <- rbind(tab_RRS, row)  
 }
-
-
-# Here we have three "green" squares: Yes, Partial and Aggregate
-tab_RRS[, "Open Data"] <- paste(
-  lapply(applicant_list, function(x) {x$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html, colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
-  sapply(tab_RRS$RRS_OD, ministack, height=14)
-)
-
-tab_RRS[, "Open Material"] <- paste(
-  lapply(applicant_list, function(x) {x$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_OM, ministack, height=14)
-)
-
-tab_RRS[, "Preregistration"] <- paste(
-  lapply(applicant_list, function(x) {x$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_PreReg, ministack, height=14)
-)
-
-if (all(is.na(applicant_list[[1]]$rigor_pubs$P_IndependentVerification))) {
-  code_heading <- "Reproducible Code"
-} else {
-  code_heading <- "Reproducible Code \n& Verification"
-}
-tab_RRS[, code_heading] <- paste(
-  lapply(applicant_list, function(x) {x$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist()}) |> sapply(waffle_html),
-  sapply(tab_RRS$RRS_OC, ministack, height=14)
-)
-
-
 
 # dom = 't', # Removes "Show X entries" and search bar
 # The RRS_* columns are needed for sorting, but should not be displayed
@@ -281,15 +236,16 @@ datatable(
     dom = 't', 
     paging = FALSE,
     columnDefs = list(
-      list(targets = "Overall Rigor", orderData = 2), 
-      list(targets = "Open Data", orderData = 3),  # Sort OD by RRS_OD (which is the 5th column)
-      list(targets = "Open Material", orderData = 4),
-      list(targets = "Preregistration", orderData = 5),
-      list(targets = code_heading, orderData = 6),  
+      list(targets = colnames(tab_RRS)[2], orderData = 2), 
+      list(targets = colnames(tab_RRS)[3], orderData = 3),  # Sort OD by RRS_OD (which is the 5th column)
+      list(targets = colnames(tab_RRS)[4], orderData = 4),
+      list(targets = colnames(tab_RRS)[5], orderData = 5),
+      list(targets = colnames(tab_RRS)[6], orderData = 6),  
       
-      list (targets = c(2:6), visible = FALSE) # Hide numeric sorting columns
+      list (targets = c(7:11), visible = FALSE) # Hide numeric sorting columns
     ))
 )
+
 ```
 
 
@@ -327,7 +283,7 @@ horizontal_bar_chart(c(10, 10, 10, 10, 10), max_value = 10, colors = brewer.pal(
 
 <br>
 
-```{r}
+```{r sample_types}
 tab_samples <- data.frame(
   applicant = overview_tab$names
 )

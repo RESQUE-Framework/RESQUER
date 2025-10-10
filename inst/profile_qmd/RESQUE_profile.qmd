@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-08T07-03-47.json"
+  json_path: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/testCases/resque_1pub_noOD_0OM.json"
   show_inter: true
 ---
 
@@ -463,111 +463,9 @@ The RESQUE indicators cover current best practices, which often are not yet used
 
 ```{r overview_transparency}
 
-tab_RRS <- data.frame(FullName=applicant$meta$FullName)
-
-RRS_overall <- applicant$RRS$overall_score
-
-#+------ ALTERNATIVE APPROACH ------------
-
-# tab_RRS2 <- tab_RRS
-# 
-# score_cats <- applicant$RRS$sector_scores$category
-# 
-# score_cat_res <- 
-# for (score_cat in score_cats) {
-#   
-# }
-
-#+#+------ /ALTERNATIVE APPROACH ------------
-
-
-RRS_OD <- applicant$RRS$sector_scores %>%
-  filter(category == "Open Data") %>%
-  pull(rel_score) %>%
-  { if (length(.) == 0) NA else . }
-
-RRS_OM = applicant$RRS$sector_scores %>% 
-  filter(category == "Open Materials") %>% 
-  pull(rel_score) %>%
-  { if (length(.) == 0) NA else . }
-
-RRS_PreReg = applicant$RRS$sector_scores %>% 
-  filter(category == "Preregistration") %>% 
-  pull(rel_score) %>%
-  { if (length(.) == 0) NA else . }
-
-RRS_OC = applicant$RRS$sector_scores %>% 
-  filter(str_detect(category, "Reproducible Code")) %>% 
-  pull(rel_score) %>%
-  { if (length(.) == 0) NA else . }
-
-
-#TODO: generalize to any number of quality sectors.
-# Take the information on requested sectors from the config.yaml
-
-tab_RRS[, "Relative Rigor Score"] <- NA
-RRS_vec <- c(
-  RRS_OD,
-  RRS_OM,
-  RRS_PreReg,
-  RRS_OC)
-
-# Original version with complex layer circle (which requires that all 4 OS scores are available)
-# RRS_vec_sorted <- RRS_vec[order(RRS_vec, decreasing = TRUE)]
-# tab_RRS[1, "Relative Rigor Score"] <- circle_layer(
-#     value = RRS_overall[1], 
-#     colors = get_color(RRS_vec_sorted), 
-#     weights = applicant$RRS$sector_scores$max_points[order(RRS_vec, decreasing = TRUE)],
-#     outer_width = 60)
-
-tab_RRS[1, "Relative Rigor Score"] <- circle_simple(
-    value = RRS_overall[1], outer_width = 60)
-
-# tab_RRS[1, "Relative Rigor Score"] |> htmltools::HTML() |> htmltools::html_print()
-
-# Create the table with the visualizations:
-# 1. The waffle chart for each submitted publication
-# 2. Below that: The stacked bar chart with the triangle indicator of the score.
-
-if (!is.na(RRS_OD)) {
-  # Here we have three "green" squares: Yes, Partial and Aggregate
-  tab_RRS[, "Open Data"] <- paste(
-    applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
-    sapply(RRS_OD, ministack, height=14)
-  )
-}
-
-
-if (!is.na(RRS_OM)) {
-  tab_RRS[, "Open Material"] <- paste(
-    applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
-    sapply(RRS_OM, ministack, height=14)
-  )
-}
-
-if (!is.na(RRS_PreReg)) {
-  tab_RRS[, "Preregistration"] <- paste(
-    applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(),
-    sapply(RRS_PreReg, ministack, height=14)
-  )
-}
-
-if (all(is.na(applicant$rigor_pubs$P_IndependentVerification))) {
-  code_heading <- "Reproducible Code"
-} else {
-  code_heading <- "Reproducible Code \n& Verification"
-}
-
-if (!is.na(RRS_OC)) {
-  tab_RRS[, code_heading] <- paste(
-    applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
-    sapply(RRS_OC, ministack, height=14)
-  )
-}
-
+tab_RRS <- get_RRS_tablerow(applicant)
 
 # dom = 't', # Removes "Show X entries" and search bar
-# The RRS_* columns are needed for sorting, but should not be displayed
 datatable(
   tab_RRS[, -1], 
   escape=FALSE, 
@@ -575,7 +473,6 @@ datatable(
   width = '100%',
   options = list(
     ordering = FALSE,
-    #scrollCollapse = TRUE,
     dom = 't', 
     scrollX = FALSE)
 )
