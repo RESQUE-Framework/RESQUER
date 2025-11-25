@@ -25,7 +25,6 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
 
   # create a clean meta object
   meta <- dat0[1, , drop=TRUE]
-  meta$forms <- NULL
   meta$queryConfig <- NULL
   meta <- meta[!is.na(meta)]
 
@@ -43,16 +42,16 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
   # remove unnecessary column that breaks the structure of dat (nested data frame)
   dat$queryConfig <- NULL
 
-  # read the scores
+  # compute the scores
   #scores <- score_all_from_file(file=file, verbose=verbose)
-  scores <- score_all(parse_json(fixed_json, simplifyVector = FALSE), verbose=verbose)
+  scores <- score_all(research_outputs=parse_json(fixed_json, simplifyVector = FALSE), verbose=verbose)
 
   # remove the first element: This is the meta-information which has no scores
   # Now each list entry is one publication, in the same order as in `dat`
   scores$scores <- scores$scores[-1]
 
   # Create nice factor labels
-  dat$type <- factor(dat$type, levels=c("pub", "data", "software"), labels=c("Publication", "Data set", "Research software"))
+  dat$type2 <- factor(dat$type, levels=c("pub", "data", "software"), labels=c("Publication", "Data set", "Research software"))
 
   #dat <- unCamel(dat, "P_TypePublication")
   #dat <- unCamel(dat, "P_ReproducibleScripts")

@@ -46,7 +46,7 @@ po/*~
 rsconnect/
 .Rproj.user
 
-_test
+_test*
 inst/doc
 
 inst/dashboard/dashboard_shiny_files

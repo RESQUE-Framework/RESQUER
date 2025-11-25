@@ -17,8 +17,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
 
   # Which outputs should be scored? At the moment, only publications
   score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE]
-  NaNs <- sapply(score_list, "[[", "relative_score")
-  n_scorable <- sum(!is.nan(NaNs))
+  NaN_check <- sapply(score_list, "[[", "relative_score")
+  n_scorable <- sum(!is.nan(NaN_check))
 
   if (n_scorable == 0) {
     warning("No publications suitable for scoring.")
@@ -35,21 +35,35 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   scores_all <- get_indicators(sc=score_list)
 
   scores_all$category <- NA
-  scores_all$category[str_detect(scores_all$indicator, "Data")] <- "Open Data"
-  scores_all$category[str_detect(scores_all$indicator, "Prereg")] <- "Preregistration"
 
-  if (all(str_detect(scores_all$indicator, "Verification")==FALSE)) {
-    scores_all$category[str_detect(scores_all$indicator, "ReproducibleScripts")] <- "Reproducible Code"
-  } else {
-    scores_all$category[str_detect(scores_all$indicator, "ReproducibleScripts|IndependentVerification")] <- "Reproducible Code \n& Verification"
+  # retrieve categories from applicant meta-data
+  cat_def <- applicant$meta$forms$config$score_categories[[1]]
+
+  for (cat in 1:nrow(cat_def)) {
+    # find out the category ...
+    candidates <- which(str_detect(scores_all$indicator, cat_def$cue[cat]))
+
+    # ... and ensure that no "double booking" happens when the regexp matches
+    # multiple times:
+    if (all(is.na(scores_all$category[candidates]))) {
+      scores_all$category[candidates] <- cat_def$title[cat]
+    } else {
+      stop("A scoring category has been assigned multiple times - check the regexp in your config.yaml for multiple matches.")
+    }
   }
-
-  scores_all$category[str_detect(scores_all$indicator, "Theorizing")] <- "Theorizing"
-  scores_all$category[str_detect(scores_all$indicator, "OpenMaterials")] <- "Open Materials"
+  effective_categories <- length(unique(scores_all$category))
 
   # plausibility check: Which indicators have not been categorized?
-  table(scores_all$category, useNA="always")
-  scores_all[is.na(scores_all$category), ]
+  # (<NA> should be 0)
+  t1 <- table(scores_all$category, useNA="always")
+  t1
+
+  n_uncategorized_indicators <- sum(is.na(scores_all$category))
+  if (n_uncategorized_indicators > 0) {
+    warning(paste0(n_uncategorized_indicators, " scoring indicators have not been categorized:"))
+    warning(print(scores_all[is.na(scores_all$category), ]))
+  }
+
 
   # each row is one publication; show overall RRS and raw points
   RRS_by_paper_overall <- scores_all %>%
@@ -58,11 +72,19 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
       scores = sum(value),
       max_points = sum(max),
       rel_score = scores/max_points
-    ) %>%
-    arrange(output)
+    )
+
+  # fill in missing publications (which have a max score of 0)
+  for (i in 1:length(score_list)) {
+    if (!i %in% RRS_by_paper_overall$output) {
+      RRS_by_paper_overall <- rbind(RRS_by_paper_overall, c(i, NA, NA, NA))
+    }
+  }
+  RRS_by_paper_overall <- RRS_by_paper_overall |> arrange(output)
 
   RRS_by_paper_overall$doi <- normalize_dois(applicant$rigor_pubs$doi)
   RRS_by_paper_overall <- RRS_by_paper_overall %>% relocate(doi) %>% select(-output)
+
 
   # each row is one publication; show sector scores
   RRS_by_paper_sector <- scores_all %>%
@@ -74,8 +96,17 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
     ) %>%
     ungroup() %>%
     select(-max_points, -scores) %>%
-    pivot_wider(names_from=category, values_from=rel_score) %>%
-    arrange(output)
+    pivot_wider(names_from=category, values_from=rel_score)
+
+
+  # fill in missing publications (which have a max score of 0)
+  for (i in 1:length(score_list)) {
+    if (!i %in% RRS_by_paper_sector$output) {
+      RRS_by_paper_sector <- rbind(RRS_by_paper_sector, c(i, rep(NA, effective_categories)))
+    }
+  }
+  RRS_by_paper_sector <- RRS_by_paper_sector |> arrange(output)
+
 
   RRS_by_paper_sector$doi <- normalize_dois(applicant$rigor_pubs$doi)
   RRS_by_paper_sector <- RRS_by_paper_sector %>% relocate(doi) %>% select(-output)
@@ -102,9 +133,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   #sum(RRS_by_paper$scores)/sum(RRS_by_paper$max_points)
 
   # overall score averaged across papers (each paper gets same weight)
-  overall_score <- mean(RRS_by_paper$RRS_overall)
-
-  n_categories_present <- nrow(RRS_by_category)
+  overall_score <- mean(RRS_by_paper$RRS_overall, na.rm=TRUE)
 
   radar_dat <- tibble(
     dimension = factor(RRS_by_category$category),
@@ -115,8 +144,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   if (sectors == "equal") {
     # Sectors all have the same width
     radar_dat <- radar_dat %>% mutate(
-      xstart = 0:(n_categories_present-1),
-      xend = 1:n_categories_present,
+      xstart = 0:(effective_categories-1),
+      xend = 1:effective_categories,
       xmid = (xend-xstart)/2 + xstart
     )
   } else if (sectors == "weighted") {
@@ -131,7 +160,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   return(list(
     overall_score = overall_score,
     paper_scores = RRS_by_paper,
-    n_papers = nrow(RRS_by_paper),
+    n_papers = sum(!is.na(RRS_by_paper$RRS_overall)),
     sector_scores = RRS_by_category,
     radar_dat = radar_dat,
     publication_years = applicant$rigor_pubs$Year |> as.numeric()
