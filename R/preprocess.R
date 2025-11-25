@@ -39,7 +39,6 @@ get_missing <- function(pub) {
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 # applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json")
-# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_röseler.json")
 
 preprocess <- function(applicant, verbose=FALSE) {
 
@@ -101,7 +100,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   applicant$indicators$valid_doi <- grepl(doi_url_regex_icase, applicant$indicators$doi, perl = TRUE)
 
   if (any(applicant$indicators$valid_doi == FALSE)) {
-    note <- paste0(sum(applicant$indicators$valid_doi == FALSE), " publication(s) had an invalid doi. They will not show up in the impact table, but the rigor score still is computed.")
+    note <- paste0(sum(applicant$indicators$valid_doi == FALSE), " publication(s) had an invalid doi:\n", paste0(applicant$indicators$doi[!applicant$indicators$valid_doi], collapse="\n"), "\nThey will not show up in the impact table, but the rigor score still is computed.")
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
 
@@ -387,8 +386,8 @@ preprocess <- function(applicant, verbose=FALSE) {
   applicant$indicators <- applicant$indicators |>
     mutate(
       # exclude fully empty publication records without indicator values (or only trivial information)
-      rigor_pub = type == "Publication" & P_Suitable == "Yes" & ind_missing < .95,
-      impact_pub = type == "Publication" &  valid_doi == TRUE & (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
+      rigor_pub = type2 == "Publication" & P_Suitable == "Yes" & ind_missing < .95,
+      impact_pub = type2 == "Publication" &  valid_doi == TRUE & (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
     )
 
   # TODO: Semi-hotfix: As P_IndependentVerification might often be removed as an indicator,
@@ -467,7 +466,7 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   if (nrow(applicant$impact_pubs) > 0) {
     c_counts_psy_2001_2024 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2024.RDS", package="RESQUER"))
-    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2024, verbose=FALSE)
+    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2024, verbose=verbose)
     applicant$FNCS <- fncs
   } else {
     applicant$FNCS <- NA
@@ -493,7 +492,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Compute Relative Rigor Score RRS
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
+  if (nrow(applicant$rigor_pubs) > 0) {
     applicant$RRS <- compute_RRS(applicant)
 
     # merge RRS scores into the other objects
@@ -515,7 +514,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get internationalization and interdisciplinarity scores
   #----------------------------------------------------------------
 
-  if (!is.null(applicant$meta$OA_author_id) & !is.na(applicant$meta$OA_author_id) & (nrow(applicant$impact_pubs) > 0)) {
+  if (!is.null(applicant$meta$OA_author_id) & all(!is.na(applicant$meta$OA_author_id)) & (nrow(applicant$impact_pubs) > 0)) {
     nw <- get_network(works=applicant$OAlex_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
 
     applicant$internationalization <- list(
@@ -526,8 +525,8 @@ preprocess <- function(applicant, verbose=FALSE) {
       n_coauthors_same_country = nw$n_coauthors_same_country,
       perc_international = (nw$n_coauthors_international*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round(),
       perc_same_country = (nw$n_coauthors_same_country*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round()
-
     )
+
     applicant$interdisciplinarity <- list(
       interdisc_evenness = nw$interdisc_evenness,
       primary_fields_tab_reduced = nw$primary_fields_tab_reduced,

@@ -16,6 +16,7 @@
 #' the applicant's profile.
 #'
 #' @param applicant_list A list containing the RESQUE jsons from multiple applicants.
+#' @param selector The prefix(es) of indicators that should be selected with `starts_with()`
 #'
 #' @return The function returns a data frame where each row corresponds to one
 #' publication and indicators are in columns.
@@ -23,11 +24,11 @@
 #' @importFrom plyr rbind.fill
 #' @export
 
-extract_indicators <- function(applicant_list) {
+extract_indicators <- function(applicant_list, selector=c("P_")) {
   all_indicators <- data.frame()
   for (i in 1:length(applicant_list)) {
     ind <- applicant_list[[i]]$indicators %>%
-      select(starts_with("P_"), Title, Year, doi) %>%
+      select(starts_with(selector), Title, Year, doi) %>%
       select(-starts_with("P_CRediT"), -matches("P_SchemeFit"), -P_TopPaper_Select)
 
     ind$ORCID <- applicant_list[[i]]$meta$ORCID

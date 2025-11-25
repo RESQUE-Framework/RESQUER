@@ -100,7 +100,7 @@ score <- function(research_output, verbose = FALSE, meta) {
     # Handle 'not applicable' condition
     # Skip this indicator if the 'not applicable' condition is met
     if (evaluate_condition_in_context(
-      indicator$not_applicable,
+      condition = indicator$not_applicable,
       research_output)) {
       if (verbose == TRUE) {
         print(paste0("This indicator is not applicable; skipping."))
@@ -215,22 +215,4 @@ score_all_from_file <- function(file, verbose = FALSE) {
   score_all(research_outputs, verbose = verbose)
 }
 
-# ====== Example ======
 
-# Example: score multiple research outputs
-# research_outputs <- read_json("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_after_name_change.json")
-# score_all(research_outputs)
-
-# Example: score a single research output
-# research_output <- research_outputs[[2]]
-
-# meta <- research_outputs[[1]]
-
-# score(research_outputs[[11]], meta = meta, verbose = TRUE)
-
-# Example: score all research outputs from a file
-# scores <- score_all_from_file("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json", verbose = TRUE)
-
-# scores <- score_all_from_file(json_file, verbose = TRUE)
-
-# applicant <- read_RESQUE(file=json_file)

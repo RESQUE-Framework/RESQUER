@@ -164,18 +164,18 @@ cat("\n</div>\n")
 The following table shows the types of submitted outputs, and whether they have been flagged as suitable for the rating sheet (*yes*) or not (*no*).
 
 ```{r}
-kable(table(applicant$indicators$type, factor(applicant$indicators$P_Suitable, levels=c("Yes", "No"))))
+kable(table(applicant$indicators$type2, factor(applicant$indicators$P_Suitable, levels=c("Yes", "No"))))
 ```
 
-The `r nrow(applicant$indicators[applicant$indicators$type == "Publication", ])` publications had the following types:
+The `r nrow(applicant$indicators[applicant$indicators$type2 == "Publication", ])` publications had the following types:
 
 ```{r}
-kable(table(applicant$indicators[applicant$indicators$type == "Publication", "P_TypePublication"]))
+kable(table(applicant$indicators[applicant$indicators$type2 == "Publication", "P_TypePublication"]))
 ```
 -->
 
 
-The `r nrow(applicant$indicators[applicant$indicators$type == "Publication", ])` publications had the following methodological type:
+The `r nrow(applicant$indicators[applicant$indicators$type2 == "Publication", ])` publications had the following methodological type:
 
 ```{r ROs}
 dat_tM <- applicant$indicators %>% select(contains("P_TypeMethod"))
@@ -213,7 +213,7 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r teamscience}
 #| results: "asis"
 
-  cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
+  cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type2 == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
   
   applicant$OAlex_papers$n_authors <- get_n_authors(applicant$OAlex_papers)
   
