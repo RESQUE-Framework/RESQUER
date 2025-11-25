@@ -35,6 +35,9 @@ exists <- function(variable, context) {
   }
 }
 
+# This function extends the built-in "!" operator, so that it works more like the
+# JS operator: If a variable is NA or NULL, this evaluates to TRUE (i.e., "NOT")
+# (instead of NA or NULL)
 not <- function(variable, context) {
   if (exists(variable, context)) {
     value <- context[[variable]]

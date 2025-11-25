@@ -436,7 +436,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   if (nrow(applicant$impact_pubs) > 0) {
     OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi, verbose=verbose)
 
-    if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(applicant$impact_pubs$doi), " submitted publications could be automatically retrieved with openAlex.\n"))
+    if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(applicant$impact_pubs$doi), " submitted publications could be automatically retrieved with openAlex."))
 
     if (is.null(OAlex_papers)) {stop("Error: Could not retrieve data from OpenAlex.")}
 

@@ -86,6 +86,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   RRS_by_paper_overall <- RRS_by_paper_overall %>% relocate(doi) %>% select(-output)
 
 
+  #--------------------------------------------------------------------------------
   # each row is one publication; show sector scores
   RRS_by_paper_sector <- scores_all %>%
     group_by(output, category) %>%
@@ -106,7 +107,6 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
     }
   }
   RRS_by_paper_sector <- RRS_by_paper_sector |> arrange(output)
-
 
   RRS_by_paper_sector$doi <- normalize_dois(applicant$rigor_pubs$doi)
   RRS_by_paper_sector <- RRS_by_paper_sector %>% relocate(doi) %>% select(-output)
