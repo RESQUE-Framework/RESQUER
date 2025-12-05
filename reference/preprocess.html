@@ -9,7 +9,7 @@ Needs an internet connection to query the BIP! and OpenAlex APIs."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@ Needs an internet connection to query the BIP! and OpenAlex APIs.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">preprocess</span><span class="op">(</span><span class="va">applicant</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">preprocess</span><span class="op">(</span><span class="va">applicant</span>, get_BIP <span class="op">=</span> <span class="cn">TRUE</span>, get_OpenAlex <span class="op">=</span> <span class="cn">TRUE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -51,6 +51,14 @@ Needs an internet connection to query the BIP! and OpenAlex APIs.</p>
 
 <dl><dt id="arg-applicant">applicant<a class="anchor" aria-label="anchor" href="#arg-applicant"></a></dt>
 <dd><p>The applicant data to be preprocessed (as loaded with the <code>read_RESQUE</code> function).</p></dd>
+
+
+<dt id="arg-get-bip">get_BIP<a class="anchor" aria-label="anchor" href="#arg-get-bip"></a></dt>
+<dd><p>Should the BIP! API be polled for impact indicators? If FALSE, NA values are returned.</p></dd>
+
+
+<dt id="arg-get-openalex">get_OpenAlex<a class="anchor" aria-label="anchor" href="#arg-get-openalex"></a></dt>
+<dd><p>Should the papers be polled from OpenAlex? If FALSE, NA values are returned. If FALSE, many indexes cannot be computed, including: Citation counts, FNCS, author networks</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

@@ -8,7 +8,7 @@ ExternalRaterName from the applicant's profile.
 ## Usage
 
 ``` r
-extract_indicators(applicant_list)
+extract_indicators(applicant_list, selector = c("P_"))
 ```
 
 ## Arguments
@@ -16,6 +16,11 @@ extract_indicators(applicant_list)
 - applicant_list:
 
   A list containing the RESQUE jsons from multiple applicants.
+
+- selector:
+
+  The prefix(es) of indicators that should be selected with
+  `starts_with()`
 
 ## Value
 

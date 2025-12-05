@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.8.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,9 +49,12 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="resquer">RESQUER<a class="anchor" aria-label="anchor" href="#resquer"></a>
 </h1></div>
-<p>An R package for analyzing the <a href="https://resque-framework.github.io/website/" class="external-link">RESQUE Research Quality Evaluation</a> schemes. This is work in progress, and likely to change.</p>
+<p>An R package for analyzing the data from the <a href="https://www.resque.info" class="external-link">RESQUE Research Quality Evaluation</a> scheme. This is work in progress, and likely to change.</p>
 <p>Install the development versions from GitHub with:</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># OAmetrics has some convenience functions to retrieve data from</span></span>
+<span><span class="co"># OpenAlex, such as h-index, JIF, citation counts, etc.</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"nicebread/OAmetrics"</span>, auth_token<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"RESQUE-Framework/RESQUER"</span>, auth_token<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre>
 <p>The package is not on CRAN yet.</p>
@@ -101,7 +104,7 @@
 <code>$indicators</code> contains all data (also publications without any data).
 <ul>
 <li>
-<code>$impact_pubs</code> is a subset of <code>indicators</code>: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers were a manual processing was requested)
+<code>$impact_pubs</code> is a subset of <code>indicators</code>: contains all publications that are eligible for the impact table (i.e., papers with sufficient indicator information and papers where a manual processing was requested)
 <ul>
 <li>
 <code>$OAlex_papers</code> is the same set as <code>$impact_pubs</code>, but contains the full OpenAlex information</li>
@@ -112,7 +115,7 @@
 </ul>
 </li>
 <li>There can be <code>impact_pubs</code> which are not <code>rigor_pubs</code>: E.g., opinion papers (which have impact metrics), but where no rigor score could be computed.</li>
-<li>There can be <code>rigor_pubs</code> which are not <code>impact_pubs</code>: E.g., submitted papers which have no doi (e.g., a paper on OSF; technically a preprint without a doi), but where a rigor could be computed.</li>
+<li>There can be <code>rigor_pubs</code> which are not <code>impact_pubs</code>: E.g., submitted papers which have no doi (e.g., a paper on OSF; technically a preprint without a doi), but where a rigor score could be computed.</li>
 </ul>
 </div>
 </div>

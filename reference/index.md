@@ -2,6 +2,9 @@
 
 ## All functions
 
+- [`RRS_category_summary()`](https://resque-framework.github.io/RESQUER/reference/RRS_category_summary.md)
+  : Display information about the scoring categories
+
 - [`RRS_radarchart()`](https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.md)
   : Radar Chart for Relative Rigor Score
 
@@ -58,11 +61,20 @@
 - [`get_json_object()`](https://resque-framework.github.io/RESQUER/reference/get_json_object.md)
   : Get JSON Object
 
+- [`get_jsons()`](https://resque-framework.github.io/RESQUER/reference/get_jsons.md)
+  : Batch import and preprocess RESQUE JSON files
+
 - [`get_reference_list()`](https://resque-framework.github.io/RESQUER/reference/get_reference_list.md)
   : Convert OpenAlex works into formatted reference list (in HTML)
 
 - [`horizontal_bar_chart()`](https://resque-framework.github.io/RESQUER/reference/horizontal_bar_chart.md)
   : Create a Horizontal Bar Chart in HTML
+
+- [`is.nulla()`](https://resque-framework.github.io/RESQUER/reference/is.nulla.md)
+  : Check if an object is NULL, NA, or length zero
+
+- [`many_raters()`](https://resque-framework.github.io/RESQUER/reference/many_raters.md)
+  : Create a wide rater–indicator table across many RESQUE applicants
 
 - [`ministack()`](https://resque-framework.github.io/RESQUER/reference/ministack.md)
   : Create a mini horizontal stacked bar chart in pure HTML
@@ -103,12 +115,20 @@
 - [`sparkpie()`](https://resque-framework.github.io/RESQUER/reference/sparkpie.md)
   : Sparkline pie chart function.
 
+- [`test_forms_json_structure()`](https://resque-framework.github.io/RESQUER/reference/test_forms_json_structure.md)
+  : Test structure of a "forms" JSON file
+
 - [`unCamel()`](https://resque-framework.github.io/RESQUER/reference/unCamel.md)
   : For all cells in selected columns, replace CamelCase with spaces
   between words
 
 - [`unCamel0()`](https://resque-framework.github.io/RESQUER/reference/unCamel0.md)
   : Replaces CamelCase in a vector with spaces between words
+
+- [`update_forms()`](https://resque-framework.github.io/RESQUER/reference/update_forms.md)
+  :
+
+  Update the `"forms"` element in a RESQUE JSON file
 
 - [`validate_json()`](https://resque-framework.github.io/RESQUER/reference/validate_json.md)
   : Fix some problems with old exported json files

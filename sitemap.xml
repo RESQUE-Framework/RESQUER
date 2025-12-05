@@ -6,6 +6,7 @@
 <url><loc>https://resque-framework.github.io/RESQUER/articles/index.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/authors.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/index.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/RRS_category_summary.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/add_variables.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/check_urls.html</loc></url>
@@ -24,9 +25,12 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_color.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_indicators.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_json_object.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/get_jsons.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/get_reference_list.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/horizontal_bar_chart.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/index.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/is.nulla.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/many_raters.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/ministack.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/preprocess.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/radial_chart.html</loc></url>
@@ -38,8 +42,10 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/score_all_from_file.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/slider.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/sparkpie.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/test_forms_json_structure.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/unCamel.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/unCamel0.html</loc></url>
+<url><loc>https://resque-framework.github.io/RESQUER/reference/update_forms.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/validate_json.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/waffle_html.html</loc></url>
 </urlset>

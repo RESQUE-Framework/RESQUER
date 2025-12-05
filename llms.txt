@@ -1,12 +1,15 @@
 # RESQUER
 
-An R package for analyzing the [RESQUE Research Quality
-Evaluation](https://resque-framework.github.io/website/) schemes. This
-is work in progress, and likely to change.
+An R package for analyzing the data from the [RESQUE Research Quality
+Evaluation](https://www.resque.info) scheme. This is work in progress,
+and likely to change.
 
 Install the development versions from GitHub with:
 
     install.packages("remotes")
+
+    # OAmetrics has some convenience functions to retrieve data from
+    # OpenAlex, such as h-index, JIF, citation counts, etc.
     remotes::install_github("nicebread/OAmetrics", auth_token=NULL)
     remotes::install_github("RESQUE-Framework/RESQUER", auth_token=NULL)
 
@@ -62,7 +65,7 @@ Launch the dashboard with the three included demo profiles:
 - `$indicators` contains all data (also publications without any data).
   - `$impact_pubs` is a subset of `indicators`: contains all
     publications that are eligible for the impact table (i.e., papers
-    with sufficient indicator information and papers were a manual
+    with sufficient indicator information and papers where a manual
     processing was requested)
     - `$OAlex_papers` is the same set as `$impact_pubs`, but contains
       the full OpenAlex information
@@ -74,11 +77,14 @@ Launch the dashboard with the three included demo profiles:
   computed.
 - There can be `rigor_pubs` which are not `impact_pubs`: E.g., submitted
   papers which have no doi (e.g., a paper on OSF; technically a preprint
-  without a doi), but where a rigor could be computed.
+  without a doi), but where a rigor score could be computed.
 
 # Package index
 
 ## All functions
+
+- [`RRS_category_summary()`](https://resque-framework.github.io/RESQUER/reference/RRS_category_summary.md)
+  : Display information about the scoring categories
 
 - [`RRS_radarchart()`](https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.md)
   : Radar Chart for Relative Rigor Score
@@ -136,11 +142,20 @@ Launch the dashboard with the three included demo profiles:
 - [`get_json_object()`](https://resque-framework.github.io/RESQUER/reference/get_json_object.md)
   : Get JSON Object
 
+- [`get_jsons()`](https://resque-framework.github.io/RESQUER/reference/get_jsons.md)
+  : Batch import and preprocess RESQUE JSON files
+
 - [`get_reference_list()`](https://resque-framework.github.io/RESQUER/reference/get_reference_list.md)
   : Convert OpenAlex works into formatted reference list (in HTML)
 
 - [`horizontal_bar_chart()`](https://resque-framework.github.io/RESQUER/reference/horizontal_bar_chart.md)
   : Create a Horizontal Bar Chart in HTML
+
+- [`is.nulla()`](https://resque-framework.github.io/RESQUER/reference/is.nulla.md)
+  : Check if an object is NULL, NA, or length zero
+
+- [`many_raters()`](https://resque-framework.github.io/RESQUER/reference/many_raters.md)
+  : Create a wide rater–indicator table across many RESQUE applicants
 
 - [`ministack()`](https://resque-framework.github.io/RESQUER/reference/ministack.md)
   : Create a mini horizontal stacked bar chart in pure HTML
@@ -181,12 +196,20 @@ Launch the dashboard with the three included demo profiles:
 - [`sparkpie()`](https://resque-framework.github.io/RESQUER/reference/sparkpie.md)
   : Sparkline pie chart function.
 
+- [`test_forms_json_structure()`](https://resque-framework.github.io/RESQUER/reference/test_forms_json_structure.md)
+  : Test structure of a "forms" JSON file
+
 - [`unCamel()`](https://resque-framework.github.io/RESQUER/reference/unCamel.md)
   : For all cells in selected columns, replace CamelCase with spaces
   between words
 
 - [`unCamel0()`](https://resque-framework.github.io/RESQUER/reference/unCamel0.md)
   : Replaces CamelCase in a vector with spaces between words
+
+- [`update_forms()`](https://resque-framework.github.io/RESQUER/reference/update_forms.md)
+  :
+
+  Update the `"forms"` element in a RESQUE JSON file
 
 - [`validate_json()`](https://resque-framework.github.io/RESQUER/reference/validate_json.md)
   : Fix some problems with old exported json files

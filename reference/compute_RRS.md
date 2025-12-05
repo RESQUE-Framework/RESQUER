@@ -6,20 +6,24 @@ provided from an applicant.
 ## Usage
 
 ``` r
-compute_RRS(applicant, sectors = c("weighted", "equal"))
+compute_RRS(applicant, sectors = c("weighted", "equal"), verbose = FALSE)
 ```
 
 ## Arguments
 
 - applicant:
 
-  The applicant data that has been preprocessed by the `read_RESQUE`
+  The applicant data that has been imported by the `read_RESQUE`
   function.
 
 - sectors:
 
   Should sectors be all equally sized ("equal") or weighted by the
   maximum sum of attainable points in each category ("weighted")?
+
+- verbose:
+
+  Print extra information.
 
 ## Value
 
