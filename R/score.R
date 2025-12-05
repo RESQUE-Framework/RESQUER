@@ -67,7 +67,8 @@ evaluate_condition_in_context <- function(condition, research_output) {
 #' @export
 score <- function(research_output, verbose = FALSE, meta) {
   # for debugging:
-  # research_output <- research_outputs[[2]]
+  # research_output <- research_outputs[[3]]
+  # meta <- research_outputs[[1]]
 
   # load the scoring information, which is stored in the exported json file
   scoring <- meta$forms[[research_output$type]]$scoring

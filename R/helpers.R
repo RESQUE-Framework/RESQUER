@@ -95,3 +95,25 @@ smart_as_numeric <- function(x) {
   unname(nums)
 }
 
+
+#' Check if an object is NULL, NA, or length zero
+#'
+#' This utility function returns `TRUE` if the input is `NULL`,
+#' has length zero, or is an `NA` of length one. Otherwise returns `FALSE`.
+#'
+#' @param x Any R object.
+#'
+#' @return A logical scalar: `TRUE` if `x` is considered "null-like",
+#'   otherwise `FALSE`.
+#'
+#' @examples
+#' is.nulla(NULL)
+#' is.nulla(NA)
+#' is.nulla(character(0))
+#' is.nulla(1)   # FALSE
+#'
+#' @export
+is.nulla <- function(x) {
+  is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))
+}
+

@@ -8,7 +8,7 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/testCases/resque_1pub_noOD_0OM.json"
+  json_path: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_a_all_data.json"
   show_inter: true
 ---
 
@@ -20,7 +20,7 @@ params:
 # "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
 # "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-01T07-25-48.json"
 
-# params <- list(FullName="Max Mustermann Demoprofile", json_path="/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-08T07-03-47.json", show_inter=TRUE)
+# params <- list(FullName="Max Mustermann Demoprofile", json_path="/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_a_all_data.json", show_inter=TRUE)
 
 library(knitr)
 library(kableExtra)
@@ -112,7 +112,7 @@ overview_tab <- data.frame(
 extra_meta <- names(applicant$meta)
 
 # remove unnecessary variables
-extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis", "MeritStatement", "P_MeritStatement")]
+extra_meta <- extra_meta[!extra_meta %in% c("type", "position", "LastName", "FirstName", "YearPhD", "AcademicAgeBonus", "HonestyDisclaimer_Yes", "FullName", "AcademicAge", "OA_author_id", "date_exported", "date_added", "date_created", "date_modified", "date_analysis", "MeritStatement", "P_MeritStatement", "forms", "version")]
 
 for (i in extra_meta) {
   overview_tab <- rbind(overview_tab, c(i, applicant$meta[i] |> as.character()))
@@ -133,7 +133,7 @@ kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:"
 
 
 ::: {.callout-note}
-This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially. No bonus points have been assigned to the theory indicators yet, and also not to some other indicators of sample characteristics.
+This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially.
 :::
 
 
@@ -333,16 +333,16 @@ ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
 
 
 
-```{r}
+```{r show_rare_samples}
 #| results: asis
 
 if (any(!is.na(applicant$rigor_pubs$P_Sample_RareOther))) {
   res <- "**Rare samples used in studies:**\n\n"
   
-  rare_sample_position <- which(!is.na(applicant$rigor_pubs$P_Sample_RareOther))
-  for (i in rare_sample_position) {
+  rare_sample_positions <- which(!is.na(applicant$rigor_pubs$P_Sample_RareOther))
+  for (i in rare_sample_positions) {
     res <- paste0(res, "- ", applicant$rigor_pubs$P_Sample_RareOther[i], "\n")
-    if (!is.na(applicant$rigor_pubs$P_SampleSize[i])) {
+    if (!is.nulla(applicant$rigor_pubs$P_SampleSize[i])) {
       res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$rigor_pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
     } else {
       res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")

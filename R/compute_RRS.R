@@ -2,16 +2,18 @@
 #'
 #' This function computes a relative rigor score based on the indicators provided from an applicant.
 #'
-#' @param applicant The applicant data that has been preprocessed by the `read_RESQUE` function.
+#' @param applicant The applicant data that has been imported by the `read_RESQUE` function.
 #' @param sectors Should sectors be all equally sized ("equal") or weighted by the maximum sum of attainable points in each category ("weighted")?
+#' @param verbose Print extra information.
 #' @return A tibble containing the dimension (category), maximum points, and relative score for each category, suitable for creating a radar chart.
 #' @import dplyr
 #' @import stringr
 #' @import tibble
 #' @importFrom janitor clean_names
+#' @importFrom stringr str_detect
 #'
 #' @export
-compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
+compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FALSE) {
 
   sectors <- match.arg(sectors, choices=c("weighted", "equal"))
 
@@ -56,7 +58,16 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
   # plausibility check: Which indicators have not been categorized?
   # (<NA> should be 0)
   t1 <- table(scores_all$category, useNA="always")
-  t1
+
+  if (verbose==TRUE) {
+    print(paste0("Number of indicators per scoring category, summed across ", n_scorable, " papers:"))
+    print(t1)
+    print("Note: If an scorable indicator has not been shown because of a filter condition, it does not show up here.")
+
+    if (t1[is.na(names(t1))] == 0) {
+      print("Note: The <NA> category has > 0 indicators: There are uncategorized scorable indicators present.")
+    }
+  }
 
   n_uncategorized_indicators <- sum(is.na(scores_all$category))
   if (n_uncategorized_indicators > 0) {
@@ -169,3 +180,66 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal")) {
 
 #RRS <- compute_RRS(applicant, sectors="weighted")
 #RRS_radarchart(RRS, overall_score = TRUE)
+
+
+
+
+
+
+#' Display information about the scoring categories
+#'
+#' This function shows a table how many indicators
+#'
+#' @param applicant The applicant data that has been imported by the `read_RESQUE` function.
+#' @param selector The prefix(es) of indicators that should be selected with `starts_with()`
+#' @return Nothing (called for it's print output)
+#' @importFrom stringr str_detect str_starts
+#'
+#' @export
+RRS_category_summary <- function(applicant, selector=c("P_")) {
+  # retrieve categories from applicant meta-data
+  cat_def <- applicant$meta$forms$config$score_categories[[1]]
+
+  # Select indicators that actually have scores attached.
+  # We do this by looking for the "score" node in the forms.
+  indicators_with_scores <- names(applicant$meta$forms$pub$scoring)
+
+  # reduce to indicators that match the selector
+  selector_match <- paste0("^(", paste(selector, collapse="|"), ")")
+  X <- indicators_with_scores[grepl(selector_match, indicators_with_scores)]
+
+  # reduce to indicators that match the category cues
+
+  # 1. Build a logical matrix: rows = X, cols = cues
+  match_mat <- sapply(cat_def$cue, function(pat) grepl(pat, X, perl = TRUE))
+
+  # 2. Count how many categories each element of X matches
+  n_matches <- rowSums(match_mat)
+
+  # 3. Check for elements that match more than one cue
+  if (any(n_matches > 1L)) {
+    i <- which(n_matches > 1L)
+    stop("Some inficators match to multiple category cues:\n",
+         paste0("  X[", i, "] = ", X[i], collapse = "\n"))
+  }
+
+  # 4. Map each X to its single matching category (or NA if no match)
+  category <- rep(NA_character_, length(X))
+  idx_unique <- which(n_matches == 1L)
+
+  # for those with exactly one TRUE, find which cue it is
+  category[idx_unique] <- cat_def$title[
+    apply(match_mat[idx_unique, , drop = FALSE], 1, function(z) which(z))
+  ]
+
+  # 5. Final result
+  match_table <- data.frame(
+    indicator = X,
+    category = category,
+    stringsAsFactors = FALSE
+  )
+
+  print(match_table |> group_by(category) |> count())
+
+  return(match_table)
+}

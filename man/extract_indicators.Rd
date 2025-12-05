@@ -4,10 +4,12 @@
 \alias{extract_indicators}
 \title{Extract Indicators from Applicant List}
 \usage{
-extract_indicators(applicant_list)
+extract_indicators(applicant_list, selector = c("P_"))
 }
 \arguments{
 \item{applicant_list}{A list containing the RESQUE jsons from multiple applicants.}
+
+\item{selector}{The prefix(es) of indicators that should be selected with \code{starts_with()}}
 }
 \value{
 The function returns a data frame where each row corresponds to one

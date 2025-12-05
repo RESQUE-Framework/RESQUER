@@ -19,6 +19,8 @@ get_missing <- function(pub) {
 #' Needs an internet connection to query the BIP! and OpenAlex APIs.
 #'
 #' @param applicant The applicant data to be preprocessed (as loaded with the `read_RESQUE` function).
+#' @param get_BIP Should the BIP! API be polled for impact indicators? If FALSE, NA values are returned.
+#' @param get_OpenAlex Should the papers be polled from OpenAlex? If FALSE, NA values are returned. If FALSE, many indexes cannot be computed, including: Citation counts, FNCS, author networks
 #' @param verbose Show diagnostic information?
 #'
 #' @return Preprocessed applicant data.
@@ -40,7 +42,7 @@ get_missing <- function(pub) {
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 # applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json")
 
-preprocess <- function(applicant, verbose=FALSE) {
+preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=FALSE) {
 
   # create an empty vector that gets populated with relevant notes
   applicant$preprocessing_notes <- c()
@@ -71,11 +73,15 @@ preprocess <- function(applicant, verbose=FALSE) {
 
   if (!is.na(applicant$meta$ORCID)) {
     # Retrieve OpenAlex Author ID
-    author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
-    if (is.null(author_info)) {
-      applicant$meta$OA_author_id <- NA
+    if (get_OpenAlex == TRUE) {
+      author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
+      if (is.null(author_info)) {
+        applicant$meta$OA_author_id <- NA
+      } else {
+        applicant$meta$OA_author_id <- author_info$id
+      }
     } else {
-      applicant$meta$OA_author_id <- author_info$id
+      applicant$meta$OA_author_id <- NA
     }
   } else {
     applicant$meta$OA_author_id <- NA
@@ -418,7 +424,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Call BIP! API for impact measures
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
+  if (nrow(applicant$impact_pubs) > 0 & get_BIP == TRUE) {
     applicant$BIP <- get_BIP(dois=applicant$impact_pubs$doi, verbose=verbose)
     applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
     applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
@@ -433,7 +439,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Retrieve submitted works from OpenAlex
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
+  if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
     OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi, verbose=verbose)
 
     if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(applicant$impact_pubs$doi), " submitted publications could be automatically retrieved with openAlex."))
@@ -464,7 +470,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get FNCS
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
+  if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
     c_counts_psy_2001_2024 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2024.RDS", package="RESQUER"))
     fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2024, verbose=verbose)
     applicant$FNCS <- fncs
@@ -476,7 +482,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   # Get TOP factor of the publication venues
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0) {
+  if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
     TOP <- read.csv(system.file("extdata", "top-factor.csv", package="RESQUER"))
 
     applicant$TOP_journals <- TOP %>%
@@ -493,7 +499,7 @@ preprocess <- function(applicant, verbose=FALSE) {
   #----------------------------------------------------------------
 
   if (nrow(applicant$rigor_pubs) > 0) {
-    applicant$RRS <- compute_RRS(applicant)
+    applicant$RRS <- compute_RRS(applicant, verbose=verbose)
 
     # merge RRS scores into the other objects
     if (!is.na(applicant$RRS$overall_score)) {
