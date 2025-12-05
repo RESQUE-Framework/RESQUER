@@ -4,10 +4,14 @@
 \alias{preprocess}
 \title{Preprocess and enrich the raw information from an applicant's JSON}
 \usage{
-preprocess(applicant, verbose = FALSE)
+preprocess(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{applicant}{The applicant data to be preprocessed (as loaded with the \code{read_RESQUE} function).}
+
+\item{get_BIP}{Should the BIP! API be polled for impact indicators? If FALSE, NA values are returned.}
+
+\item{get_OpenAlex}{Should the papers be polled from OpenAlex? If FALSE, NA values are returned. If FALSE, many indexes cannot be computed, including: Citation counts, FNCS, author networks}
 
 \item{verbose}{Show diagnostic information?}
 }

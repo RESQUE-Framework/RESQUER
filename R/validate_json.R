@@ -102,6 +102,12 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
       research_outputs[[r]]$P_TypeMethod_MetaAnalysis <- FALSE
       if (verbose==TRUE) print(paste0("Added missing 'P_TypeMethod_MetaAnalysis = FALSE' to research output #", r))
     }
+
+    # Add missing type P_TypeMethod_EmpiricalQuantitative
+    if (is.null(research_outputs[[r]]$P_TypeMethod_EmpiricalQuantitative)) {
+      research_outputs[[r]]$P_TypeMethod_EmpiricalQuantitative <- FALSE
+      if (verbose==TRUE) print(paste0("Added missing 'P_TypeMethod_EmpiricalQuantitative = FALSE' to research output #", r))
+    }
   }
 
 
