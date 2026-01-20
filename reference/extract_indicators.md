@@ -8,7 +8,11 @@ ExternalRaterName from the applicant's profile.
 ## Usage
 
 ``` r
-extract_indicators(applicant_list, selector = c("P_"))
+extract_indicators(
+  applicant_list,
+  selector = c("P_"),
+  meta_selector = c("ORCID", "LastName", "ExternalRaterName", "YearPhD")
+)
 ```
 
 ## Arguments
@@ -21,6 +25,11 @@ extract_indicators(applicant_list, selector = c("P_"))
 
   The prefix(es) of indicators that should be selected with
   `starts_with()`
+
+- meta_selector:
+
+  A list of the exact indicator names from the author's meta-information
+  that should be included in the return object.
 
 ## Value
 

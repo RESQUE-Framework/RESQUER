@@ -1,6 +1,9 @@
 # Display information about the scoring categories
 
-This function shows a table how many indicators
+This function shows a table how many indicators are assigned to each
+scoring category. This counts all indicators that are defined in the
+packs.json and contribute to scoring (regardless of whether an indicator
+is missing in that specific applicant).
 
 ## Usage
 

@@ -13,14 +13,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/RESQUE-Framework/RESQUER/DESCRIPTION)
 
-Schönbrodt F, Aksu A (2025). *RESQUER: Enrich, analyse and visualize
-data from the RESQUE rating scheme*. R package version 0.9.1,
+Schönbrodt F, Aksu A (2026). *RESQUER: Enrich, analyse and visualize
+data from the RESQUE rating scheme*. R package version 0.9.2,
 <https://resque-framework.github.io/RESQUER/>.
 
     @Manual{,
       title = {RESQUER: Enrich, analyse and visualize data from the RESQUE rating scheme},
       author = {Felix D. Schönbrodt and Alp Kaan Aksu},
-      year = {2025},
-      note = {R package version 0.9.1},
+      year = {2026},
+      note = {R package version 0.9.2},
       url = {https://resque-framework.github.io/RESQUER/},
     }
