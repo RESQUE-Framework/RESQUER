@@ -4,12 +4,19 @@
 \alias{extract_indicators}
 \title{Extract Indicators from Applicant List}
 \usage{
-extract_indicators(applicant_list, selector = c("P_"))
+extract_indicators(
+  applicant_list,
+  selector = c("P_"),
+  meta_selector = c("ORCID", "LastName", "ExternalRaterName", "YearPhD")
+)
 }
 \arguments{
 \item{applicant_list}{A list containing the RESQUE jsons from multiple applicants.}
 
 \item{selector}{The prefix(es) of indicators that should be selected with \code{starts_with()}}
+
+\item{meta_selector}{A list of the exact indicator names from the author's
+meta-information that should be included in the return object.}
 }
 \value{
 The function returns a data frame where each row corresponds to one
