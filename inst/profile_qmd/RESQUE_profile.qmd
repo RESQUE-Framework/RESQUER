@@ -15,8 +15,6 @@ params:
 ```{r setup0}
 #| include: false
 
-
-
 library(knitr)
 library(kableExtra)
 
