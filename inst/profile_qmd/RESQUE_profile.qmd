@@ -8,19 +8,13 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_a_all_data.json"
+  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/resque_schönbrodt_0-8-1.json"
   show_inter: true
 ---
 
 
 ```{r setup0}
 #| include: false
-
-# "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json"
-# "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Eichstätt/resque_schönbrodt_0.7.2.json"
-# "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_lennartz_2025-10-01T07-25-48.json"
-
-# params <- list(FullName="Max Mustermann Demoprofile", json_path="/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/Ruben/resque_a_all_data.json", show_inter=TRUE)
 
 library(knitr)
 library(kableExtra)

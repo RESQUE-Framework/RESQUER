@@ -17,6 +17,8 @@
 #'
 #' @param applicant_list A list containing the RESQUE jsons from multiple applicants.
 #' @param selector The prefix(es) of indicators that should be selected with `starts_with()`
+#' @param meta_selector A list of the exact indicator names from the author's
+#'    meta-information that should be included in the return object.
 #'
 #' @return The function returns a data frame where each row corresponds to one
 #' publication and indicators are in columns.
@@ -24,21 +26,22 @@
 #' @importFrom plyr rbind.fill
 #' @export
 
-extract_indicators <- function(applicant_list, selector=c("P_")) {
+extract_indicators <- function(applicant_list, selector=c("P_"), meta_selector=c("ORCID", "LastName", "ExternalRaterName", "YearPhD")) {
   all_indicators <- data.frame()
   for (i in 1:length(applicant_list)) {
     ind <- applicant_list[[i]]$indicators %>%
       select(starts_with(selector), Title, Year, doi) %>%
       select(-starts_with("P_CRediT"), -matches("P_SchemeFit"), -P_TopPaper_Select)
 
-    ind$ORCID <- applicant_list[[i]]$meta$ORCID
-    ind$LastName <- applicant_list[[i]]$meta$LastName
-    ind$ExternalRaterName <- applicant_list[[i]]$meta$ExternalRaterName
+    for (m in meta_selector) {
+      ind[, m] <- applicant_list[[i]]$meta[m]
+    }
+
     all_indicators <- plyr::rbind.fill(all_indicators, ind)
   }
 
   all_indicators <- all_indicators %>%
-    relocate(ORCID, LastName, ExternalRaterName)
+    relocate(all_of(meta_selector))
 
   return(all_indicators)
 }

@@ -188,7 +188,10 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
 #' Display information about the scoring categories
 #'
-#' This function shows a table how many indicators
+#' This function shows a table how many indicators are assigned to each scoring
+#' category. This counts all indicators that are defined in the packs.json and
+#' contribute to scoring (regardless of whether an indicator is missing in that
+#' specific applicant).
 #'
 #' @param applicant The applicant data that has been imported by the `read_RESQUE` function.
 #' @param selector The prefix(es) of indicators that should be selected with `starts_with()`
@@ -239,6 +242,9 @@ RRS_category_summary <- function(applicant, selector=c("P_")) {
     stringsAsFactors = FALSE
   )
 
+  print("The following indicators are defined in the scoring rules of the
+        selected indicators (regardless of whether some indicator are missing
+        for this specific applicant):")
   print(match_table |> group_by(category) |> count())
 
   return(match_table)

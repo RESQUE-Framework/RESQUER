@@ -40,7 +40,7 @@ get_missing <- function(pub) {
 # For testing:
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
-# applicant <- read_RESQUE("/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Mainz Test 2/resque_schönbrodt_0.6.2.json")
+
 
 preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=FALSE) {
 
@@ -176,6 +176,8 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
                       applicant$indicators$P_Data_Source_ReuseOwn == FALSE &
                       applicant$indicators$P_Data_Source_ReuseCompilation == FALSE &
                       applicant$indicators$P_Data_Source_Simulated == FALSE
+
+  stopifnot(length(pure_reuse_other) == nrow(applicant$indicators))
 
   no_data <- applicant$indicators$P_Data == "No"
 
