@@ -24,7 +24,7 @@ const scoreAll = (rs) => {
     }, []);
 
     return {
-        scores: [{}, ...scores],
+        scores: [{} /* meta */, ...scores],
         overall: {
             relative,
             percentage: (relative * 100).toFixed(1),
@@ -127,10 +127,11 @@ const score = (r, meta) => {
     });
 
     return {
+        doi: r.DOI,
         max: maxScore,
         score: reachedScore,
-        relative: maxScore > 0 ? reachedScore / maxScore : 0,
-        percentage: maxScore > 0 ? ((reachedScore / maxScore) * 100).toFixed(1) : "0.0",
+        relative: maxScore > 0 ? reachedScore / maxScore : null,
+        percentage: maxScore > 0 ? ((reachedScore / maxScore) * 100).toFixed(1) : null,
         items: itemScores,
         categories: categoryScores
     };

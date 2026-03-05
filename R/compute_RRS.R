@@ -18,9 +18,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
   sectors <- match.arg(sectors, choices=c("weighted", "equal"))
 
   # Which outputs should be scored? At the moment, only publications
-  score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE]
-  NaN_check <- sapply(score_list, "[[", "relative_score")
-  n_scorable <- sum(!is.nan(NaN_check))
+  score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE, ]
+  n_scorable <- sum(!is.na(score_list$relative))
 
   if (n_scorable == 0) {
     warning("No publications suitable for scoring.")
@@ -34,49 +33,31 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
     ))
   }
 
-  scores_all <- get_indicators(sc=score_list)
 
-  scores_all$category <- NA
-
-  # retrieve categories from applicant meta-data
-  cat_def <- applicant$meta$forms$config$score_categories[[1]]
-
-  for (cat in 1:nrow(cat_def)) {
-    # find out the category ...
-    candidates <- which(str_detect(scores_all$indicator, cat_def$cue[cat]))
-
-    # ... and ensure that no "double booking" happens when the regexp matches
-    # multiple times:
-    if (all(is.na(scores_all$category[candidates]))) {
-      scores_all$category[candidates] <- cat_def$title[cat]
-    } else {
-      stop("A scoring category has been assigned multiple times - check the regexp in your config.yaml for multiple matches.")
-    }
-  }
-  effective_categories <- length(unique(scores_all$category))
-
-  # plausibility check: Which indicators have not been categorized?
-  # (<NA> should be 0)
-  t1 <- table(scores_all$category, useNA="always")
-
-  if (verbose==TRUE) {
-    print(paste0("Number of indicators per scoring category, summed across ", n_scorable, " papers:"))
-    print(t1)
-    print("Note: If an scorable indicator has not been shown because of a filter condition, it does not show up here.")
-
-    if (t1[is.na(names(t1))] == 0) {
-      print("Note: The <NA> category has > 0 indicators: There are uncategorized scorable indicators present.")
-    }
+  cat_scores <- data.frame()
+  for (cat in 1:nrow(score_list$categories[[1]])) {
+    max <- sapply(score_list$categories, function(x) x[cat, "max"])
+    score <- sapply(score_list$categories, function(x) x[cat, "score"])
+    cat_scores <- rbind(cat_scores, data.frame(
+      category = score_list$categories[[1]]$title[cat],
+      max = sum(max, na.rm=TRUE),
+      score = sum(score, na.rm=TRUE)
+    ))
   }
 
-  n_uncategorized_indicators <- sum(is.na(scores_all$category))
-  if (n_uncategorized_indicators > 0) {
-    warning(paste0(n_uncategorized_indicators, " scoring indicators have not been categorized:"))
-    warning(print(scores_all[is.na(scores_all$category), ]))
-  }
+  cat_scores$relative <- cat_scores$score / cat_scores$max
+
+
+  effective_categories <- sum(cat_scores$max > 0)
 
 
   # each row is one publication; show overall RRS and raw points
+  RRS_by_paper_overall <- score_list |> select(doi, scores=score, max_points=max, rel_score=relative)
+
+
+  #===========#===========#===========#===========#===========
+  # TODO: Hier weitermachen
+
   RRS_by_paper_overall <- scores_all %>%
     group_by(output) %>%
     summarise(
@@ -85,6 +66,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
       rel_score = scores/max_points
     )
 
+  
   # fill in missing publications (which have a max score of 0)
   for (i in 1:length(score_list)) {
     if (!i %in% RRS_by_paper_overall$output) {

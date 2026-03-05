@@ -65,7 +65,7 @@ evaluate_condition_in_context <- function(condition, research_output) {
 #' @importFrom purrr map2_dbl map
 #' @importFrom stats setNames
 #' @export
-score <- function(research_output, verbose = FALSE, meta) {
+score_old <- function(research_output, verbose = FALSE, meta) {
   # for debugging:
   # research_output <- research_outputs[[3]]
   # meta <- research_outputs[[1]]
@@ -169,7 +169,7 @@ score <- function(research_output, verbose = FALSE, meta) {
 #' @param verbose A logical value indicating if verbose output should be printed
 #' @return A list with scores, number of scored research outputs, and overall score
 #' @export
-score_all <- function(research_outputs, verbose = FALSE) {
+score_all_old <- function(research_outputs, verbose = FALSE) {
   meta <- research_outputs[[1]]
   scores <- map(research_outputs, ~ score(.x, meta = meta, verbose = verbose))
 
@@ -211,7 +211,7 @@ score_all <- function(research_outputs, verbose = FALSE) {
 #' }
 #'
 #' @export
-score_all_from_file <- function(file, verbose = FALSE) {
+score_all_from_file_old <- function(file, verbose = FALSE) {
   research_outputs <- jsonlite::read_json(file)
   score_all(research_outputs, verbose = verbose)
 }
