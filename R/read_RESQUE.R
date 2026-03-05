@@ -44,11 +44,7 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
 
   # compute the scores
   #scores <- score_all_from_file(file=file, verbose=verbose)
-  scores <- score_all(research_outputs=parse_json(fixed_json, simplifyVector = FALSE), verbose=verbose)
-
-  # remove the first element: This is the meta-information which has no scores
-  # Now each list entry is one publication, in the same order as in `dat`
-  scores$scores <- scores$scores[-1]
+  scores <- score_all(research_outputs=parse_json(fixed_json, simplifyVector = FALSE))
 
   # Create nice factor labels
   dat$type2 <- factor(dat$type, levels=c("pub", "data", "software"), labels=c("Publication", "Data set", "Research software"))
