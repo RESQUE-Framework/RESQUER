@@ -11,6 +11,7 @@
 #' @import tibble
 #' @importFrom janitor clean_names
 #' @importFrom stringr str_detect
+#' @importFrom stats setNames
 #'
 #' @export
 compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FALSE) {
