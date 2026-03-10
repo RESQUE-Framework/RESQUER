@@ -1,18 +1,12 @@
 library(V8)
 library(jsonlite)
 
-ctx <- V8::v8()
-
-ctx$source("./R/score2.js")
-
-categories <- c()
-
 score_all <- function(research_outputs) {
-  scores <- ctx$call("scoreAll", research_outputs)
+  ctx <- V8::v8()
+  ctx$source(system.file("js", "score2.js", package = "RESQUER"))
   
-  # remove the first element: This is the meta-information which has no scores
+  scores <- ctx$call("scoreAll", research_outputs)
   scores$scores <- scores$scores[-1, ]
-
   return(scores)
 }
 

@@ -111,70 +111,72 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
   }
 
 
+  #TODO: These checks were only present to import old json files that had some missing values. Once all json files are updated, we can remove these checks and just require that all json files have the correct format.
+
   # Manually check all conditional checkbox items, for all research outputs.
   # If the condition applies (i.e., it is not "not applicable" AND they have been shown (i.e., $condition == TRUE)), then missing child checkboxes should be FALSE (and not missing)
 
-  # go through all research outputs
-  for (r in seq_along(research_outputs)) {
+  # # go through all research outputs
+  # for (r in seq_along(research_outputs)) {
 
-    # TODO: Add all other dependencies:
-    # P_Preregistration_Content items
-    # ------------------------------------------
-    condition <- "P_Preregistration_Content"
-    to_check <- c(
-      "P_Preregistration_Content_SampleSizePlanning",
-      "P_Preregistration_Content_Hypotheses",
-      "P_Preregistration_Content_Operationalizations",
-      "P_Preregistration_Content_AnalysisPlan",
-      "P_Preregistration_Content_InferentialCriteria"
-    )
+  #   # TODO: Add all other dependencies:
+  #   # P_Preregistration_Content items
+  #   # ------------------------------------------
+  #   condition <- "P_Preregistration_Content"
+  #   to_check <- c(
+  #     "P_Preregistration_Content_SampleSizePlanning",
+  #     "P_Preregistration_Content_Hypotheses",
+  #     "P_Preregistration_Content_Operationalizations",
+  #     "P_Preregistration_Content_AnalysisPlan",
+  #     "P_Preregistration_Content_InferentialCriteria"
+  #   )
 
-    item0 <- items[items$id == condition, ]
-    not_applicable <- evaluate_condition_in_context(condition=item0$score$not_applicable, research_output=research_outputs[[r]])
-    shown <- evaluate_condition_in_context(condition=item0$condition, research_output=research_outputs[[r]])
+  #   item0 <- items[items$id == condition, ]
+  #   not_applicable <- evaluate_condition_in_context(condition=item0$score$not_applicable, research_output=research_outputs[[r]])
+  #   shown <- evaluate_condition_in_context(condition=item0$condition, research_output=research_outputs[[r]])
 
-    if (!not_applicable & shown) {
-      if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' DOES apply."))
+  #   if (!not_applicable & shown) {
+  #     if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' DOES apply."))
 
-      for (check in to_check) {
-        if (is.null(research_outputs[[r]][check][[1]])) {
-          research_outputs[[r]][check] <- FALSE
-          if (verbose==TRUE) print(paste0("  |-- Research output ", r, ": Setting missing item '", check, "' to FALSE."))
-        }
-      }
-    } else {
-      if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
-    }
+  #     for (check in to_check) {
+  #       if (is.null(research_outputs[[r]][check][[1]])) {
+  #         research_outputs[[r]][check] <- FALSE
+  #         if (verbose==TRUE) print(paste0("  |-- Research output ", r, ": Setting missing item '", check, "' to FALSE."))
+  #       }
+  #     }
+  #   } else {
+  #     if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
+  #   }
 
 
 
-    # P_Data_Open_FAIR items
-    # ------------------------------------------
-    condition <- "P_Data_Open_FAIR"
-    to_check <- c(
-      "P_Data_Open_FAIR_PersistentIdentifier",
-      "P_Data_Open_FAIR_Codebook",
-      "P_Data_Open_FAIR_StructuredOpenFormat"
-    )
+  #   # P_Data_Open_FAIR items
+  #   # ------------------------------------------
+  #   condition <- "P_Data_Open_FAIR"
+  #   to_check <- c(
+  #     "P_Data_Open_FAIR_PersistentIdentifier",
+  #     "P_Data_Open_FAIR_Codebook",
+  #     "P_Data_Open_FAIR_StructuredOpenFormat"
+  #   )
 
-    item0 <- items[items$id == condition, ]
-    not_applicable <- evaluate_condition_in_context(condition=item0$score$not_applicable, research_output=research_outputs[[r]])
-    shown <- evaluate_condition_in_context(condition=item0$condition, research_output=research_outputs[[r]])
+  #   item0 <- items[items$id == condition, ]
+  #   not_applicable <- evaluate_condition_in_context(condition=item0$score$not_applicable, research_output=research_outputs[[r]])
+  #   shown <- evaluate_condition_in_context(condition=item0$condition, research_output=research_outputs[[r]])
 
-    if (!not_applicable & shown) {
-      if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' DOES apply."))
+  #   if (!not_applicable & shown) {
+  #     if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' DOES apply."))
 
-      for (check in to_check) {
-        if (is.null(research_outputs[[r]][check][[1]])) {
-          research_outputs[[r]][check] <- FALSE
-          if (verbose==TRUE) print(paste0("  |-- Research output ", r, ": Setting missing item '", check, "' to FALSE."))
-        }
-      }
-    } else {
-      if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
-    }
+  #     for (check in to_check) {
+  #       if (is.null(research_outputs[[r]][check][[1]])) {
+  #         research_outputs[[r]][check] <- FALSE
+  #         if (verbose==TRUE) print(paste0("  |-- Research output ", r, ": Setting missing item '", check, "' to FALSE."))
+  #       }
+  #     }
+  #   } else {
+  #     if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
+  #   }
 
-  }  # of r in seq_along
+  # }  # of r in seq_along
 
 
   # Rebuild the entire json
