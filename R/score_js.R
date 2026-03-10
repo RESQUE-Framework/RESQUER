@@ -1,14 +1,13 @@
 library(V8)
 library(jsonlite)
 
-ctx <- V8::v8()
-
-ctx$source("./R/score2.js")
-
-categories <- c()
-
 score_all <- function(research_outputs) {
-    ctx$call("scoreAll", research_outputs)
+  ctx <- V8::v8()
+  ctx$source(system.file("js", "score2.js", package = "RESQUER"))
+  
+  scores <- ctx$call("scoreAll", research_outputs)
+  scores$scores <- scores$scores[-1, ]
+  return(scores)
 }
 
 score_all_from_file <- function(research_outputs_file) {
