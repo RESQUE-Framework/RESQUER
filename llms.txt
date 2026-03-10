@@ -109,9 +109,6 @@ Launch the dashboard with the three included demo profiles:
 - [`credit_barchart()`](https://resque-framework.github.io/RESQUER/reference/credit_barchart.md)
   : Display a barchart with CRediT roles
 
-- [`evaluate_condition_in_context()`](https://resque-framework.github.io/RESQUER/reference/evaluate_condition_in_context.md)
-  : Evaluate a condition in a context
-
 - [`extract_indicator_scores()`](https://resque-framework.github.io/RESQUER/reference/extract_indicator_scores.md)
   : Extract scores on indicator level
 
@@ -180,15 +177,6 @@ Launch the dashboard with the three included demo profiles:
 
 - [`render_profile()`](https://resque-framework.github.io/RESQUER/reference/render_profile.md)
   : Render an HTML profile of a single applicant
-
-- [`score()`](https://resque-framework.github.io/RESQUER/reference/score.md)
-  : Score a single research output
-
-- [`score_all()`](https://resque-framework.github.io/RESQUER/reference/score_all.md)
-  : Score multiple research outputs
-
-- [`score_all_from_file()`](https://resque-framework.github.io/RESQUER/reference/score_all_from_file.md)
-  : Score all research outputs from a file
 
 - [`slider()`](https://resque-framework.github.io/RESQUER/reference/slider.md)
   : Generate a Slider Indicator in HTML

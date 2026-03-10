@@ -14,7 +14,6 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/circle_simple.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/compute_RRS.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/credit_barchart.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/evaluate_condition_in_context.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/extract_indicator_scores.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/extract_indicators.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/extract_overall_scores.html</loc></url>
@@ -37,9 +36,6 @@
 <url><loc>https://resque-framework.github.io/RESQUER/reference/read_RESQUE.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/render_overview.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/render_profile.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/score.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/score_all.html</loc></url>
-<url><loc>https://resque-framework.github.io/RESQUER/reference/score_all_from_file.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/slider.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/sparkpie.html</loc></url>
 <url><loc>https://resque-framework.github.io/RESQUER/reference/test_forms_json_structure.html</loc></url>
