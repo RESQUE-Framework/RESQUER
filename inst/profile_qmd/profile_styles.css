@@ -1,0 +1,29 @@
+/* ── Methods / Details offcanvas pill ──────────────────────────────────────── */
+.methods-pill {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              0.3em;
+  font-size:        0.4em;
+  font-weight:      normal;
+  line-height:      1;
+  padding:          0.3em 0.7em;
+  border-radius:    999px;
+  background-color: #cfe2ff;
+  color:            #084298;
+  text-decoration:  none;
+  vertical-align:   middle;
+  cursor:           pointer;
+  border:           none;
+}
+
+.methods-pill:hover {
+  background-color: #9ec5fe;
+  color:            #084298;
+  text-decoration:  none;
+}
+
+/* Hide pills from the TOC sidebar */
+#quarto-sidebar .methods-pill,
+#TOC .methods-pill {
+  display: none;
+}
