@@ -6,6 +6,10 @@ format:
   html:
     toc: true
     toc-location: left
+    css: profile_styles.css
+filters:
+  - path: offcanvas
+    at: pre-quarto
 params:
   FullName: "Max Mustermann Demoprofile"
   json_path: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Chemnitz 2026/Testlauf/jsons/resque_bender_2026-03-13T08-41-44.json'
@@ -498,11 +502,19 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 }
 ```
 
-# Indicators of Research Transparency and Reproducibility
+# Indicators of Research Transparency and Reproducibility <a class="methods-pill" data-bs-toggle="offcanvas" href="#rrs-methods-offcanvas" role="button" aria-controls="rrs-methods-offcanvas"><i class="bi bi-journal-text"></i>Methods</a>
 
-::: {.callout-note title="Methods: Computation of the relative rigor score" collapse="true"}
-The relative rigor score (RRS) is computed as a “percentage of maximal points” (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
-:::
+```{=html}
+<div class="offcanvas offcanvas-end" tabindex="-1" id="rrs-methods-offcanvas" aria-labelledby="rrs-methods-offcanvas-label">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="rrs-methods-offcanvas-label">Methods: Computation of the relative rigor score</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <p>The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code &amp; Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.</p>
+  </div>
+</div>
+```
 
 The following charts are based on `r nrow(applicant$rigor_pubs)` scoreable publications.
 
