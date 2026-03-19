@@ -8,13 +8,18 @@ format:
     toc-location: left
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/resque_schönbrodt_0-8-1.json"
+  json_path: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Chemnitz 2026/Testlauf/jsons/resque_bender_2026-03-13T08-41-44.json'
   show_inter: true
 ---
 
-
 ```{r setup0}
 #| include: false
+
+# params <- list(
+#   FullName = "Test Test",
+#   json_path = '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Chemnitz 2026/Testlauf/jsons/resque_bender_2026-03-13T08-41-44.json',
+#   show_inter = FALSE
+# )
 
 library(knitr)
 library(kableExtra)
@@ -45,7 +50,6 @@ DARKGREEN <- "#1da412"
 LIGHTGREY <- "#e8e8e8"
 ```
 
-
 ```{r demo_warning}
 #| results: "asis"
 
@@ -53,7 +57,6 @@ if (is.null(params$json_path)) {
   cat("\n\n::: {.callout-warning}\nNo data supplied - using demo profile\n:::\n\n")
 }
 ```
-
 
 ```{r setup}
 #| results: "asis"
@@ -88,7 +91,7 @@ if (is.na(applicant$meta$ORCID)) {
 }
 ```
 
-**The "fingerprint" of how research is conducted, when only the best work is submitted.** 
+**The "fingerprint" of how research is conducted, when only the best work is submitted.**
 
 ```{r overview_table}
 overview_tab <- data.frame(
@@ -124,23 +127,20 @@ kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:"
   row_spec(1:nrow(overview_tab), extra_css = "padding-top:1px; padding-bottom:1px;")
 ```
 
-
-
-::: {.callout-note}
+::: callout-note
 This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially.
 :::
 
+Some parts of this profile are purely descriptive. For example, it is summarized the type of participant samples, or whether researchers predominantly work with psychophysiological data or rather focus on questionnaire studies.
 
-Some parts of this profile are purely descriptive. For example, it is summarized the type of participant samples, or whether researchers predominantly work with psychophysiological data or rather focus on questionnaire studies. 
-
-Other parts contain an evaluative aspect: For example, research that is reproducible, which allows independent auditing because it provides open data and scripts is, *ceteris paribus*, better than research that does not have these aspects. Research outputs with these objective quality criteria of methodological rigor can gain "bonus points" which are summed across all provided research outputs and contribute to the [Rigor Profile Overview](#rigor-profile-overview).
+Other parts contain an evaluative aspect: For example, research that is reproducible, which allows independent auditing because it provides open data and scripts is, *ceteris paribus*, better than research that does not have these aspects. Research outputs with these objective quality criteria of methodological rigor can gain "bonus points" which are summed across all provided research outputs and contribute to the [Rigor Profile Overview](#indicators_of_research_transparency_and_reproducibility).
 
 ::: {.callout-note title="Methods: Is the rigor score systematically biased against certain fields?" collapse="true"}
 We took care not to systematically disadvantage certain fields or research styles. Generally, the rigor score is a relative score, computed as “percentage of maximal points” (POMP) score across all indicators that are applicable. For any indicator, one can choose the option "not applicable" if an indicator *principally* cannot be attained by a research output. The points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficient justification, in contrast, the indicator is set to "not available" (=0 points) and the maximum points are not adjusted.
 :::
 
-
 <!-- Conditionally render the section on Overall Merit Statement -->
+
 ```{r OverallMeritStatement}
 #| eval: !expr is.null(applicant$meta$MeritStatement) == FALSE
 #| results: asis
@@ -151,8 +151,8 @@ cat(applicant$meta$MeritStatement)
 cat("\n</div>\n")
 ```
 
-
 ## Submitted research outputs
+
 
 <!--
 The following table shows the types of submitted outputs, and whether they have been flagged as suitable for the rating sheet (*yes*) or not (*no*).
@@ -201,7 +201,6 @@ colnames(dat_tM_tab) <- c("Type of method", "# papers")
 kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```
 
-
 ### Team science in publications?
 
 ```{r teamscience}
@@ -224,11 +223,13 @@ kable(team_tab, align=c("l", "r", "r"))
 
 ## Types of research data
 
+```{=html}
 <!-- 
 TODO: This does not work without Simulated data.
 
 The applicant submitted r sum(is.na(applicant$rigor_pubs$P_Data_Source_Simulated) | !applicant$rigor_pubs$P_Data_Source_Simulated) papers with empirical data. 
 -->
+```
 
 ```{r datatypes}
 #| results: asis
@@ -252,19 +253,18 @@ get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
 }
 
 # for some reason, you need to explicitly set the table.attr when you use `results: asis`
-get_data_types(selector="P_Data_Type_") |> kable(table.attr = "class='table table-sm table-striped small'") 
+get_data_types(selector="P_Data_Type_") |> kable(table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") 
 
 if (any(applicant$rigor_pubs$P_Data_Type_Behavioral, na.rm = TRUE)) {
   cat("\n\n### ⤷ Types of behavioral data\n\n")
-  get_data_types("P_Data_TypeBehavioral_") |> kable(table.attr = "class='table table-sm table-striped small'")  
+  get_data_types("P_Data_TypeBehavioral_") |> kable(table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")  
 }
 if (any(applicant$rigor_pubs$P_Data_Type_Physiological, na.rm = TRUE)) {
   cat("\n\n### ⤷ Types of physiological data\n\n")
-  get_data_types(selector="P_Data_TypePhysiological_") |> kable(table.attr = "class='table table-sm table-striped small'")
+  get_data_types(selector="P_Data_TypePhysiological_") |> kable(table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true")
 }
 
 ```
-
 
 ## Types of samples
 
@@ -277,12 +277,11 @@ if (nrow(applicant$rigor_pubs) > 0) {
 }
 ```
 
-
 Type of population/sample and cultural background for the `r sum(applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Sample != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
 
 ```{r}
 #| fig-width: 6
-#| fig-height: 4
+#| fig-height: 3.2
 #| out-width: 100%
 #| out-height: auto
 
@@ -303,6 +302,11 @@ df <- data.frame(
   Sample_CrossCultural = factor(applicant$rigor_pubs$P_Sample_CrossCultural, levels=c("NotApplicable", "SingleCulture", "MultipleCultures"), labels=c("Not applicable", "Single cultural or ethnic background", "Multiple cultural or ethnic backgrounds"))
 )
 
+# in case the Sample_CrossCultural indicator is missing (this might get deselected frequently)
+if (all(is.na(df$Sample_CrossCultural))) {
+  df$Sample_CrossCultural <- rep("", nrow(df))
+}
+
 df <- na.omit(df)
 
 # Count occurrences of each combination, and add missing factor levels (to also show the non-existent cells)
@@ -313,19 +317,83 @@ heatmap_data <- df %>%
   na.omit()
 
 ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
-  geom_tile() +
-  geom_text(aes(label = n), color="#FFFFFF") +  
+  geom_tile(height = 1) +
+  geom_text(aes(label = n), color = "#FFFFFF", size = 3) +
   scale_fill_gradient(low = "#DDDDDD", high = "darkblue") +
-  theme_minimal() +
+  scale_y_discrete(
+    limits = rev(levels(df$Sample_Type)),
+    expand = c(0, 0)
+  ) +
+  scale_x_discrete(expand = c(0, 0)) +
   labs(x = "", y = "") +
-  theme(legend.position = "none") +
-  scale_y_discrete(limits = rev(levels(df$Sample_Type))) +  # Reverse the order on the y-axis
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 ```
 
+```{r experimental_effort}
+#| fig-width: 6
+#| fig-height: 2
+#| out-width: 100%
+#| out-height: auto
 
+# show experimental effort as heatmap
+if (!is.null(applicant$rigor_pubs$P_DesignExperimental_Effort)) {
+  exp_effort <- factor(
+    applicant$rigor_pubs$P_DesignExperimental_Effort,
+    levels = c("Low", "Medium", "High")
+  )
+
+  if (!all(is.na(exp_effort))) {
+    effort_data <- table(exp_effort) |> as.data.frame()
+
+    ggplot(effort_data, aes(x = " ", y = exp_effort, fill = Freq)) +
+      geom_tile(height = 1) +
+      geom_text(aes(label = Freq), color = "#FFFFFF", size = 3) +
+      scale_fill_gradient(low = "#DDDDDD", high = "darkblue") +
+      scale_y_discrete(limits = rev(c("Low", "Medium", "High"))) +
+      scale_x_discrete(expand = c(0, 0)) +
+      labs(x = "", y = "", title = "Experimental Effort") +
+      theme_minimal() +
+      theme(
+        legend.position = "none",
+        panel.grid = element_blank()
+      )
+  }
+}
+```
+
+```{r sample_location}
+#| fig-width: 6
+#| fig-height: 2
+#| out-width: 100%
+#| out-height: auto
+# show sample location as heatmap
+if (any(str_detect(colnames(applicant$rigor_pubs), "P_Sample_Location_"))) {
+  Sample_Location <- RESQUER:::sum_MC(pubs = applicant$rigor_pubs, prefix = "P_Sample_Location_")
+  
+  location_data <- data.frame(
+    label = rownames(as.data.frame(Sample_Location)),
+    Freq  = as.data.frame(Sample_Location)[, 1]
+  )
+
+  ggplot(location_data, aes(x = " ", y = label, fill = Freq)) +
+    geom_tile(height = 1) +
+    geom_text(aes(label = Freq), color = "#FFFFFF", size = 3) +
+    scale_fill_gradient(low = "#DDDDDD", high = "darkblue") +
+    scale_y_discrete(limits = rev(location_data$label)) +
+    scale_x_discrete(expand = c(0, 0)) +
+    labs(x = "", y = "", title = "Location of Data Collection") +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      panel.grid = element_blank()
+    )
+}
+```
 
 ```{r show_rare_samples}
 #| results: asis
@@ -346,15 +414,11 @@ if (any(!is.na(applicant$rigor_pubs$P_Sample_RareOther))) {
 }
 ```
 
-
-
-
-
 ## Types of Research Designs
 
 ```{r research_design}
 #| fig-width: 6
-#| fig-height: 4
+#| fig-height: 2
 #| out-width: 100%
 #| out-height: auto
 
@@ -377,22 +441,27 @@ heatmap_data <- df %>%
   na.omit()
 
 ggplot(heatmap_data, aes(x = Longitudinal_Type, y = DesignExperimental_Type, fill = n)) +
-  geom_tile() +
-  geom_text(aes(label = n), color="#FFFFFF") +  
-  scale_fill_gradient(low = "#dddddd", high = "darkblue") +
-  theme_minimal() +
+  geom_tile(height = 1) +
+  geom_text(aes(label = n), color = "#FFFFFF", size = 3) +
+  scale_fill_gradient(low = "#DDDDDD", high = "darkblue") +
+  scale_y_discrete(
+    limits = rev(levels(df$DesignExperimental_Type)),
+    expand = c(0, 0)
+  ) +
+  scale_x_discrete(expand = c(0, 0)) +
   labs(x = "", y = "") +
-  theme(legend.position = "none") +
-  scale_y_discrete(limits = rev(levels(df$Sample_Type))) +  # Reverse the order on the y-axis
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 
 
 ```
 
-
-
-
 <!-- Conditionally render the CRediT section -->
+
 ```{r}
 #| out.width: 100%
 #| fig.width: 8
@@ -416,7 +485,7 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
   
   cat("\n\n## Compact CRediT profile\n")
   
-  credit_barchart(applicant$credit, ordered=FALSE, compact=TRUE)  |> print()
+  credit_barchart(credit_dat=applicant$credit, ordered=FALSE, compact=TRUE)  |> print()
   
   cat("\n:::")
   
@@ -428,7 +497,6 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
   hideCRediT <- TRUE
 }
 ```
-
 
 # Indicators of Research Transparency and Reproducibility
 
@@ -442,17 +510,15 @@ The following charts are based on `r nrow(applicant$rigor_pubs)` scoreable publi
 
 The RESQUE indicators cover current best practices, which often are not yet used broadly. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
 
-- 10-20% can be considered average
-- 30% is very good
-- \>40% is excellent.
-
+-   10-20% can be considered average
+-   30% is very good
+-   \>40% is excellent.
 
 ::: {.callout-note collapse="true" title="How to read the small charts"}
+-   *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (), *not* performed (), or was not applicable ().\
+-   *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
 
-- *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
-- *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
-
-![](assets/Overview_chart_explanation1.png){width=450}
+![](assets/Overview_chart_explanation1.png){width="450"}
 :::
 
 ```{r overview_transparency}
@@ -472,14 +538,12 @@ datatable(
 )
 ```
 
-
 ::: {.callout-note title="How to read the radar chart" collapse="true"}
-The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality.
-The radar chart with the **Relative Rigor Score** helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
+The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality. The radar chart with the **Relative Rigor Score** helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
 
-- The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If many indicators are flagged as "not applicable", then the maximal points get reduced and the sector gets more narrow.
-- The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
-- The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
+-   The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If many indicators are flagged as "not applicable", then the maximal points get reduced and the sector gets more narrow.
+-   The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
+-   The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
 :::
 
 ```{r Radarchart}
@@ -489,26 +553,21 @@ if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
 }
 ```
 
-
-
-
-
 # Scientific impact
-
 
 [BIP! Scholar](https://bip.imsi.athenarc.gr/site/home) (a non-commercial open-source service to facilitate fair researcher assessment) provides **five impact classes** based on norm values:
 
-::: {style="font-size: 80%;"}
+:::: {style="font-size: 80%;"}
+```{=html}
 <style>.table-equal-width th, .table-equal-width td {width: 20%; text-align: center; }
 </style>
+```
 
-<div class="table-equal-width">
-| 🚀 Top 0.01% | ️🌟 Top 0.1%  |️✨ Top 1% | Top 10% | Average (Bottom 90%) |
-|--------------|--------------|----------|--------|----------------------|
-</div>
-
+::: table-equal-width
+| 🚀 Top 0.01% | ️🌟 Top 0.1% | ️✨ Top 1% | Top 10% | Average (Bottom 90%) |
+|--------------|-------------|-----------|---------|----------------------|
 :::
-
+::::
 
 ::: {.callout-note title="Methods: Computation of the Popularity metric" collapse="true"}
 This indicator reflects impact/attention of an article in the research community at large. It is based on *AttRank*, a variation of PageRank (known from the Google search algorithm) that accounts for the temporal evolution of the citation network. By that, it alleviates the bias against younger publications, which have not had the chance to accumulate a lot of citations. It models a researcher's preference to read papers which received a lot of attention recently. It was evaluated (and vetted) in its performance to predict the ranking of papers concerning their *future impact* (i.e., citations). For more details, see [BIP! glossary](https://bip.imsi.athenarc.gr/site/indicators) and the references therein.
@@ -543,8 +602,6 @@ kable(credit_inv_tab)
 :::
 
 From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullName`, `r nrow(applicant$BIP %>% filter(pop_class <= "C4"))` `r ifelse(nrow(applicant$BIP %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class of all papers or better.
-
-
 
 ```{r impact_table}
 #| results: asis
@@ -618,7 +675,6 @@ high_impact <- pop_sel[which(pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", 
 low_impact <- pop_sel[which(is.na(pop_sel$Popularity) | !pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%")), ]
 ```
 
-
 ## Highly popular publications
 
 ::: {style="font-size: 80%;"}
@@ -654,9 +710,8 @@ if (nrow(low_impact) > 0) {
 ```
 :::
 
-
-
 <!-- Conditionally render the section on interdisciplinarity -->
+
 ```{r inter_section}
 #| eval: !expr length(applicant$internationalization) > 1 & params$show_inter == TRUE
 #| results: asis
@@ -723,12 +778,9 @@ cat(paste0('
 }
 ```
 
-
-
 # "Not applicable" justifications
 
 Choosing "not applicable" indicates that an indicator *principally* cannot be attained by a research output. To avoid bias against certain research fields, the points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficent justification, in contrast, the indicator should be set to "not available" (=0 points) and the maximum points are not adjusted. (Note: The latter correction currently needs to be done manually in the json file.)
-
 
 ```{r}
 #| results='asis'
@@ -769,13 +821,9 @@ if (length(colnames_with_NotApplicable) > 0) {
 }
 ```
 
-
-
 # "Not suitable" justifications
 
-These were the justification, why papers have been flagged as "generally not suitable for the RESQUE scheme".
-These papers have been excluded from the rigor score computation, but not from the impact table.
-
+These were the justification, why papers have been flagged as "generally not suitable for the RESQUE scheme". These papers have been excluded from the rigor score computation, but not from the impact table.
 
 ```{r}
 #| results='asis'
@@ -806,10 +854,6 @@ if (any(applicant$indicators$P_Suitable == "No") & !is.null(applicant$indicators
 }
 ```
 
-
-
-
-
 ```{r show preprocessing_notes}
 #| results: asis
 
@@ -821,24 +865,25 @@ if (any(applicant$preprocessing_notes != "")) {
 }
 ```
 
----
+------------------------------------------------------------------------
 
 *RESQUER package version: `r packageVersion("RESQUER") |> as.character()`*
 
----
+------------------------------------------------------------------------
 
-
-
-
+```{=html}
 <!-- ########################################################
 ###########  TECHNICAL STUFF, DO NOT CHANGE #################
 ############################################################# -->
-
+```
 
 <!-- JS script to embed the raw json material -->
+
+```{=html}
 <!-- Retrieve later, e.g. with JS:
   const jsonData = JSON.parse(document.getElementById('raw-json-data').textContent);
 -->
+```
 
 ```{r embed_json}
 #| output: asis
@@ -847,9 +892,8 @@ cat(sprintf('<script id="raw-json-data" type="application/json" style="display:n
 
 ```
 
-
-
 <!-- Custom script to show popovers -->
+
 ```{=html}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -949,4 +993,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 ```
-

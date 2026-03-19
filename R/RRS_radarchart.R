@@ -17,11 +17,12 @@
 #' @import dplyr
 #' @import scales
 #' @import patchwork
+#' @importFrom scales label_wrap
 #'
 #' @examples
 #' radar_dat <- data.frame(
 #'   dimension = c("Open Data", "Open Materials", "Preregistration",
-#'     "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
+#'     "Reproducible Code & Verification", "Theorizing & Formal Modeling"),
 #'   max_points = rep(10, 5),
 #'   rel_score=c(1, 0.75, 0.5, 0.25, 0.1),
 #'   xstart = 0:4,
@@ -70,7 +71,8 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
       geom_rect(aes(xmin = xstart, xmax = xend, ymin = rel_score2, ymax = 1), fill = "#EFEFEF", color = "#DEDEDE") +
       guides(fill = guide_legend("Rigor Domain")) +
       scale_fill_brewer(palette = "Set3") +
-      geom_text(aes(x = xmid, y = 1, label = dimension), vjust = 0, hjust = 0.5, size = base_size / 5)
+      geom_text(aes(x = xmid, y = 1, label = scales::label_wrap(15)(dimension)),
+                vjust = 0, hjust = 0.5, size = base_size / 5)
 
     if (overall_score == TRUE) {
       subtitle <- paste0(subtitle, "Overall score = ", round(RRS$overall_score * 100), "%. ")

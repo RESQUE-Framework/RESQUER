@@ -15,9 +15,10 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+  json_folder: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview'
   anonymous: true
   clear_cache: false
+  verbose: false
 ---
 
 
@@ -25,7 +26,6 @@ params:
 #| include: false
 
 # json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
-# json_folder: "/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/testCases"
 
 library(knitr)
 library(kableExtra)
@@ -117,6 +117,7 @@ Theory_norms <- c(.1, .2)
 
 
 #params$json_folder = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+#params$anonymous = FALSE
 
 if (is.null(params$json_folder)) {
   # TODO: Load demo profiles if no folder with jsons is provided
@@ -138,7 +139,7 @@ if (is.null(params$json_folder)) {
     
     options(openalexR.mailto = "felix@nicebread.de")
     for (i in 1:length(json_files)) {
-        # print(paste0("Reading file #", i))
+        if (params$verbose == TRUE) print(paste0("Reading file #", i, ": ", json_files[i]))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)
         applicant_list[[i]] <- preprocess(applicant=R, verbose=FALSE)
         
@@ -221,7 +222,13 @@ The Overall Rigor Score reflects current best practices, many of which are not y
 tab_RRS <- data.frame()
 
 for (i in 1:length(applicant_list)) {
-  row <- get_RRS_tablerow(applicant_list[[i]], add_scores = TRUE)
+  row <- get_RRS_tablerow(applicant=applicant_list[[i]], add_scores = TRUE)
+  
+  if (i > 1 && any(colnames(tab_RRS) != colnames(row))) {
+    warning("Colnames do not match - the json files donot have the same set of indicators!")
+    colnames(row) <- colnames(tab_RRS)
+  } 
+  
   tab_RRS <- rbind(tab_RRS, row)  
 }
 
@@ -236,11 +243,11 @@ datatable(
     dom = 't', 
     paging = FALSE,
     columnDefs = list(
-      list(targets = colnames(tab_RRS)[2], orderData = 2), 
-      list(targets = colnames(tab_RRS)[3], orderData = 3),  # Sort OD by RRS_OD (which is the 5th column)
-      list(targets = colnames(tab_RRS)[4], orderData = 4),
-      list(targets = colnames(tab_RRS)[5], orderData = 5),
-      list(targets = colnames(tab_RRS)[6], orderData = 6),  
+      list(targets = colnames(tab_RRS)[2], orderData = 7), 
+      list(targets = colnames(tab_RRS)[3], orderData = 8),  # Sort OD by RRS_OD (which is the 5th column)
+      list(targets = colnames(tab_RRS)[4], orderData = 9),
+      list(targets = colnames(tab_RRS)[5], orderData = 11),
+      list(targets = colnames(tab_RRS)[6], orderData = 10),  
       
       list (targets = c(7:11), visible = FALSE) # Hide numeric sorting columns
     ))
@@ -382,7 +389,7 @@ tab_impact$BIP_n_papers_top10 <- ""
 for (i in 1:nrow(tab_impact)) {
   tab_impact$BIP_n_papers_top10[i] <- waffle_html(
     values = c(top10[i], non_top10[i]),
-    max_value = 10, rows = 1,
+    max_value = sum(top10[i], non_top10[i]), rows = 1,
     #colors = c("#fff614", "#C7C7C7"),
     emojis = c("⭐️", "▢"),
     width_px = 120, gap_px = 2
