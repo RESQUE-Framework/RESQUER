@@ -505,11 +505,11 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 # Indicators of Research Transparency and Reproducibility
 
 ::: {.column-margin}
-<a class="methods-pill" href="#rrs-methods-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="rrs-methods-offcanvas"><i class="bi bi-journal-text"></i>Methods</a>
+<a class="methods-pill" href="#rrs-methods-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="rrs-methods-offcanvas"><i class="bi bi-journal-text"></i>Methods: Computation of the Relative Rigor Score</a>
 :::
 
 :::: {#rrs-methods-offcanvas .offcanvas placement="end" trigger-position="none"}
-# Methods: Computation of the relative rigor score
+# Methods: Computation of the Relative Rigor Score
 The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
 :::
 
