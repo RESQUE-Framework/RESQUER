@@ -117,3 +117,15 @@ is.nulla <- function(x) {
   is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))
 }
 
+
+
+# prefix should be something like `"P_Sample_Location_"`
+sum_MC <- function(pubs, prefix) {
+  i0 <- pubs |> select(starts_with(prefix), -contains("P_Sample_Location_Comment"))
+  res <- list()
+  for (j in 1:ncol(i0)) {
+    res[[j]] <- sum(i0[, j], na.rm=TRUE)
+    names(res[[j]]) <- str_remove(colnames(i0)[j], str_c("^", prefix))
+  }
+  return(unlist(res))
+}
