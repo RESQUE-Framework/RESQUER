@@ -23,6 +23,7 @@ params:
 #   show_inter = FALSE
 # )
 
+
 library(knitr)
 library(kableExtra)
 
@@ -139,7 +140,7 @@ Other parts contain an evaluative aspect: For example, research that is reproduc
 :::
 
 :::: {#rigor-bias-offcanvas .offcanvas placement="end" trigger-position="none"}
-# 🧾 Method Details
+# 🧾 Methods details
 
 ### Is the rigor score systematically biased against certain fields?
 
@@ -512,7 +513,7 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 :::
 
 :::: {#rrs-methods-offcanvas .offcanvas placement="end" trigger-position="none"}
-# 🧾 Method Details
+# 🧾 Methods details
 
 ### Computation of the Relative Rigor Score
 The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
@@ -550,7 +551,7 @@ datatable(
 :::
 
 :::: {#small-charts-offcanvas .offcanvas placement="end" trigger-position="none"}
-# 🧾 Method Details
+# 🧾 Methods details
 
 ### How to read the small charts
 
@@ -574,7 +575,7 @@ if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
 :::
 
 :::: {#radar-chart-offcanvas .offcanvas placement="end" trigger-position="none"}
-# 🧾 Method Details
+# 🧾 Methods details
 
 ### How to read the radar chart
 
@@ -608,7 +609,7 @@ The general philosophy of RESQUE is: It doesn't matter so much what kind of rese
 
 :::: {#popularity-metric-offcanvas .offcanvas placement="end" trigger-position="none"}
 
-# 🧾 Method details
+# 🧾 Methods details
 
 ### Computation of the Popularity metric
 
