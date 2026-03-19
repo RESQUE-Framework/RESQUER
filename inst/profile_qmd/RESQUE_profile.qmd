@@ -12,7 +12,7 @@ filters:
     at: pre-quarto
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Chemnitz 2026/Testlauf/jsons/resque_bender_2026-03-13T08-41-44.json'
+  json_path: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/resque_schönbrodt_2026-03.json'
   show_inter: true
 ---
 
@@ -21,7 +21,7 @@ params:
 
 # params <- list(
 #   FullName = "Test Test",
-#   json_path = '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Chemnitz 2026/Testlauf/jsons/resque_bender_2026-03-13T08-41-44.json',
+#   json_path = '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/resque_schönbrodt_2026-03.json',
 #   show_inter = FALSE
 # )
 
@@ -131,16 +131,21 @@ kable(overview_tab, escape = FALSE, col.names = c("<b>Overview of analysis</b>:"
   row_spec(1:nrow(overview_tab), extra_css = "padding-top:1px; padding-bottom:1px;")
 ```
 
-::: callout-note
-This is a preview which shows some visual summaries of the RESQUE indicators. Not all indicators have been covered yet, and things might change substantially.
-:::
 
 Some parts of this profile are purely descriptive. For example, it is summarized the type of participant samples, or whether researchers predominantly work with psychophysiological data or rather focus on questionnaire studies.
 
 Other parts contain an evaluative aspect: For example, research that is reproducible, which allows independent auditing because it provides open data and scripts is, *ceteris paribus*, better than research that does not have these aspects. Research outputs with these objective quality criteria of methodological rigor can gain "bonus points" which are summed across all provided research outputs and contribute to the [Rigor Profile Overview](#indicators_of_research_transparency_and_reproducibility).
 
-::: {.callout-note title="Methods: Is the rigor score systematically biased against certain fields?" collapse="true"}
-We took care not to systematically disadvantage certain fields or research styles. Generally, the rigor score is a relative score, computed as “percentage of maximal points” (POMP) score across all indicators that are applicable. For any indicator, one can choose the option "not applicable" if an indicator *principally* cannot be attained by a research output. The points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficient justification, in contrast, the indicator is set to "not available" (=0 points) and the maximum points are not adjusted.
+::: {.column-margin}
+<a class="methods-pill" href="#rigor-bias-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="rigor-bias-offcanvas"><i class="bi bi-journal-text"></i>Methods: Rigor score bias</a>
+:::
+
+:::: {#rigor-bias-offcanvas .offcanvas placement="end" trigger-position="none"}
+# 🧾 Method Details
+
+### Is the rigor score systematically biased against certain fields?
+
+We took care not to systematically disadvantage certain fields or research styles. Generally, the rigor score is a relative score, computed as “percentage of maximal points” (POMP) score across all indicators that are applicable. For any indicator, one can choose the option "not applicable" if an indicator *principally* cannot be attained by a research output. The points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score.
 :::
 
 <!-- Conditionally render the section on Overall Merit Statement -->
@@ -509,7 +514,9 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 :::
 
 :::: {#rrs-methods-offcanvas .offcanvas placement="end" trigger-position="none"}
-# Methods: Computation of the Relative Rigor Score
+# 🧾 Method Details
+
+### Computation of the Relative Rigor Score
 The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
 :::
 
@@ -522,13 +529,6 @@ The RESQUE indicators cover current best practices, which often are not yet used
 -   10-20% can be considered average
 -   30% is very good
 -   \>40% is excellent.
-
-::: {.callout-note collapse="true" title="How to read the small charts"}
--   *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (), *not* performed (), or was not applicable ().\
--   *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
-
-![](assets/Overview_chart_explanation1.png){width="450"}
-:::
 
 ```{r overview_transparency}
 
@@ -547,13 +547,21 @@ datatable(
 )
 ```
 
-::: {.callout-note title="How to read the radar chart" collapse="true"}
-The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality. The radar chart with the **Relative Rigor Score** helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
-
--   The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If many indicators are flagged as "not applicable", then the maximal points get reduced and the sector gets more narrow.
--   The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
--   The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
+::: {.column-margin}
+<a class="methods-pill" href="#small-charts-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="small-charts-offcanvas"><i class="bi bi-info-circle"></i>How to read the small charts</a>
 :::
+
+:::: {#small-charts-offcanvas .offcanvas placement="end" trigger-position="none"}
+# 🧾 Method Details
+
+### How to read the small charts
+
+-   *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (), *not* performed (), or was not applicable ().
+-   *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
+
+![](assets/Overview_chart_explanation1.png){width="450"}
+:::
+
 
 ```{r Radarchart}
 #| fig.width=8
@@ -561,6 +569,24 @@ if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
   RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
 }
 ```
+
+
+::: {.column-margin}
+<a class="methods-pill" href="#radar-chart-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="radar-chart-offcanvas"><i class="bi bi-info-circle"></i>How to read the radar chart</a>
+:::
+
+:::: {#radar-chart-offcanvas .offcanvas placement="end" trigger-position="none"}
+# 🧾 Method Details
+
+### How to read the radar chart
+
+The general philosophy of RESQUE is: It doesn't matter so much what kind of research you do - but when you do it, you should do it in a high quality. The radar chart with the **Relative Rigor Score** helps you to see how many quality indicators have been fulfilled in multiple areas of methodological rigor.
+
+-   The **width** of each sector corresponds to the **maximal number of rigor points** one could gain. If many indicators are flagged as "not applicable", then the maximal points get reduced and the sector gets more narrow.
+-   The **colored part** of each sector shows the **achieved rigor points**. An entirely grey sector indicates that no rigor points could be awarded at all.
+-   The quality indicators measure both the *presence* of a practice (e.g., is Open Data available?) and the *quality* of the practice (e.g., is does it have a codebook? Does have a persistent identifier?). Hence, even if the pie charts in the table above show the presence, a lack of quality indicators can lead to a low rigor score.
+:::
+
 
 # Scientific impact
 
@@ -578,11 +604,20 @@ if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
 :::
 ::::
 
-::: {.callout-note title="Methods: Computation of the Popularity metric" collapse="true"}
-This indicator reflects impact/attention of an article in the research community at large. It is based on *AttRank*, a variation of PageRank (known from the Google search algorithm) that accounts for the temporal evolution of the citation network. By that, it alleviates the bias against younger publications, which have not had the chance to accumulate a lot of citations. It models a researcher's preference to read papers which received a lot of attention recently. It was evaluated (and vetted) in its performance to predict the ranking of papers concerning their *future impact* (i.e., citations). For more details, see [BIP! glossary](https://bip.imsi.athenarc.gr/site/indicators) and the references therein.
+::: {.column-margin}
+<a class="methods-pill" href="#popularity-metric-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="popularity-metric-offcanvas"><i class="bi bi-journal-text"></i>Methods: Popularity metric & CRediT involvement</a>
 :::
 
-::: {.callout-note title="Methods: CRediT Levels of involvement" collapse="true"}
+:::: {#popularity-metric-offcanvas .offcanvas placement="end" trigger-position="none"}
+
+# 🧾 Method details
+
+### Computation of the Popularity metric
+
+This indicator reflects impact/attention of an article in the research community at large. It is based on *AttRank*, a variation of PageRank (known from the Google search algorithm) that accounts for the temporal evolution of the citation network. By that, it alleviates the bias against younger publications, which have not had the chance to accumulate a lot of citations. It models a researcher's preference to read papers which received a lot of attention recently. It was evaluated (and vetted) in its performance to predict the ranking of papers concerning their *future impact* (i.e., citations). For more details, see [BIP! glossary](https://bip.imsi.athenarc.gr/site/indicators) and the references therein.
+
+### CRediT Levels of involvement
+
 We categorized papers into levels of involvement, based on the degrees of contributorship:
 
 ```{r credit_involvement_tab}
@@ -789,7 +824,28 @@ cat(paste0('
 
 # "Not applicable" justifications
 
-Choosing "not applicable" indicates that an indicator *principally* cannot be attained by a research output. To avoid bias against certain research fields, the points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified. Only when the justification is accepted by the committee, the point is removed. With no or insufficent justification, in contrast, the indicator should be set to "not available" (=0 points) and the maximum points are not adjusted. (Note: The latter correction currently needs to be done manually in the json file.)
+::: {.column-margin}
+<a class="warning-pill" href="#not-applicable-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="not-applicable-offcanvas"><i class="bi bi-exclamation-triangle"></i>Why committees should check the "not applicable" justifications</a>
+:::
+
+:::: {#not-applicable-offcanvas .offcanvas placement="end" trigger-position="none"}
+# ⚠️ Important note for committees
+
+### Gaming RESQUE: Why committees should check the "not applicable" justifications
+
+Choosing "not applicable" indicates that an indicator *principally* cannot be attained by a research output. To avoid bias against certain research fields, the points of such non-applicable indicators are removed from the maximum points and therefore do not lower the computed relative rigor score. 
+
+**However, in order to prevent gaming of this scheme, any "not applicable" claim needs to be justified.** 
+Applicants trying to maximize their rigor score will overuse the "not applicable" option, without providing a sound justification.
+
+How to deal with unsound justifications? 
+
+*A (tedious) manual way of adjusting:*
+With no or insufficent justification the indicator should be set to "not available" (=0 points) and then the maximum points are not adjusted. This correction currently needs to be done manually in the json file of the applicant. You should also record any changes in a changelog to make transparent what has been changed from the applicant's own self-report.
+
+*"Intuitive" adjustment:*
+Previous committees who noticed an excessive usage of the "not applicable" option factored that holistically into the assessment of the candidate, and used that information to ask specific questions in the interview stage.
+:::
 
 ```{r}
 #| results='asis'
@@ -868,7 +924,9 @@ if (any(applicant$indicators$P_Suitable == "No") & !is.null(applicant$indicators
 
 if (any(applicant$preprocessing_notes != "")) {
   cat(paste0(
-    "::: {.callout-note title='Preprocessing Notes'}\n",
+    "<a class='appendix-pill' href='#preprocessing-notes-offcanvas' data-bs-toggle='offcanvas' role='button' aria-controls='preprocessing-notes-offcanvas'><i class='bi bi-journal-bookmark'></i>Appendix: Preprocessing notes</a>\n\n",
+    ":::: {#preprocessing-notes-offcanvas .offcanvas placement='bottom' trigger-position='none'}\n",
+    "# Preprocessing Notes\n",
     paste0("- ", applicant$preprocessing_notes, collapse="\n"), 
     "\n:::\n\n"))
 }
