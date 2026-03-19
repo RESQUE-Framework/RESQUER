@@ -502,19 +502,16 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 }
 ```
 
-# Indicators of Research Transparency and Reproducibility <a class="methods-pill" data-bs-toggle="offcanvas" href="#rrs-methods-offcanvas" role="button" aria-controls="rrs-methods-offcanvas"><i class="bi bi-journal-text"></i>Methods</a>
+# Indicators of Research Transparency and Reproducibility
 
-```{=html}
-<div class="offcanvas offcanvas-end" tabindex="-1" id="rrs-methods-offcanvas" aria-labelledby="rrs-methods-offcanvas-label">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="rrs-methods-offcanvas-label">Methods: Computation of the relative rigor score</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <p>The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code &amp; Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.</p>
-  </div>
-</div>
-```
+::: {.column-margin}
+<a class="methods-pill" href="#rrs-methods-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="rrs-methods-offcanvas"><i class="bi bi-journal-text"></i>Methods</a>
+:::
+
+:::: {#rrs-methods-offcanvas .offcanvas placement="end" trigger-position="none"}
+# Methods: Computation of the relative rigor score
+The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
+:::
 
 The following charts are based on `r nrow(applicant$rigor_pubs)` scoreable publications.
 
