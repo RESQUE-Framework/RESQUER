@@ -1,0 +1,81 @@
+/* ── Methods / Details offcanvas pill ──────────────────────────────────────── */
+.methods-pill {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              0.3em;
+  font-size:        0.9em;
+  font-weight:      normal;
+  line-height:      1;
+  padding:          0.3em 0.7em;
+  border-radius:    999px;
+  background-color: #cfe2ff;
+  color:            #084298;
+  text-decoration:  none;
+  vertical-align:   middle;
+  cursor:           pointer;
+  border:           none;
+}
+
+.methods-pill:hover {
+  background-color: #9ec5fe;
+  color:            #084298;
+  text-decoration:  none;
+}
+
+/* ── Appendix offcanvas pill ──────────────────────────────────────────────── */
+.appendix-pill {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              0.35em;
+  font-size:        1.05em;
+  font-weight:      500;
+  line-height:      1;
+  padding:          0.42em 0.9em;
+  border-radius:    999px;
+  background-color: #e9d5ff;
+  color:            #5b21b6;
+  text-decoration:  none;
+  vertical-align:   middle;
+  cursor:           pointer;
+  border:           none;
+}
+
+.appendix-pill:hover {
+  background-color: #d8b4fe;
+  color:            #4c1d95;
+  text-decoration:  none;
+}
+
+/* ── Warning offcanvas pill ──────────────────────────────────────────────── */
+.warning-pill {
+  display:          inline-flex;
+  align-items:      center;
+  gap:              0.3em;
+  font-size:        0.9em;
+  font-weight:      500;
+  line-height:      1;
+  padding:          0.34em 0.78em;
+  border-radius:    999px;
+  background-color: #ffe8cc;
+  color:            #9a3412;
+  text-decoration:  none;
+  vertical-align:   middle;
+  cursor:           pointer;
+  border:           none;
+}
+
+.warning-pill:hover {
+  background-color: #ffd8a8;
+  color:            #7c2d12;
+  text-decoration:  none;
+}
+
+/* Hide pills from the TOC sidebar */
+#quarto-sidebar .methods-pill,
+#TOC .methods-pill,
+#quarto-sidebar .appendix-pill,
+#TOC .appendix-pill,
+#quarto-sidebar .warning-pill,
+#TOC .warning-pill {
+  display: none;
+}

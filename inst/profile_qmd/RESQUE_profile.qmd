@@ -6,7 +6,7 @@ format:
   html:
     toc: true
     toc-location: left
-    css: profile_styles.css
+    css: assets/profile_styles.css
 filters:
   - path: offcanvas
     at: pre-quarto
