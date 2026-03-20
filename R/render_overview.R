@@ -47,8 +47,18 @@ render_overview <- function(json_folder, output_file = NA, template = NA, anonym
   # copy template and extra files to the temp_dir, render there
   file.copy(template, temp_dir)
 
+  # copy Quarto extensions (needed for custom filters like offcanvas)
+  template_dir <- dirname(template)
+  ext_dir <- file.path(template_dir, "_extensions")
+  if (!dir.exists(ext_dir)) {
+    ext_dir <- system.file("profile_qmd", "_extensions", package = "RESQUER")
+  }
+  if (dir.exists(ext_dir)) {
+    file.copy(ext_dir, temp_dir, recursive = TRUE)
+  }
+
   dir.create(paste0(temp_dir, "/assets"), recursive = TRUE, showWarnings = FALSE)
-  list.files(paste0(dirname(template), "/assets"), recursive = TRUE, full.names = TRUE) |>
+  list.files(paste0(template_dir, "/assets"), recursive = TRUE, full.names = TRUE) |>
     file.copy(paste0(temp_dir, "/assets"), overwrite = TRUE)
 
   # get name of folder:
