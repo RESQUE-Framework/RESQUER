@@ -182,7 +182,8 @@ if (is.null(params$json_folder)) {
   # for demo purposes: Wiggle some numbers to make them anonymous
   if (params$randomize == TRUE) {
     for (i in 1:length(applicant_list)) {
-      applicant_list[[i]]$RRS$overall_score
+      applicant_list[[i]]$RRS$overall_score <- wiggle(applicant_list[[i]]$RRS$overall_score)
+      applicant_list[[i]]$RRS$sector_scores$rel_score <- sapply(applicant_list[[i]]$RRS$sector_scores$rel_score, wiggle)
     }
   }
 }

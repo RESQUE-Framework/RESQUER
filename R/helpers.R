@@ -96,6 +96,35 @@ smart_as_numeric <- function(x) {
 }
 
 
+#' Wiggle a number by a random ±margin%
+#'
+#' Adds a uniformly-distributed random perturbation of up to ±\code{margin}%
+#' to \code{x}, returning the result rounded to the same number of decimal
+#' places as the original value.
+#'
+#' @param x A numeric scalar to wiggle.
+#' @param margin Maximum percentage perturbation (default: 10).
+#' @return A numeric scalar with the same number of decimal places as \code{x}.
+#' @examples
+#' set.seed(42)
+#' wiggle(0.25)        # e.g. 0.27 (still 2 decimal places)
+#' wiggle(1.5, margin = 20)  # e.g. 1.4 (still 1 decimal place)
+#' wiggle(3)           # e.g. 3 (still 0 decimal places)
+#' @export
+wiggle <- function(x, margin = 10) {
+  if (!is.numeric(x) || is.na(x)) return(x)
+
+  # Detect decimal places in original number
+  x_char <- as.character(x)
+  decimals <- if (grepl("\\.", x_char)) nchar(sub(".*\\.", "", x_char)) else 0L
+
+  # Apply random perturbation of ±margin%
+  result <- x + x * (margin / 100) * runif(1, -1, 1)
+
+  round(result, decimals)
+}
+
+
 #' Check if an object is NULL, NA, or length zero
 #'
 #' This utility function returns `TRUE` if the input is `NULL`,
