@@ -64,7 +64,7 @@ the distribution of scores across different dimensions.
 ``` r
 radar_dat <- data.frame(
   dimension = c("Open Data", "Open Materials", "Preregistration",
-    "Reproducible Code \n& Verification", "Theorizing \n& Formal Modeling"),
+    "Reproducible Code & Verification", "Theorizing & Formal Modeling"),
   max_points = rep(10, 5),
   rel_score=c(1, 0.75, 0.5, 0.25, 0.1),
   xstart = 0:4,

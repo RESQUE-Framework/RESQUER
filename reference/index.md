@@ -127,6 +127,8 @@
   Generate an HTML
 
   tag embedding a Waffle plot using R with optional emoji support
+  [`wiggle()`](https://resque-framework.github.io/RESQUER/reference/wiggle.md)
+  Wiggle a number by a random ±margin%
 
   ## On this page
 

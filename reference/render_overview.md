@@ -10,6 +10,7 @@ render_overview(
   output_file = NA,
   template = NA,
   anonymous = FALSE,
+  randomize = FALSE,
   clear_cache = FALSE
 )
 ```
@@ -34,6 +35,11 @@ render_overview(
 - anonymous:
 
   If `TRUE`, all candidate names are replaced by A, B, C, ...
+
+- randomize:
+
+  If `TRUE`, numeric scores are randomly perturbed by ±10% for
+  demo/anonymization purposes.
 
 - clear_cache:
 
