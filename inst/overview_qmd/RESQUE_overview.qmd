@@ -2,12 +2,15 @@
 title: "RESQUE Overview for multiple candidates"
 embed-resources: true
 output: html
+filters:
+  - path: offcanvas
+    at: pre-quarto
 format:
   html:
     toc: true
     toc-location: left
     df-print: paged
-    css: assets/overview_styles.css
+    css: [assets/overview_styles.css, profile_styles.css]
     page-layout: full
     grid:
       sidebar-width: 250px
@@ -19,7 +22,20 @@ params:
   anonymous: true
   clear_cache: false
   verbose: false
+  randomize: true
 ---
+
+<!-- Params:
+randomize: For demo purposes, randomize some values to change them away from the real values.
+
+params <- list(
+  json_folder= '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview',
+  anonymous = TRUE,
+  clear_cache= FALSE,
+  verbose= FALSE,
+  randomize= TRUE
+  )
+ -->
 
 
 ```{r setup0}
@@ -162,7 +178,13 @@ if (is.null(params$json_folder)) {
       applicant_list[[i]]$meta$FullName <- index_to_letters(i)
     }
   }
-  
+
+  # for demo purposes: Wiggle some numbers to make them anonymous
+  if (params$randomize == TRUE) {
+    for (i in 1:length(applicant_list)) {
+      applicant_list[[i]]$RRS$overall_score
+    }
+  }
 }
 
 ```
@@ -207,14 +229,21 @@ The Overall Rigor Score reflects current best practices, many of which are not y
   - 30%: Very good
   - \>40%: Excellent.
 
-*(Note: The Overall Rigor Score presented here is based solely on the four transparency categories, excluding Theorizing. As a result, it may differ from the Overall Score in individual reports.)*
+*(Note: The Overall Rigor Score presented here is based solely on the four displayed transparency categories, excluding, for example, *Methodological Rigor*. As a result, it can slightly differ from the Overall Score in individual reports.)*
 
-::: {.callout-note collapse="true" title="How to read the small charts"}
+::: {.column-margin}
+<a class="methods-pill" href="#small-charts-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="small-charts-offcanvas"><i class="bi bi-info-circle"></i>How to read the small charts</a>
+:::
 
-- *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (<span style="width: 10px; height: 10px; background-color: `r DARKGREEN`; display: inline-block;"></span>), *not* performed (<span style="width: 10px; height: 10px; background-color: `r DARKRED`; display: inline-block;"></span>), or was not applicable (<span style="width: 10px; height: 10px; background-color: `r LIGHTGREY`; display: inline-block;"></span>). \
-- *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
+:::: {#small-charts-offcanvas .offcanvas placement="end" trigger-position="none"}
+# 🧾 Methods details
 
-![](assets/Overview_chart_explanation1.png){width=450}
+### How to read the small charts
+
+-   *Quantity of openness*: How *often* did they do it?<br>Each small square represents one publication, where the open practice (e.g., open data) has been performed (), *not* performed (), or was not applicable ().
+-   *Quality of openness*: How *well* did they do it?<br>The colors of the bar below the squares are based on normative values of the Relative Rigor Score (i.e., "What quality of a practice could reasonably be expected in that field?").
+
+![](assets/Overview_chart_explanation1.png){width="450"}
 :::
 
 ```{r overview_table2b}
@@ -362,13 +391,20 @@ datatable(
 
 ## Impact
 
-::: {.callout-note collapse="true" title="How to interpret the indices"}
+::: {.column-margin}
+<a class="methods-pill" href="#impact-indices-offcanvas" data-bs-toggle="offcanvas" role="button" aria-controls="impact-indices-offcanvas"><i class="bi bi-info-circle"></i>How to interpret the indices</a>
+:::
+
+:::: {#impact-indices-offcanvas .offcanvas placement="end" trigger-position="none"}
+# 🧾 Methods details
+
+### How to interpret the indices
 
 - **# of papers in top-10% of popularity**: How many papers are ranked in the top 10%, according to a popularity metric based on the AttentionRank algorithm. [This captures *current* impact dynamics (and less so "historical" citations of old papers).]{style="background: #f4fbc6;"}
 - **mean FNCS**: The median of field- and age-normalized citation scores: The FNCS is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publications (on average) got cited twice as much as comparable publications. [This captures *cumulative* impact (across all papers, and also across all years of publication activity).]{style="background: #f4fbc6;"}. The background color of the cell indicates the [lower 25%]{style="background: #fbe3cc;"}, [middle 50%]{style="background: #fbf9cc;"} or [top 25%]{style="background: #daf9d7;"} of the applicant field.
 - **Highest citation count of a single paper**: The citation count (and publication year) of the single paper with the most citations.
 
-:::
+::::
 
 ```{r}
 tab_impact <- data.frame(
