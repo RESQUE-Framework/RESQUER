@@ -129,3 +129,40 @@ sum_MC <- function(pubs, prefix) {
   }
   return(unlist(res))
 }
+
+
+#' Wiggle a number by a random ±margin%
+#'
+#' Adds a uniformly-distributed random perturbation of up to ±\code{margin}%
+#' to \code{x}, returning the result rounded to the same number of decimal
+#' places as the original value.
+#'
+#' @param x A numeric vector (or scalar) to wiggle.
+#' @param margin Maximum percentage perturbation (default: 10).
+#' @return A numeric vector with the same number of decimal places as \code{x}.
+#' @examples
+#' set.seed(42)
+#' wiggle(0.25)        # e.g. 0.27 (still 2 decimal places)
+#' wiggle(1.5, margin = 20)  # e.g. 1.4 (still 1 decimal place)
+#' wiggle(c(4.4, 0.7, 3.1, NA), margin = 10)
+#' wiggle(3)           # e.g. 3 (still 0 decimal places)
+#' @export
+wiggle <- function(x, margin = 10) {
+  if (!is.numeric(x) || length(x) == 0) return(x)
+
+  # Detect decimal places per element in original values
+  x_char <- as.character(x)
+  decimals <- ifelse(grepl("\\.", x_char), nchar(sub(".*\\.", "", x_char)), 0L)
+
+  # Apply random perturbation of ±margin% element-wise
+  result <- x + x * (margin / 100) * runif(length(x), -1, 1)
+
+  # Preserve NAs and element-wise decimal places
+  out <- ifelse(
+    is.na(x),
+    NA_real_,
+    mapply(function(value, d) round(value, d), result, decimals)
+  )
+
+  as.numeric(out)
+}

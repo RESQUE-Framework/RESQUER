@@ -9,6 +9,7 @@ render_overview(
   output_file = NA,
   template = NA,
   anonymous = FALSE,
+  randomize = FALSE,
   clear_cache = FALSE
 )
 }
@@ -20,6 +21,8 @@ render_overview(
 \item{template}{The path to the .qmd file with the profile. If set to \code{NA}(default), the package's built-in profile is used.}
 
 \item{anonymous}{If \code{TRUE}, all candidate names are replaced by A, B, C, ...}
+
+\item{randomize}{If \code{TRUE}, numeric scores are randomly perturbed by ±10\% for demo/anonymization purposes.}
 
 \item{clear_cache}{The computations (e.g., citation statistics) are cached in the file \code{applicant_data.RData} (stored in the same folder as the jsons). If \code{clear_cache = TRUE}, the file is deleted and recomputed.}
 }

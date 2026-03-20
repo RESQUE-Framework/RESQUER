@@ -19,6 +19,7 @@ params:
   anonymous: true
   clear_cache: false
   verbose: false
+  randomize: false
 ---
 
 
@@ -81,6 +82,7 @@ index_to_letters <- function(index) {
   }
   return(result)
 }
+
 
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -162,7 +164,6 @@ if (is.null(params$json_folder)) {
       applicant_list[[i]]$meta$FullName <- index_to_letters(i)
     }
   }
-  
 }
 
 ```
@@ -219,13 +220,20 @@ The Overall Rigor Score reflects current best practices, many of which are not y
 
 ```{r overview_table2b}
 
+# for demo purposes: Wiggle some numbers to make them anonymous
+  if (params$randomize == TRUE) {
+    for (i in 1:length(applicant_list)) {
+      applicant_list[[i]]$RRS$overall_score <- wiggle(applicant_list[[i]]$RRS$overall_score)
+    }
+  }
+
 tab_RRS <- data.frame()
 
 for (i in 1:length(applicant_list)) {
   row <- get_RRS_tablerow(applicant=applicant_list[[i]], add_scores = TRUE)
   
   if (i > 1 && any(colnames(tab_RRS) != colnames(row))) {
-    warning("Colnames do not match - the json files donot have the same set of indicators!")
+    warning("Colnames do not match - the json files do not have the same set of indicators!")
     colnames(row) <- colnames(tab_RRS)
   } 
   
@@ -401,12 +409,26 @@ tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.r
 # for choosing the background color:
 mean_FNCS_quantiles <- quantile(tab_impact$mean_FNCS, probs = c(0.25, 0.75))
 
+
+if (params$randomize == TRUE) {
+  tab_impact$mean_FNCS <- wiggle(tab_impact$mean_FNCS)
+}
+
 tab_impact$highest_citation_count = 
   sapply(applicant_list, function(x) {
     top <- which.max(x$FNCS$cited_by_count)
+    max_citation <- x$FNCS$cited_by_count[top]
+    year_of_max_citation <- x$FNCS$publication_year[top]
+
+    if (params$randomize == TRUE) {
+      max_citation <- wiggle(max_citation)
+      if (max_citation < 1) max_citation <- 1
+      year_of_max_citation <- year_of_max_citation - sample(1:7, 1)
+    }
+
     paste0(
-      x$FNCS$cited_by_count[top], " (",
-      x$FNCS$publication_year[top],
+      max_citation, " (",
+      year_of_max_citation,
       ")"
     )
   })
