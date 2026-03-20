@@ -1,6 +1,6 @@
 Package: RESQUER
 Title: Enrich, analyse and visualize data from the RESQUE rating scheme
-Version: 0.10.3
+Version: 0.10.4
 Date: 2026-03-19
 Authors@R: c(
     person("Felix D.", "Schönbrodt", , "felix.schoenbrodt@psy.lmu.de", role = c("aut", "cre"),
