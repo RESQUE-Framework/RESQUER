@@ -32,25 +32,10 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
   temp_dir <- paste0(tempdir(), "/RESQUEPROFILE")
   if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
 
-  # copy template and extra files to the temp_dir, render there
+  # copy entire template folder (including subfolders) to temp_dir
   template_dir <- dirname(template)
-  file.copy(template, temp_dir, overwrite = TRUE)
-
-  # copy local stylesheet if present (referenced from YAML via relative path)
-  css_path <- file.path(template_dir, "profile_styles.css")
-  if (file.exists(css_path)) {
-    file.copy(css_path, temp_dir, overwrite = TRUE)
-  }
-
-  # copy Quarto extensions (needed for custom filters like offcanvas)
-  ext_dir <- file.path(template_dir, "_extensions")
-  if (dir.exists(ext_dir)) {
-    file.copy(ext_dir, temp_dir, recursive = TRUE)
-  }
-
-  dir.create(paste0(temp_dir, "/assets"), recursive = TRUE, showWarnings = FALSE)
-  list.files(paste0(template_dir, "/assets"), recursive = TRUE, full.names = TRUE) |>
-    file.copy(paste0(temp_dir, "/assets"), overwrite = TRUE)
+  copied <- file.copy(list.files(template_dir, full.names = TRUE), temp_dir, recursive = TRUE)
+  if (!all(copied)) warning("Some files failed to copy to temp_dir")
 
   # get name of applicant:
   js <- read_json(json_path, simplifyVector = TRUE)
