@@ -7,12 +7,12 @@
 wiggle(x, margin = 10)
 }
 \arguments{
-\item{x}{A numeric scalar to wiggle.}
+\item{x}{A numeric vector (or scalar) to wiggle.}
 
 \item{margin}{Maximum percentage perturbation (default: 10).}
 }
 \value{
-A numeric scalar with the same number of decimal places as \code{x}.
+A numeric vector with the same number of decimal places as \code{x}.
 }
 \description{
 Adds a uniformly-distributed random perturbation of up to ±\code{margin}\%
@@ -23,5 +23,6 @@ places as the original value.
 set.seed(42)
 wiggle(0.25)        # e.g. 0.27 (still 2 decimal places)
 wiggle(1.5, margin = 20)  # e.g. 1.4 (still 1 decimal place)
+wiggle(c(4.4, 0.7, 3.1, NA), margin = 10)
 wiggle(3)           # e.g. 3 (still 0 decimal places)
 }

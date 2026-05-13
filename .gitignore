@@ -55,3 +55,4 @@ inst/dashboard/dashboard_shiny_files
 docs
 
 _archive/*
+.positai

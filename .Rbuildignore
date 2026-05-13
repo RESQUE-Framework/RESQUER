@@ -8,3 +8,6 @@ _test
 ^\.github$
 .code-workspace
 _archive
+^\.positai$
+^\.claude$
+Documentation.md
