@@ -140,6 +140,7 @@ sum_MC <- function(pubs, prefix) {
 #' @param x A numeric vector (or scalar) to wiggle.
 #' @param margin Maximum percentage perturbation (default: 10).
 #' @return A numeric vector with the same number of decimal places as \code{x}.
+#' @importFrom stats runif
 #' @examples
 #' set.seed(42)
 #' wiggle(0.25)        # e.g. 0.27 (still 2 decimal places)
