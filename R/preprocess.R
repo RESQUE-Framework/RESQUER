@@ -428,8 +428,14 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
   if (nrow(applicant$impact_pubs) > 0 & get_BIP == TRUE) {
     applicant$BIP <- get_BIP(dois=applicant$impact_pubs$doi, verbose=verbose)
-    applicant$BIP_n_papers <- sum(applicant$BIP$pop_class <= "C5", na.rm=TRUE)
-    applicant$BIP_n_papers_top10 <- sum(applicant$BIP$pop_class <= "C4", na.rm=TRUE)
+
+    # Attention: Due to multi-study papers, a single paper can show up multiple times.
+    # Here we compute the papers, not the studies.
+
+    BIP_unique_papers <- applicant$BIP[!duplicated(applicant$BIP$doi), ]
+
+    applicant$BIP_n_papers <- sum(BIP_unique_papers$pop_class <= "C5", na.rm=TRUE)
+    applicant$BIP_n_papers_top10 <- sum(BIP_unique_papers$pop_class <= "C4", na.rm=TRUE)
   } else {
     applicant$BIP <- NA
     applicant$BIP_n_papers <- NA
@@ -439,16 +445,17 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
   #----------------------------------------------------------------
   # Retrieve submitted works from OpenAlex
+  # Attention: Make sure to distinguish *papers* from *studies* in the presence of multi-study entries
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
     OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi, verbose=verbose)
 
-    if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(applicant$impact_pubs$doi), " submitted publications could be automatically retrieved with openAlex."))
+    if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(unique(applicant$impact_pubs$doi)), " submitted publications could be automatically retrieved with openAlex."))
 
     if (is.null(OAlex_papers)) {stop("Error: Could not retrieve data from OpenAlex.")}
 
-    if (nrow(OAlex_papers) < nrow(applicant$impact_pubs)) {
+    if (nrow(OAlex_papers) < length(unique(applicant$impact_pubs$doi))) {
       note <- paste0(
         '## The following papers could *not* be retrieved by openAlex:\n\n',
         applicant$impact_pubs[!applicant$impact_pubs$doi %in% OAlex_papers$doi, ] %>%
@@ -458,14 +465,20 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
       applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
     }
 
+    # Work on a unique-paper object (one row per DOI)
+    OAlex_papers <- OAlex_papers[!duplicated(OAlex_papers$doi), ]
     OAlex_papers$n_authors <- get_n_authors(OAlex_papers)
+    OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
 
-    OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (> 15 co-authors)"))
-
-    applicant$OAlex_papers <- OAlex_papers
+    # Store unique object and expand to impact_pubs order/multiplicity (e.g., multi-study duplicates)
+    applicant$OAlex_papers_unique <- OAlex_papers
+    applicant$OAlex_papers <- applicant$impact_pubs |>
+      select(doi) |>
+      left_join(OAlex_papers, by = "doi")
     rm(OAlex_papers)
   } else {
     applicant$OAlex_papers <- NA
+    applicant$OAlex_papers_unique <- NA
   }
 
   #----------------------------------------------------------------
@@ -505,9 +518,12 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
     # merge RRS scores into the other objects
     if (!is.na(applicant$RRS$overall_score)) {
-      applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by="doi")
-      applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by="doi")
-      applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by="doi")
+      # keep one RRS score row per DOI to avoid many-to-many joins for duplicated studies
+      rrs_scores <- applicant$RRS$paper_scores[!duplicated(applicant$RRS$paper_scores$doi), ]
+
+      applicant$indicators <- left_join(applicant$indicators, rrs_scores, by="doi")
+      applicant$rigor_pubs <- left_join(applicant$rigor_pubs, rrs_scores, by="doi")
+      applicant$impact_pubs <- left_join(applicant$impact_pubs, rrs_scores, by="doi")
     } else {
       applicant$RRS <- NA
       applicant$indicators$RRS_overall <- NA
