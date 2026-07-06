@@ -180,10 +180,28 @@ kable(table(applicant$indicators[applicant$indicators$type2 == "Publication", "P
 -->
 
 
-The `r nrow(applicant$indicators[applicant$indicators$type2 == "Publication", ])` publications had the following methodological type:
+`r {
+  pub_tab <- applicant$indicators[applicant$indicators$type2 == "Publication", ]
+  has_multi <- any(pub_tab$P_MultiStudy %in% c("Yes", TRUE), na.rm = TRUE)
+  valid_doi <- pub_tab$doi[!is.na(pub_tab$doi) & pub_tab$doi != ""]
+  has_dup_doi <- any(duplicated(valid_doi))
+
+  if (has_multi && has_dup_doi) {
+    paste0(
+      "The applicant submitted ",
+      nrow(pub_tab),
+      " studies from ",
+      dplyr::n_distinct(valid_doi),
+      " unique papers (including multiple studies from multi-study papers). ",
+      "The ", nrow(pub_tab), " studies had the following methodological type:"
+    )
+  } else {
+    paste0("The ", nrow(pub_tab), " studies had the following methodological type:")
+  }
+}`
 
 ```{r ROs}
-dat_tM <- applicant$indicators %>% select(contains("P_TypeMethod"))
+dat_tM <- applicant$indicators %>% select(starts_with("P_TypeMethod"), -contains("_Comment"))
 
 # add missing columns
 expected_columns<- c(
@@ -208,7 +226,7 @@ dat_tM_tab <- pivot_longer(dat_tM, everything()) %>%
 dat_tM_tab$name <- str_replace(dat_tM_tab$name, "P_TypeMethod_", "")
 dat_tM_tab <- unCamel(df=dat_tM_tab, cname="name")
 
-colnames(dat_tM_tab) <- c("Type of method", "# papers")
+colnames(dat_tM_tab) <- c("Type of method", "# studies")
 kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```
 
@@ -217,14 +235,12 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r teamscience}
 #| results: "asis"
 
-  cat(paste0(nrow(applicant$OAlex_papers), " out of ", sum(applicant$indicators$type2 == "Publication"), " submitted publications could be automatically retrieved with OpenAlex.\n"))
+  oalex_team <- applicant$OAlex_papers_unique
+
+  cat(paste0(nrow(oalex_team), " out of ", length(unique(applicant$indicators$doi[applicant$indicators$type2 == "Publication"])), " submitted publications could be automatically retrieved with OpenAlex.\n"))
   
-  applicant$OAlex_papers$n_authors <- get_n_authors(applicant$OAlex_papers)
-  
-  applicant$OAlex_papers$team_category <- cut(applicant$OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
-  
-  team_tab <- table(applicant$OAlex_papers$team_category) |> as.data.frame()
-  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(applicant$OAlex_papers)), "%")
+  team_tab <- table(oalex_team$team_category) |> as.data.frame()
+  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(oalex_team)), "%")
   colnames(team_tab) <- c("Team category", "Frequency", "%")
 ```
 
@@ -246,7 +262,7 @@ The applicant submitted r sum(is.na(applicant$rigor_pubs$P_Data_Source_Simulated
 #| results: asis
 
 
-get_data_types <- function(selector, headings=c("Data type", "# of papers")) {
+get_data_types <- function(selector, headings=c("Data type", "# of studies")) {
   df <- applicant$rigor_pubs |> select(contains(selector))
 
   tab <- data.frame(
@@ -288,7 +304,7 @@ if (nrow(applicant$rigor_pubs) > 0) {
 }
 ```
 
-Type of population/sample and cultural background for the `r sum(applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Sample != "Other", na.rm=TRUE)` papers with own new data collection ("Other" excluded):
+Type of population/sample and cultural background for the `r sum(applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Sample != "Other", na.rm=TRUE)` studies with own new data collection ("Other" excluded):
 
 ```{r}
 #| fig-width: 6
@@ -522,11 +538,11 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
 The relative rigor score (RRS) is computed as a percentage of maximal points (POMP) score of multiple indicators. The indicators are grouped into four categories: Open Data, Preregistration, Reproducible Code & Verification, and Open Materials. Indicators that are flagged as "not applicable" are removed from the maximum points and therefore do not lower the RRS.
 :::
 
-The following charts are based on `r nrow(applicant$rigor_pubs)` scoreable publications.
+The following charts are based on `r nrow(applicant$rigor_pubs)` scoreable studies.
 
 **What is a "good" Relative Rigor Score?**
 
-The RESQUE indicators cover current best practices, which often are not yet used broadly. Therefore the scores might look meager, even for very good papers. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
+The RESQUE indicators cover current best practices, which often are not yet used broadly. Therefore the scores might look meager, even for very good studies. Tentative norm values for the overall rigor score, based on some first evaluation studies are:
 
 -   10-20% can be considered average
 -   30% is very good
@@ -620,7 +636,7 @@ This indicator reflects impact/attention of an article in the research community
 
 ### CRediT Levels of involvement
 
-We categorized papers into levels of involvement, based on the degrees of contributorship:
+We categorized studies into levels of involvement, based on the degrees of contributorship:
 
 ```{r credit_involvement_tab}
 
@@ -652,8 +668,8 @@ From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullNa
 ```{r impact_table}
 #| results: asis
 
+# initially, keep all publications (also those not found by BIP).
 pop_sel <- applicant$BIP %>% 
-  filter(is.na(msg)) |>    # is msg is NA, then there is no problem
   select(doi, "three_year_cc", cc,	pop_class)
   
 
@@ -664,8 +680,27 @@ pop_sel$pop_class[is.na(pop_sel$pop_class)] <- "n.a."
 pop_sel$Popularity <- factor(pop_sel$pop_class, levels=c(paste0("C", 1:5), "n.a."), labels=c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%", "Average", "n.a."))
 pop_sel$pop_class <- NULL
 
-pop_sel <- pop_sel |> 
-  left_join(applicant$indicators %>% select(doi, Title = title_links_html, RRS_overall, CRediT_involvement, CRediT_involvement_roles, P_MeritStatement), by="doi") %>%
+# gather optional free-text comment fields
+comment_cols <- names(applicant$indicators)[str_detect(names(applicant$indicators), "_Comment$")]
+
+pop_indicator_cols <- c(
+  "doi",
+  "title_links_html",
+  "RRS_overall",
+  "CRediT_involvement",
+  "CRediT_involvement_roles",
+  "P_MeritStatement",
+  "P_TopPaper_Select",
+  comment_cols
+)
+
+pop_sel <- pop_sel |>
+  left_join(
+    applicant$indicators |>
+      select(all_of(pop_indicator_cols)) |>
+      rename(Title = title_links_html),
+    by = "doi"
+  ) |>
   left_join(applicant$FNCS %>% select(doi, FNCS, FNPR), by="doi") %>%
   relocate(Title) |> 
   relocate(FNCS, .after = cc) |> 
@@ -675,31 +710,93 @@ pop_sel <- pop_sel |>
 
 pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
 
-if (!all(is.na(pop_sel$P_MeritStatement))) {
-  pop_sel$merit <- cell_spec(
-  ifelse(!is.na(pop_sel$P_MeritStatement) & pop_sel$P_MeritStatement != "",
-# Show Merit Statement as popover
-    '<i class="bi bi-info-circle text-primary fs-5"></i>',
-    "(n.a.)"),
-  escape=FALSE,
-  popover = spec_popover(content = pop_sel$P_MeritStatement, title = NULL, position = "right")
+if ("P_TopPaper_Select" %in% names(pop_sel)) {
+  pop_sel$top3_selected <- !is.na(pop_sel$P_TopPaper_Select) & pop_sel$P_TopPaper_Select %in% c(TRUE, "TRUE", "Yes", "yes", 1)
+  pop_sel$top3 <- ifelse(
+    !is.na(pop_sel$P_TopPaper_Select) & pop_sel$P_TopPaper_Select %in% c(TRUE, "TRUE", "Yes", "yes", 1),
+    "⭐",
+    ""
+  )
+  pop_sel$P_TopPaper_Select <- NULL
+} else {
+  pop_sel$top3_selected <- FALSE
+  pop_sel$top3 <- ""
+}
+
+pop_sel <- pop_sel |> relocate(top3, .before = 1)
+
+if (length(comment_cols) > 0) {
+  pop_sel$all_comments <- apply(pop_sel[, comment_cols, drop = FALSE], 1, function(row_vals) {
+    row_vals <- as.character(row_vals)
+    has_text <- !is.na(row_vals) & trimws(row_vals) != ""
+
+    if (!any(has_text)) {
+      return(NA_character_)
+    }
+
+    escaped_vals <- htmltools::htmlEscape(row_vals[has_text], attribute = TRUE)
+    escaped_vals <- str_replace_all(escaped_vals, "\\n", "<br>")
+
+    escaped_names <- htmltools::htmlEscape(comment_cols[has_text], attribute = FALSE)
+
+    paste0("<i>", escaped_names, "</i>: ", escaped_vals, collapse = "<br>")
+  })
+
+  if (any(!is.na(pop_sel$all_comments))) {
+    pop_sel$comments <- cell_spec(
+      ifelse(!is.na(pop_sel$all_comments),
+        '<i class="bi bi-info-circle text-primary fs-5"></i>',
+        "(n.a.)"
+      ),
+      escape = FALSE,
+      popover = spec_popover(content = pop_sel$all_comments, title = NULL, position = "right")
     )
 
-# hack: Remove popovers for n.a. cells
-pop_sel$merit[is.na(pop_sel$P_MeritStatement) | pop_sel$P_MeritStatement == ""] <- cell_spec("(n.a.)",
-  escape=FALSE, popover = NULL)
+    # hack: remove popovers for n.a. cells
+    pop_sel$comments[is.na(pop_sel$all_comments)] <- cell_spec("(n.a.)",
+      escape = FALSE, popover = NULL
+    )
+  }
 
-  # This has been added as a popover; column can now be deleted
-  pop_sel$P_MeritStatement <- NULL
-  
-  colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles", "Merit Statement")
-} else {
-  # do not show merit statement col
-  # This has been added as a popover; column can now be deleted
-  pop_sel$P_MeritStatement <- NULL
-  
-  colnames(pop_sel) <- c("Title", "doi", "3 year citation count", "Overall citation count", "FNCS", "FNPR", "Popularity", "Rigor Score", "Candidates' CRediT involvement", "Candidates' CRediT main roles")
+  pop_sel[, comment_cols] <- NULL
+  pop_sel$all_comments <- NULL
 }
+
+merit_text <- as.character(pop_sel$P_MeritStatement)
+has_merit <- !is.na(merit_text) & trimws(merit_text) != ""
+
+if (any(has_merit)) {
+  escaped_merit <- htmltools::htmlEscape(merit_text, attribute = TRUE)
+  escaped_merit <- str_replace_all(escaped_merit, "\\n", "<br>")
+  escaped_merit <- paste0("<b>Merit Statement</b>:<br>", escaped_merit)
+
+  merit_icon <- cell_spec(
+    ifelse(has_merit,
+      '<i class="bi bi-info-circle text-primary fs-5"></i>',
+      ""
+    ),
+    escape = FALSE,
+    popover = spec_popover(content = ifelse(has_merit, escaped_merit, NA_character_), title = NULL, position = "right")
+  )
+
+  top3_star <- ifelse(pop_sel$top3_selected, "⭐", "")
+  pop_sel$top3 <- ifelse(
+    top3_star != "" & has_merit,
+    paste0(top3_star, "<br>", merit_icon),
+    ifelse(top3_star != "", top3_star, ifelse(has_merit, merit_icon, ""))
+  )
+}
+
+# Merit statement is represented in Top 3 as an icon popover; remove raw column
+pop_sel$P_MeritStatement <- NULL
+
+names(pop_sel)[names(pop_sel) == "three_year_cc"] <- "3 year citation count"
+names(pop_sel)[names(pop_sel) == "cc"] <- "Overall citation count"
+names(pop_sel)[names(pop_sel) == "RRS_overall"] <- "Rigor Score"
+names(pop_sel)[names(pop_sel) == "CRediT_involvement"] <- "Candidates' CRediT involvement"
+names(pop_sel)[names(pop_sel) == "CRediT_involvement_roles"] <- "Candidates' CRediT main roles"
+names(pop_sel)[names(pop_sel) == "comments"] <- "Applicant's Comments"
+names(pop_sel)[names(pop_sel) == "top3"] <- "Top 3 & Merit Statement"
 
 
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
@@ -714,10 +811,13 @@ pop_sel$Title[pop_sel$Popularity == "Top 1%"] <- paste0("️✨", pop_sel$Title[
 
 # Remove columns Candidates' CRediT involvement	and Candidates' CRediT main roles if no CRediT roles have been provided.
 if (hideCRediT == TRUE) {
-  pop_sel <- pop_sel[, 1:6]
+  pop_sel <- pop_sel |> select(-any_of(c("Candidates' CRediT involvement", "Candidates' CRediT main roles")))
 }
 
+# First table: Only show high impact publications
 high_impact <- pop_sel[which(pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%")), ]
+
+# Second table: Show low-impact publications, or those without any impact score.
 low_impact <- pop_sel[which(is.na(pop_sel$Popularity) | !pop_sel$Popularity %in% c("Top 0.01%", "Top 0.1%", "Top 1%", "Top 10%")), ]
 ```
 
@@ -729,8 +829,19 @@ low_impact <- pop_sel[which(is.na(pop_sel$Popularity) | !pop_sel$Popularity %in%
 
 
 if (nrow(high_impact) > 0) {
-  
-  kable(high_impact, escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
+  top3_rows_high <- integer(0)
+  if ("top3_selected" %in% names(high_impact)) {
+    top3_rows_high <- which(high_impact$top3_selected)
+  }
+  high_impact_show <- high_impact |> select(-any_of("top3_selected"))
+
+  tab_high <- kable(high_impact_show, row.names = FALSE, escape = FALSE, table.attr = "class='table table-sm small' quarto-disable-processing=true")
+
+  if (length(top3_rows_high) > 0) {
+    tab_high <- tab_high |> row_spec(top3_rows_high, background = "#fffce2")
+  }
+
+  tab_high |>
     footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
   
 } else {
@@ -748,7 +859,19 @@ For very new publications, no citation metrics can be computed.
 #| results: asis
 
 if (nrow(low_impact) > 0) {
-  kable(low_impact, escape = FALSE, table.attr = "class='table table-sm table-striped small' quarto-disable-processing=true") |> 
+  top3_rows_low <- integer(0)
+  if ("top3_selected" %in% names(low_impact)) {
+    top3_rows_low <- which(low_impact$top3_selected)
+  }
+  low_impact_show <- low_impact |> select(-any_of("top3_selected"))
+
+  tab_low <- kable(low_impact_show, row.names = FALSE, escape = FALSE, table.attr = "class='table table-sm small' quarto-disable-processing=true")
+
+  if (length(top3_rows_low) > 0) {
+    tab_low <- tab_low |> row_spec(top3_rows_low, background = "#fffce2")
+  }
+
+  tab_low |>
     footnote(general="FNCS = Field- and age-normalized citation score: This is the factor by which a publication is cited more often than other publications from the same field and the same publication year. A value of 2, for example, indicates that the publication got cited twice as much as comparable publications.")
 } else {
   cat("No publications submitted without citation metrics or average popularity class.")

@@ -121,7 +121,10 @@ is.nulla <- function(x) {
 
 # prefix should be something like `"P_Sample_Location_"`
 sum_MC <- function(pubs, prefix) {
-  i0 <- pubs |> select(starts_with(prefix), -contains("P_Sample_Location_Comment"))
+  i0 <- pubs |> 
+    select(starts_with(prefix), -ends_with("_Comment")) |>
+    select(where(is.logical))
+
   res <- list()
   for (j in 1:ncol(i0)) {
     res[[j]] <- sum(i0[, j], na.rm=TRUE)

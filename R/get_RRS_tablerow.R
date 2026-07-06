@@ -76,7 +76,7 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
     { if (length(.) == 0) NA else . }
 
   RRS_PreReg = applicant$RRS$sector_scores %>%
-    filter(category == "Preregistration") %>%
+    filter(grepl("Preregistration", category)) %>%
     pull(rel_score) %>%
     { if (length(.) == 0) NA else . }
 
@@ -117,7 +117,10 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
   if (!is.na(RRS_OD)) {
     # Here we have three "green" squares: Yes, Partial and Aggregate
     tab_RRS[, "Open Data"] <- paste(
-      applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7")),
+      applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(
+        colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7"),
+        max_value = max(c(10, sum(applicant$OS_pie$OpenData)))
+      ),
       sapply(RRS_OD, ministack, height=14)
     )
   } else {
@@ -126,7 +129,9 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
 
   if (!is.na(RRS_OM)) {
     tab_RRS[, "Open Material"] <- paste(
-      applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+      applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(
+        max_value = max(c(10, sum(applicant$OS_pie$OpenMaterial)))
+      ),
       sapply(RRS_OM, ministack, height=14)
     )
   } else {
@@ -135,7 +140,9 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
 
   if (!is.na(RRS_PreReg)) {
     tab_RRS[, "Preregistration"] <- paste(
-      applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(),
+      applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(
+        max_value = max(c(10, sum(applicant$OS_pie$Prereg)))
+      ),
       sapply(RRS_PreReg, ministack, height=14)
     )
   } else {
@@ -153,7 +160,9 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
     }
 
     tab_RRS[, code_heading] <- paste(
-      applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(),
+      applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(
+        max_value = max(c(10, sum(applicant$OS_pie$OpenCode)))
+      ),
       sapply(RRS_OC, ministack, height=14)
     )
   } else {
