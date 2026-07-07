@@ -128,6 +128,7 @@ const score = (r, meta) => {
 
     return {
         doi: r.DOI,
+        P_MultiStudy_Selected: r.P_MultiStudy_Selected ?? null,
         max: maxScore,
         score: reachedScore,
         relative: maxScore > 0 ? reachedScore / maxScore : null,

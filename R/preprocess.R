@@ -48,7 +48,7 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   applicant$preprocessing_notes <- c()
 
   # create missing indicator variables
-  ind_vars <- c("P_PreregisteredReplication", "P_MeritStatement")
+  ind_vars <- c("P_PreregisteredReplication", "P_MeritStatement", "P_MultiStudy_Selected")
   for (i in ind_vars) {
     if (!i %in% colnames(applicant$indicators)) applicant$indicators[, i] <- NA
   }
@@ -518,12 +518,10 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
     # merge RRS scores into the other objects
     if (!is.na(applicant$RRS$overall_score)) {
-      # keep one RRS score row per DOI to avoid many-to-many joins for duplicated studies
-      rrs_scores <- applicant$RRS$paper_scores[!duplicated(applicant$RRS$paper_scores$doi), ]
 
-      applicant$indicators <- left_join(applicant$indicators, rrs_scores, by="doi")
-      applicant$rigor_pubs <- left_join(applicant$rigor_pubs, rrs_scores, by="doi")
-      applicant$impact_pubs <- left_join(applicant$impact_pubs, rrs_scores, by="doi")
+      applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by=c("doi", "P_MultiStudy_Selected"))
+      applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by=c("doi", "P_MultiStudy_Selected"))
+      applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by=c("doi", "P_MultiStudy_Selected"))
     } else {
       applicant$RRS <- NA
       applicant$indicators$RRS_overall <- NA

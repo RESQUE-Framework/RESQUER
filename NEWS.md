@@ -1,5 +1,11 @@
 # RESQUER News
 
+## RESQUER 0.10.8 (2026-07-07)
+
+### Added
+
+- Enable multi-study support
+
 ## RESQUER 0.10.7 (2026-07-06)
 
 ### Added
