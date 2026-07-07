@@ -18,7 +18,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
-  json_folder: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview'
+  json_folder: '/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/report_testsuite/jsons'
   anonymous: true
   clear_cache: false
   verbose: false
@@ -29,7 +29,7 @@ params:
 ```{r setup0}
 #| include: false
 
-# json_folder: "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
+# params=list(); params$verbose=FALSE; params$anonymous=FALSE; params$randomize = FALSE; params$clear_cache=TRUE; params$json_folder='/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/report_testsuite/jsons'
 
 library(knitr)
 library(kableExtra)
@@ -142,7 +142,7 @@ if (is.null(params$json_folder)) {
     
     applicant_list <- list()
     
-    options(openalexR.mailto = "felix@nicebread.de")
+    options(openalexR.mailto = "felix.schoenbrodt@psy.lmu.de")
     for (i in 1:length(json_files)) {
         if (params$verbose == TRUE) print(paste0("Reading file #", i, ": ", json_files[i]))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)

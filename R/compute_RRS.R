@@ -2,7 +2,7 @@
 #'
 #' This function computes a relative rigor score based on the indicators provided from an applicant.
 #'
-#' @param applicant The applicant data that has been imported by the `read_RESQUE` function.
+#' @param applicant The applicant data that has been imported by the `read_RESQUE()` and preprocessed by the `preprocess()` function.
 #' @param sectors Should sectors be all equally sized ("equal") or weighted by the maximum sum of attainable points in each category ("weighted")?
 #' @param verbose Print extra information.
 #' @return A tibble containing the dimension (category), maximum points, and relative score for each category, suitable for creating a radar chart.
@@ -15,6 +15,10 @@
 #'
 #' @export
 compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FALSE) {
+
+  if (is.null(applicant$indicators$rigor_pub)) {
+    stop("Applicant data does not contain the 'rigor_pub' field. Please ensure that the applicant has been preprocessed correctly by the `preprocess()` function.")
+  }
 
   sectors <- match.arg(sectors, choices=c("weighted", "equal"))
 
@@ -52,14 +56,18 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
   effective_categories <- sum(RRS_by_category$max_points > 0)
 
-  # each row is one publication; show overall RRS and raw points
-  RRS_by_paper_overall <- score_list |> select(doi, scores=score, max_points=max, rel_score=relative)
+  # each row is one study (take care of multistudy papers); show overall RRS and raw points
+  RRS_by_study_overall <- score_list |> select(doi, P_MultiStudy_Selected, scores=score, max_points=max, rel_score=relative)
 
   # fill in missing publications (which have a max score of 0)
   for (i in 1:nrow(applicant$scores$scores)) {
-    if (!applicant$scores$scores$doi[i] %in% RRS_by_paper_overall$doi) {
-      RRS_by_paper_overall <- rbind(RRS_by_paper_overall, data.frame(
-        doi = applicant$scores$scores$doi[i], scores = 0, max_points = 0, rel_score = NA)
+    if (!applicant$scores$scores$doi[i] %in% RRS_by_study_overall$doi) {
+      RRS_by_study_overall <- rbind(RRS_by_study_overall, data.frame(
+        doi = applicant$scores$scores$doi[i], 
+        P_MultiStudy_Selected = applicant$scores$scores$P_MultiStudy_Selected[i],
+        scores = 0, 
+        max_points = 0, 
+        rel_score = NA)
       )
     }
   }
@@ -68,42 +76,63 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
   #--------------------------------------------------------------------------------
   # each row is one publication; extract sector scores
 
-  RRS_by_paper_sector <- data.frame()
+  RRS_by_study_sector <- data.frame()
   for (i in 1:nrow(score_list)) {
     cat_long <- score_list[i, "categories"][[1]]
     cat_long$rel_score <- cat_long$score / cat_long$max
     cat_wide <- pivot_wider(cat_long |> select(title, rel_score), names_from=title, values_from=rel_score)
 
-    RRS_by_paper_sector <- rbind(RRS_by_paper_sector, data.frame(
+    RRS_by_study_sector <- rbind(RRS_by_study_sector, data.frame(
       doi = score_list$doi[i],
+      P_MultiStudy_Selected = score_list$P_MultiStudy_Selected[i],
       cat_wide
     ))
   }
 
     # fill in missing publications (which have a max score of 0)
     for (i in 1:nrow(applicant$scores$scores)) {
-      if (!applicant$scores$scores$doi[i] %in% RRS_by_paper_sector$doi) {
+      if (!applicant$scores$scores$doi[i] %in% RRS_by_study_sector$doi) {
         empty_row <- setNames(
-          data.frame(matrix(c(applicant$scores$scores$doi[i], rep(NA, effective_categories)), nrow = 1)),
-          names(RRS_by_paper_sector)
+          data.frame(matrix(c(applicant$scores$scores$doi[i], applicant$scores$scores$P_MultiStudy_Selected[i], rep(NA, effective_categories)), nrow = 1)),
+          names(RRS_by_study_sector)
         )
-        RRS_by_paper_sector <- rbind(RRS_by_paper_sector, empty_row)
+        RRS_by_study_sector <- rbind(RRS_by_study_sector, empty_row)
       }
     }
 
   # merge the sector and the overall scores; bring them into the original order of the publications
-  RRS_by_paper <- full_join(RRS_by_paper_overall %>% select(doi, RRS_overall = rel_score), RRS_by_paper_sector, by="doi") %>% janitor::clean_names()
+  RRS_by_study <- full_join(RRS_by_study_overall %>% select(doi, P_MultiStudy_Selected, RRS_overall = rel_score), RRS_by_study_sector, by=c("doi", "P_MultiStudy_Selected")) %>% janitor::clean_names()
 
-  colnames(RRS_by_paper)[2] <- "RRS_overall"
-  colnames(RRS_by_paper)[3:ncol(RRS_by_paper)] <- paste0("RRS_", colnames(RRS_by_paper)[3:ncol(RRS_by_paper)])
+  colnames(RRS_by_study)[2] <- "P_MultiStudy_Selected"
+  colnames(RRS_by_study)[3] <- "RRS_overall"
+  colnames(RRS_by_study)[4:ncol(RRS_by_study)] <- paste0("RRS_", colnames(RRS_by_study)[4:ncol(RRS_by_study)])
 
-  # bring into original order of publications
-  RRS_by_paper <- RRS_by_paper %>%
-    slice(match(applicant$scores$scores$doi, doi))
+  # bring into original order of studies (doi + study selector)
+  order_lookup <- applicant$scores$scores |>
+    transmute(
+      doi,
+      P_MultiStudy_Selected = P_MultiStudy_Selected,
+      .order = row_number()
+    ) |>
+    group_by(doi, P_MultiStudy_Selected) |>
+    mutate(.dup_id = row_number()) |>
+    ungroup()
+
+  RRS_by_study <- RRS_by_study |>
+    group_by(doi, P_MultiStudy_Selected) |>
+    mutate(.dup_id = row_number()) |>
+    ungroup() |>
+    left_join(
+      order_lookup |>
+        select(doi, P_MultiStudy_Selected, .dup_id, .order),
+      by = c("doi", "P_MultiStudy_Selected", ".dup_id")
+    ) |>
+    arrange(.order) |>
+    select(-.dup_id, -.order)
 
 
   # overall score averaged across papers (each paper gets same weight)
-  overall_score <- mean(RRS_by_paper$RRS_overall, na.rm=TRUE)
+  overall_score <- mean(RRS_by_study$RRS_overall, na.rm=TRUE)
 
   radar_dat <- tibble(
     dimension = factor(RRS_by_category$category),
@@ -129,8 +158,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
   return(list(
     overall_score = overall_score,
-    paper_scores = RRS_by_paper,
-    n_papers = sum(!is.na(RRS_by_paper$RRS_overall)),
+    paper_scores = RRS_by_study,
+    n_papers = sum(!is.na(RRS_by_study$RRS_overall)),
     sector_scores = RRS_by_category,
     radar_dat = radar_dat,
     publication_years = applicant$rigor_pubs$Year |> as.numeric()

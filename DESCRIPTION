@@ -1,7 +1,7 @@
 Package: RESQUER
 Title: Enrich, analyse and visualize data from the RESQUE rating scheme
-Version: 0.10.7
-Date: 2026-07-06
+Version: 0.10.8
+Date: 2026-07-07
 Authors@R: c(
     person("Felix D.", "Schönbrodt", , "felix.schoenbrodt@psy.lmu.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-8282-3910")),
@@ -37,7 +37,7 @@ Imports:
   digest,
   testthat,
   V8,
-  OAmetrics (>= 0.5.0)
+  OAmetrics (>= 0.5.3)
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 SystemRequirements: Quarto (>= 1.8)

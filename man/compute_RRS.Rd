@@ -7,7 +7,7 @@
 compute_RRS(applicant, sectors = c("weighted", "equal"), verbose = FALSE)
 }
 \arguments{
-\item{applicant}{The applicant data that has been imported by the \code{read_RESQUE} function.}
+\item{applicant}{The applicant data that has been imported by the \code{read_RESQUE()} and preprocessed by the \code{preprocess()} function.}
 
 \item{sectors}{Should sectors be all equally sized ("equal") or weighted by the maximum sum of attainable points in each category ("weighted")?}
 

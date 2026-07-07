@@ -12,7 +12,7 @@ filters:
     at: pre-quarto
 params:
   FullName: "Max Mustermann Demoprofile"
-  json_path: '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/resque_schönbrodt_2026-03.json'
+  json_path: '/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/report_testsuite/jsons/resque_schönbrodt_2026-03.json'
   show_inter: true
 ---
 
@@ -21,7 +21,7 @@ params:
 
 # params <- list(
 #   FullName = "Test Test",
-#   json_path = '/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/resque_schönbrodt_2026-03.json',
+#   json_path = '/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/report_testsuite/jsons/resque_schönbrodt_2026-03.json',
 #   show_inter = FALSE
 # )
 
@@ -663,7 +663,14 @@ kable(credit_inv_tab)
 ```
 :::
 
-From `r nrow(applicant$indicators)` submitted papers of `r applicant$meta$FullName`, `r nrow(applicant$BIP %>% filter(pop_class <= "C4"))` `r ifelse(nrow(applicant$BIP %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class of all papers or better.
+```{r prepare_impact_papers}
+BIP_unique <- applicant$BIP %>% 
+  distinct(doi, .keep_all = TRUE) %>%
+  filter(!is.na(pop_class))
+
+```
+
+From `r nrow(BIP_unique)` papers of `r applicant$meta$FullName` that could be retrieved from the BIP! database, `r nrow(BIP_unique %>% filter(pop_class <= "C4"))` `r ifelse(nrow(BIP_unique %>% filter(pop_class <= "C4")) == 1, "was", "were")` in the top 10% popularity class or better.
 
 ```{r impact_table}
 #| results: asis
@@ -686,6 +693,7 @@ comment_cols <- names(applicant$indicators)[str_detect(names(applicant$indicator
 pop_indicator_cols <- c(
   "doi",
   "title_links_html",
+  "P_MultiStudy_Selected",
   "RRS_overall",
   "CRediT_involvement",
   "CRediT_involvement_roles",
@@ -694,35 +702,206 @@ pop_indicator_cols <- c(
   comment_cols
 )
 
+pop_sel0 <- pop_sel
+
+# Keep only unique DOIs for the impact table (one row per paper, not per study)
+# For papers with multiple studies:
+#  - Paper metrics (impact, FNCS) are deduplicated per DOI
+#  - RRS and CRediT fields are shown per study inside the paper-level cell
 pop_sel <- pop_sel |>
+  distinct(doi, .keep_all = TRUE) |>
   left_join(
     applicant$indicators |>
       select(all_of(pop_indicator_cols)) |>
-      rename(Title = title_links_html),
+      rename(Title = title_links_html) |>
+      group_by(doi) |>
+      summarise(
+        Title = first(Title),
+        RRS_overall = {
+          labels_raw <- as.character(P_MultiStudy_Selected)
+          labels_raw[is.na(labels_raw) | trimws(labels_raw) == ""] <- ""
+          n_studies <- dplyr::n()
+          labels <- ifelse(
+            labels_raw != "",
+            labels_raw,
+            paste0("Study ", seq_len(n_studies))
+          )
+          labels <- htmltools::htmlEscape(labels, attribute = FALSE)
+
+          vals <- RRS_overall
+          vals_fmt <- ifelse(is.na(vals), "-", paste0(round(vals * 100), "%"))
+
+          if (n_studies > 1) {
+            paste0("<b>", labels, ":</b> ", vals_fmt, collapse = "<br>")
+          } else {
+            vals_fmt[1]
+          }
+        },
+        CRediT_involvement = {
+          labels_raw <- as.character(P_MultiStudy_Selected)
+          labels_raw[is.na(labels_raw) | trimws(labels_raw) == ""] <- ""
+          n_studies <- dplyr::n()
+          labels <- ifelse(
+            labels_raw != "",
+            labels_raw,
+            paste0("Study ", seq_len(n_studies))
+          )
+          labels <- htmltools::htmlEscape(labels, attribute = FALSE)
+
+          vals <- as.character(CRediT_involvement)
+          vals[is.na(vals) | trimws(vals) == ""] <- "(n.a.)"
+          vals <- htmltools::htmlEscape(vals, attribute = FALSE)
+
+          if (n_studies > 1) {
+            paste0("<b>", labels, ":</b> ", vals, collapse = "<br>")
+          } else {
+            vals[1]
+          }
+        },
+        CRediT_involvement_roles = {
+          labels_raw <- as.character(P_MultiStudy_Selected)
+          labels_raw[is.na(labels_raw) | trimws(labels_raw) == ""] <- ""
+          n_studies <- dplyr::n()
+          labels <- ifelse(
+            labels_raw != "",
+            labels_raw,
+            paste0("Study ", seq_len(n_studies))
+          )
+          labels <- htmltools::htmlEscape(labels, attribute = FALSE)
+
+          vals <- as.character(CRediT_involvement_roles)
+          vals[is.na(vals) | trimws(vals) == ""] <- "(n.a.)"
+          vals <- str_replace_all(vals, "\\n", "; ")
+
+          # Preserve role markup and render it as italic instead of bold
+          vals <- str_replace_all(vals, fixed("<b>"), "<i>")
+          vals <- str_replace_all(vals, fixed("</b>"), "</i>")
+
+          if (n_studies > 1) {
+            paste0("<b>", labels, ":</b> ", vals, collapse = "<br>")
+          } else {
+            vals[1]
+          }
+        },
+        top3_selected = any(!is.na(P_TopPaper_Select) & P_TopPaper_Select %in% c(TRUE, "TRUE", "Yes", "yes", 1)),
+        top3_labels = {
+          labels_raw <- as.character(P_MultiStudy_Selected)
+          labels_raw[is.na(labels_raw) | trimws(labels_raw) == ""] <- ""
+          n_studies <- dplyr::n()
+          labels <- ifelse(
+            labels_raw != "",
+            labels_raw,
+            paste0("Study ", seq_len(n_studies))
+          )
+          labels <- htmltools::htmlEscape(labels, attribute = FALSE)
+          paste(labels, collapse = "|||")
+        },
+        P_TopPaper_Select = {
+          sel <- !is.na(P_TopPaper_Select) & P_TopPaper_Select %in% c(TRUE, "TRUE", "Yes", "yes", 1)
+          stars <- ifelse(sel, "⭐", "")
+          paste(stars, collapse = "|||")
+        },
+        P_MeritStatement = {
+          ms <- as.character(P_MeritStatement)
+          has_ms <- !is.na(ms) & trimws(ms) != ""
+
+          escaped_ms <- htmltools::htmlEscape(ms, attribute = TRUE)
+          escaped_ms <- str_replace_all(escaped_ms, "\\n", "<br>")
+          escaped_ms <- paste0("<b>Merit Statement</b>:<br>", escaped_ms)
+
+          icons <- ifelse(
+            has_ms,
+            paste0(
+              "<span data-toggle='popover' data-trigger='hover' data-placement='right' data-content=\"",
+              escaped_ms,
+              "\"><i class='bi bi-info-circle text-primary fs-5'></i></span>"
+            ),
+            ""
+          )
+          paste(icons, collapse = "|||")
+        },
+        across(all_of(comment_cols), first),
+        .groups = "drop"
+      ),
     by = "doi"
   ) |>
-  left_join(applicant$FNCS %>% select(doi, FNCS, FNPR), by="doi") %>%
+  left_join(
+    applicant$FNCS %>% 
+      select(doi, FNCS, FNPR) %>% 
+      distinct(doi, .keep_all = TRUE),
+    by="doi"
+  ) %>%
   relocate(Title) |> 
   relocate(FNCS, .after = cc) |> 
   relocate(FNPR, .after = FNCS) |> 
-  mutate(RRS_overall = paste0(round(RRS_overall*100), "%")) %>%
   arrange(Popularity, -FNCS)
 
-pop_sel$RRS_overall[pop_sel$RRS_overall == "NA%"] <- "-"
-
-if ("P_TopPaper_Select" %in% names(pop_sel)) {
-  pop_sel$top3_selected <- !is.na(pop_sel$P_TopPaper_Select) & pop_sel$P_TopPaper_Select %in% c(TRUE, "TRUE", "Yes", "yes", 1)
-  pop_sel$top3 <- ifelse(
-    !is.na(pop_sel$P_TopPaper_Select) & pop_sel$P_TopPaper_Select %in% c(TRUE, "TRUE", "Yes", "yes", 1),
-    "⭐",
-    ""
-  )
-  pop_sel$P_TopPaper_Select <- NULL
-} else {
+if (!("P_TopPaper_Select" %in% names(pop_sel))) {
+  pop_sel$P_TopPaper_Select <- ""
+}
+if (!("P_MeritStatement" %in% names(pop_sel))) {
+  pop_sel$P_MeritStatement <- ""
+}
+if (!("top3_labels" %in% names(pop_sel))) {
+  pop_sel$top3_labels <- ""
+}
+if (!("top3_selected" %in% names(pop_sel))) {
   pop_sel$top3_selected <- FALSE
-  pop_sel$top3 <- ""
 }
 
+pop_sel$P_TopPaper_Select[is.na(pop_sel$P_TopPaper_Select)] <- ""
+pop_sel$P_MeritStatement[is.na(pop_sel$P_MeritStatement)] <- ""
+pop_sel$top3_labels[is.na(pop_sel$top3_labels)] <- ""
+pop_sel$top3_selected[is.na(pop_sel$top3_selected)] <- FALSE
+
+pop_sel$top3 <- mapply(
+  function(label_str, star_str, merit_str) {
+    labels <- strsplit(as.character(label_str), "|||", fixed = TRUE)[[1]]
+    stars <- strsplit(as.character(star_str), "|||", fixed = TRUE)[[1]]
+    merits <- strsplit(as.character(merit_str), "|||", fixed = TRUE)[[1]]
+
+    n_items <- max(length(labels), length(stars), length(merits))
+    if (n_items == 0) {
+      return("")
+    }
+
+    if (length(labels) < n_items) labels <- c(labels, rep("", n_items - length(labels)))
+    if (length(stars) < n_items) stars <- c(stars, rep("", n_items - length(stars)))
+    if (length(merits) < n_items) merits <- c(merits, rep("", n_items - length(merits)))
+
+    blocks <- character(0)
+    for (i in seq_len(n_items)) {
+      content_lines <- c(stars[i], merits[i])
+      content_lines <- content_lines[trimws(content_lines) != ""]
+
+      if (length(content_lines) == 0) {
+        next
+      }
+
+      if (n_items > 1) {
+        study_label <- labels[i]
+        if (trimws(study_label) == "") {
+          study_label <- htmltools::htmlEscape(paste0("Study ", i), attribute = FALSE)
+        }
+        blocks <- c(
+          blocks,
+          paste0("<b>", study_label, ":</b><br>", paste(content_lines, collapse = "<br>"))
+        )
+      } else {
+        blocks <- c(blocks, paste(content_lines, collapse = "<br>"))
+      }
+    }
+
+    paste(blocks, collapse = "<br><br>")
+  },
+  pop_sel$top3_labels,
+  pop_sel$P_TopPaper_Select,
+  pop_sel$P_MeritStatement,
+  USE.NAMES = FALSE
+)
+
+pop_sel$P_TopPaper_Select <- NULL
+pop_sel$top3_labels <- NULL
 pop_sel <- pop_sel |> relocate(top3, .before = 1)
 
 if (length(comment_cols) > 0) {
@@ -762,32 +941,6 @@ if (length(comment_cols) > 0) {
   pop_sel$all_comments <- NULL
 }
 
-merit_text <- as.character(pop_sel$P_MeritStatement)
-has_merit <- !is.na(merit_text) & trimws(merit_text) != ""
-
-if (any(has_merit)) {
-  escaped_merit <- htmltools::htmlEscape(merit_text, attribute = TRUE)
-  escaped_merit <- str_replace_all(escaped_merit, "\\n", "<br>")
-  escaped_merit <- paste0("<b>Merit Statement</b>:<br>", escaped_merit)
-
-  merit_icon <- cell_spec(
-    ifelse(has_merit,
-      '<i class="bi bi-info-circle text-primary fs-5"></i>',
-      ""
-    ),
-    escape = FALSE,
-    popover = spec_popover(content = ifelse(has_merit, escaped_merit, NA_character_), title = NULL, position = "right")
-  )
-
-  top3_star <- ifelse(pop_sel$top3_selected, "⭐", "")
-  pop_sel$top3 <- ifelse(
-    top3_star != "" & has_merit,
-    paste0(top3_star, "<br>", merit_icon),
-    ifelse(top3_star != "", top3_star, ifelse(has_merit, merit_icon, ""))
-  )
-}
-
-# Merit statement is represented in Top 3 as an icon popover; remove raw column
 pop_sel$P_MeritStatement <- NULL
 
 names(pop_sel)[names(pop_sel) == "three_year_cc"] <- "3 year citation count"
