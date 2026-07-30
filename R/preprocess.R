@@ -487,8 +487,8 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
-    c_counts_psy_2001_2024 <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2024.RDS", package="RESQUER"))
-    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy_2001_2024, verbose=verbose)
+    c_counts_psy <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2025.RDS", package="RESQUER"))
+    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy, verbose=verbose)
     applicant$FNCS <- fncs
   } else {
     applicant$FNCS <- NA

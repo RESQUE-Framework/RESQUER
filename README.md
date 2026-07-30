@@ -17,7 +17,7 @@ remotes::install_github("RESQUE-Framework/RESQUER", auth_token=NULL)
 The package is not on CRAN yet.
 
 
-## How to create an individual profiles (html files):
+## How to create individual profiles (html files):
 
 You need [Quarto](https://quarto.org/docs/get-started/) installed on your system:
 

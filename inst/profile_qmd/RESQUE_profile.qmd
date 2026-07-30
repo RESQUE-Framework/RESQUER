@@ -1226,15 +1226,30 @@ if (any(applicant$preprocessing_notes != "")) {
 
 ```{=html}
 <!-- Retrieve later, e.g. with JS:
-  const jsonData = JSON.parse(document.getElementById('raw-json-data').textContent);
+  const rawJsonBase64 = document.getElementById('raw-json-data').textContent;
+  const jsonData = JSON.parse(decodeURIComponent(escape(window.atob(rawJsonBase64))));
+  // or, equivalently, use the helper below:
+  // const jsonData = getEmbeddedRawJson();
 -->
 ```
 
 ```{r embed_json}
 #| output: asis
-cat(sprintf('<script id="raw-json-data" type="application/json" style="display:none;">%s</script>',
-            paste(applicant_raw_json, collapse="\n")))
+json_content <- paste(applicant_raw_json, collapse = "\n")
+json_content_b64 <- jsonlite::base64_enc(charToRaw(json_content))
+cat(sprintf('<script id="raw-json-data" type="text/plain" style="display:none;">%s</script>',
+            json_content_b64))
 
+```
+
+```{=html}
+<script>
+function getEmbeddedRawJson() {
+  const el = document.getElementById('raw-json-data');
+  if (!el) return null;
+  return JSON.parse(decodeURIComponent(escape(window.atob(el.textContent))));
+}
+</script>
 ```
 
 <!-- Custom script to show popovers -->
