@@ -23,12 +23,13 @@ get_directory <- function(path) {
 #' @param clear_cache The computations (e.g., citation statistics) are cached in the file `applicant_data.RData` (stored in the same folder as the jsons). If `clear_cache = TRUE`, the file is deleted and recomputed.
 #' @param anonymous If `TRUE`, all candidate names are replaced by A, B, C, ...
 #' @param randomize If `TRUE`, numeric scores are randomly perturbed by ±10% for demo/anonymization purposes.
+#' @param FNCS_type The type of FNCS average to use (one of "median", "mean")
 #' @return The path to the rendered file
 #' @export
 #' @importFrom quarto quarto_render
 #' @importFrom jsonlite read_json
 #'
-render_overview <- function(json_folder, output_file = NA, template = NA, anonymous = FALSE, randomize = FALSE, clear_cache = FALSE) {
+render_overview <- function(json_folder, output_file = NA, template = NA, anonymous = FALSE, randomize = FALSE, clear_cache = FALSE, FNCS_type="median") {
 
   # for debugging:
   # json_folder = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
@@ -78,7 +79,8 @@ render_overview <- function(json_folder, output_file = NA, template = NA, anonym
                           json_folder = full_json_folder,
                           clear_cache = clear_cache,
                           anonymous = anonymous,
-                          randomize = randomize
+                          randomize = randomize,
+                          FNCS_type = FNCS_type
                         )
   )
 

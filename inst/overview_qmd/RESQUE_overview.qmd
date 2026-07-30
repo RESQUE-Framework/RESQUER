@@ -23,13 +23,14 @@ params:
   clear_cache: false
   verbose: false
   randomize: false
+  FNCS_type: "median"
 ---
 
 
 ```{r setup0}
 #| include: false
 
-# params=list(); params$verbose=FALSE; params$anonymous=FALSE; params$randomize = FALSE; params$clear_cache=TRUE; params$json_folder='/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/report_testsuite/jsons'
+# params=list(); params$verbose=FALSE; params$anonymous=FALSE; params$randomize = FALSE; params$clear_cache=TRUE; params$json_folder='/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/_test/report_testsuite/jsons'; params$FNCS_type = "mean"
 
 library(knitr)
 library(kableExtra)
@@ -407,14 +408,20 @@ for (i in 1:nrow(tab_impact)) {
   )
 }
 
-tab_impact$mean_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(1))
+if (params$FNCS_type == "mean") {
+  tab_impact$avg_FNCS = sapply(applicant_list, function(x) mean(x$FNCS$FNCS, na.rm=TRUE) |> round(1))
+  FNCS_colname <- "Mean FNCS"
+}
 
-# for choosing the background color:
-mean_FNCS_quantiles <- quantile(tab_impact$mean_FNCS, probs = c(0.25, 0.75))
+if (params$FNCS_type == "median") {
+  tab_impact$avg_FNCS = sapply(applicant_list, function(x) median(x$FNCS$FNCS, na.rm=TRUE) |> round(1))
+  FNCS_colname <- "Median FNCS"
+}
 
+FNCS_quantiles <- quantile(tab_impact$avg_FNCS, probs = c(0.25, 0.75))
 
 if (params$randomize == TRUE) {
-  tab_impact$mean_FNCS <- wiggle(tab_impact$mean_FNCS)
+  tab_impact$avg_FNCS <- wiggle(tab_impact$avg_FNCS)
 }
 
 tab_impact$highest_citation_count = 
@@ -451,11 +458,11 @@ datatable(
     columnDefs = list(list(width = 'auto', targets = '_all')),
     dom = 't', 
     paging = FALSE),
-  colnames=c("Applicant", "# of papers in top-10% of popularity", "mean FNCS", "Highest citation count of a single paper")) %>%
+  colnames=c("Applicant", "# of papers in top-10% of popularity", FNCS_colname, "Highest citation count of a single paper")) %>%
   formatStyle(
-    'mean_FNCS',
+    'avg_FNCS',
     backgroundColor = styleInterval(
-      mean_FNCS_quantiles, c('#fbe3cc', '#fbf9cc', '#daf9d7')
+      FNCS_quantiles, c('#fbe3cc', '#fbf9cc', '#daf9d7')
     )
   )
 ```
@@ -485,7 +492,7 @@ tab_combi$age <- sapply(applicant_list, function(x) x$meta$AcademicAge)
 
 tab_combi$name <- paste0(tab_combi$applicant, " (age: ", tab_combi$age, ")")
 
-ggplot(tab_combi, aes(x=RRS_overall, y=mean_FNCS)) + 
+ggplot(tab_combi, aes(x=RRS_overall, y=avg_FNCS)) + 
   geom_point() + 
   geom_text_repel(
     aes(label=name),
@@ -495,7 +502,7 @@ ggplot(tab_combi, aes(x=RRS_overall, y=mean_FNCS)) +
     segment.size=0.1
   ) + 
   theme_bw() +
-  xlab("Overall Rigor Score (higher ist better)") + ylab("Mean FNCS (higher ist better)") +
+  xlab("Overall Rigor Score (higher ist better)") + ylab(paste0(FNCS_colname, " (higher ist better)")) +
   scale_x_continuous(limits = c(0, max(tab_combi$RRS_overall, na.rm = TRUE)*1.1))  # Ensure that x-axis starts at 0
 ```
 
