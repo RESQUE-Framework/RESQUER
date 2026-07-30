@@ -43,7 +43,6 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
   dat$queryConfig <- NULL
 
   # compute the scores
-  #scores <- score_all_from_file(file=file, verbose=verbose)
   scores <- score_all(research_outputs=parse_json(fixed_json, simplifyVector = FALSE))
 
   # Create nice factor labels
