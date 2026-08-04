@@ -1,6 +1,21 @@
 # RESQUER News
 
+## RESQUER 0.10.10 (2026-08-04)
 
+### Added
+
+- New `check_quarto()` helper that verifies a minimum required Quarto version is installed and errors informatively if not; called at the start of `render_profile()` and `render_overview()`.
+- `DT` added as a suggested package.
+
+### Changed
+
+- `render_profile()` now restores the working directory via `on.exit()`, so it is reset even if rendering fails.
+
+## RESQUER 0.10.9 (2026-07-30)
+
+### Changed
+
+- `render_overview()` now defaults to using the *median* FNCS (Field-Normalized Citation Score) instead of the mean, with a new `FNCS_type` argument (`"median"` or `"mean"`) to switch between them.
 
 ## RESQUER 0.10.8 (2026-07-07)
 

@@ -33,6 +33,8 @@ render_overview <- function(json_folder, output_file = NA, template = NA, anonym
 
   # for debugging:
 
+  check_quarto("1.8.0")
+
   # Path to the qmd template
   if (is.na(template)) {
     template <- system.file("overview_qmd", "RESQUE_overview.qmd", package = "RESQUER")
