@@ -35,6 +35,8 @@ render_overview <- function(json_folder, output_file = NA, template = NA, anonym
   # json_folder = "/Users/felix/LMU/DGPs Kommission Open Science/RESQUE/Overview"
   # template="/Users/felix/Documents/Github/RESQUE-Framework/RESQUER/inst/overview_qmd/RESQUE_overview.qmd"
 
+  check_quarto("1.8.0")
+
   # Path to the qmd template
   if (is.na(template)) {
     template <- system.file("overview_qmd", "RESQUE_overview.qmd", package = "RESQUER")
