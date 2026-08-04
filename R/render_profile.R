@@ -22,6 +22,8 @@
 
 render_profile <- function(json_path, show_inter=TRUE, output_file = NA, template = NA) {
 
+  check_quarto("1.8.0")
+
   # Path to the qmd template
   if (is.na(template)) {
     template <- system.file("profile_qmd", "RESQUE_profile.qmd", package = "RESQUER")
@@ -47,6 +49,7 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
   }
 
   setwd(temp_dir)
+  on.exit(setwd(old_wd), add = TRUE)
   # Render the Rmd file
   quarto::quarto_render(input = basename(template),
                     output_file = basename(output_file),
@@ -58,8 +61,6 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
                       show_inter = show_inter
                     )
                   )
-
-  setwd(old_wd)
 
   # Ensure the output directory exists
   if (!dir.exists(dirname(output_file))) {dir.create(dirname(output_file), recursive = TRUE)}
