@@ -1,5 +1,7 @@
 # RESQUER News
 
+
+
 ## RESQUER 0.10.8 (2026-07-07)
 
 ### Added
