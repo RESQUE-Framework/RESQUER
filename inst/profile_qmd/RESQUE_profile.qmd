@@ -301,7 +301,7 @@ if (nrow(applicant$rigor_pubs) > 0) {
 }
 ```
 
-Type of population/sample and cultural background for the `r sum(applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Sample != "Other", na.rm=TRUE)` studies with own new data collection ("Other" excluded):
+Type of population/sample and cultural background for the `r sum(applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Sample != "Other" & applicant$rigor_pubs$P_Data == "Yes", na.rm=TRUE)` studies with own new data collection ("Other" values excluded):
 
 ```{r}
 #| fig-width: 6
@@ -310,7 +310,7 @@ Type of population/sample and cultural background for the `r sum(applicant$rigor
 #| out-height: auto
 
 Sample_Type <- factor(
-  x = na.omit(applicant$rigor_pubs$P_Sample),
+  x = na.omit(applicant$rigor_pubs$P_Sample[applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Data == "Yes"]),
   levels = c("MostlyPsychStudents", "MostlyStudents", "General", "Specific", "Rare"),
   labels = c("(Predominantly) psychology students", 
              "(Predominantly) students, interdisciplinary", 
@@ -323,7 +323,7 @@ Sample_Type <- factor(
 
 df <- data.frame(
   Sample_Type = Sample_Type, 
-  Sample_CrossCultural = factor(applicant$rigor_pubs$P_Sample_CrossCultural, levels=c("NotApplicable", "SingleCulture", "MultipleCultures"), labels=c("Not applicable", "Single cultural or ethnic background", "Multiple cultural or ethnic backgrounds"))
+  Sample_CrossCultural = factor(applicant$rigor_pubs$P_Sample_CrossCultural[applicant$rigor_pubs$P_Data_Source_NewOwn & applicant$rigor_pubs$P_Data == "Yes"], levels=c("NotApplicable", "SingleCulture", "MultipleCultures"), labels=c("Not applicable", "Single cultural or ethnic background", "Multiple cultural or ethnic backgrounds"))
 )
 
 # in case the Sample_CrossCultural indicator is missing (this might get deselected frequently)
@@ -357,6 +357,27 @@ ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 ```
+
+
+```{r show_rare_samples}
+#| results: asis
+
+if (any(!is.na(applicant$rigor_pubs$P_Sample_RareOther))) {
+  res <- "**Rare samples used in studies:**\n\n"
+  
+  rare_sample_positions <- which(!is.na(applicant$rigor_pubs$P_Sample_RareOther))
+  for (i in rare_sample_positions) {
+    res <- paste0(res, "- ", applicant$rigor_pubs$P_Sample_RareOther[i], "\n")
+    if (!is.nulla(applicant$rigor_pubs$P_SampleSize[i])) {
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$rigor_pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
+    } else {
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")
+    }
+  }
+  cat(res)
+}
+```
+
 
 ```{r experimental_effort}
 #| fig-width: 6
@@ -397,7 +418,7 @@ if (!is.null(applicant$rigor_pubs$P_DesignExperimental_Effort)) {
 #| out-height: auto
 # show sample location as heatmap
 if (any(str_detect(colnames(applicant$rigor_pubs), "P_Sample_Location_"))) {
-  Sample_Location <- RESQUER:::sum_MC(pubs = applicant$rigor_pubs, prefix = "P_Sample_Location_")
+  Sample_Location <- RESQUER:::sum_MC(pubs = applicant$rigor_pubs[applicant$rigor_pubs$P_Data == "Yes"], prefix = "P_Sample_Location_")
   
   location_data <- data.frame(
     label = rownames(as.data.frame(Sample_Location)),
@@ -419,24 +440,6 @@ if (any(str_detect(colnames(applicant$rigor_pubs), "P_Sample_Location_"))) {
 }
 ```
 
-```{r show_rare_samples}
-#| results: asis
-
-if (any(!is.na(applicant$rigor_pubs$P_Sample_RareOther))) {
-  res <- "**Rare samples used in studies:**\n\n"
-  
-  rare_sample_positions <- which(!is.na(applicant$rigor_pubs$P_Sample_RareOther))
-  for (i in rare_sample_positions) {
-    res <- paste0(res, "- ", applicant$rigor_pubs$P_Sample_RareOther[i], "\n")
-    if (!is.nulla(applicant$rigor_pubs$P_SampleSize[i])) {
-      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$rigor_pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
-    } else {
-      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")
-    }
-  }
-  cat(res)
-}
-```
 
 ## Types of Research Designs
 
@@ -581,7 +584,8 @@ datatable(
 ```{r Radarchart}
 #| fig.width=8
 if (!applicant$all_empty & !any(is.na(applicant$RRS))) {
-  RRS_radarchart(compute_RRS(applicant, sectors="weighted"), base_size=20, overall_score=TRUE)
+  RRS <- compute_RRS(applicant, sectors="weighted")
+  RRS_radarchart(RRS, base_size=20, overall_score=TRUE)
 }
 ```
 
