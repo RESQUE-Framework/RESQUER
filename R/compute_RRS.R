@@ -24,6 +24,10 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
   # Which outputs should be scored? At the moment, only publications
   score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE, ]
+
+  # Remove outputs without any scoring indicators (these have max=0 and relative=NA)
+  # and without doi (these are not reproducible)
+  score_list <- score_list[!is.na(score_list$relative) & !is.na(score_list$doi), ]
   n_scorable <- sum(!is.na(score_list$relative))
 
   if (n_scorable == 0) {
@@ -58,6 +62,9 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
   # each row is one study (take care of multistudy papers); show overall RRS and raw points
   RRS_by_study_overall <- score_list |> select(doi, P_MultiStudy_Selected, scores=score, max_points=max, rel_score=relative)
+
+  # remove rows with 0 max_points (these are publications that have no scoring indicators)
+  RRS_by_study_overall <- RRS_by_study_overall %>% filter(max_points > 0)
 
   # fill in missing publications (which have a max score of 0)
   for (i in 1:nrow(applicant$scores$scores)) {

@@ -135,8 +135,8 @@ const score = (r, meta, categoriesOverride = []) => {
         P_MultiStudy_Selected: r.P_MultiStudy_Selected ?? null,
         max: maxScore,
         score: reachedScore,
-        relative: maxScore > 0 ? reachedScore / maxScore : 0,
-        percentage: maxScore > 0 ? ((reachedScore / maxScore) * 100).toFixed(1) : "0.0",
+        relative: maxScore > 0 ? reachedScore / maxScore : null,
+        percentage: maxScore > 0 ? ((reachedScore / maxScore) * 100).toFixed(1) : null,
         items: itemScores,
         categories: categoryScores
     };
