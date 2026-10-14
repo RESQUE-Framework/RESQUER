@@ -25,7 +25,7 @@ Imports:
   ggplot2,
   curl,
   magrittr,
-  openalexR (>= 2.0.0),
+  openalexR (>= 3.1.2),
   scales,
   tibble,
   lubridate,
