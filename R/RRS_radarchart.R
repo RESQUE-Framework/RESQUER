@@ -105,7 +105,12 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
   #------------------------------------------------------------------------
   # Year histogram
 
-  years <- na.omit(RRS$publication_years)
+  years <- RRS$publication_years
+  years <- years[is.finite(years)]
+
+  if (length(years) == 0) {
+    return(p1)
+  }
 
   # Ensure middle year is a full year
   median_year <- floor(median(years))
