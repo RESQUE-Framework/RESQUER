@@ -1,3 +1,21 @@
+# RESQUER 0.10.16 (2026-10-20)
+
+## Added
+
+- The profile report publication table has a new "Open Practices" column with small badges for open data, open materials, open code, and preregistration. Badges link to the respective material when an identifier is available.
+
+## Changed
+
+- The profile report layout is wider (sidebar 250px, body 1000px, margin 300px).
+
+# RESQUER 0.10.15 (2026-10-20)
+
+## Fixed
+
+- `preprocess()` now ensures that `Title` and `Year` columns always exist in the indicators data, so downstream RRS code and profile reports no longer fail when they are missing.
+- `compute_RRS()` and `RRS_radarchart()` handle missing or `NULL` publication years without error.
+- `read_RESQUE()` now completes partial DOIs (e.g., `10.1177/...`) to full `https://doi.org/` URLs, so title links work.
+
 # RESQUER 0.10.14 (2026-10-20)
 
 ## Fixed

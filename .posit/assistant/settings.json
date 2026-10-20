@@ -1,0 +1,12 @@
+{
+  "permission": {
+    "bash": {
+      "cd *": "allow",
+      "grep *": "allow",
+      "head *": "allow",
+      "sed *": "allow",
+      "sort *": "allow",
+      "uniq *": "allow"
+    }
+  }
+}

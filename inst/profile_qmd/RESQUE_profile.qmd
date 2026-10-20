@@ -7,6 +7,10 @@ format:
     toc: true
     toc-location: left
     css: assets/profile_styles.css
+    grid:
+      sidebar-width: 250px
+      body-width: 1000px
+      margin-width: 300px
 filters:
   - path: offcanvas
     at: pre-quarto
@@ -955,6 +959,58 @@ names(pop_sel)[names(pop_sel) == "CRediT_involvement_roles"] <- "Candidates' CRe
 names(pop_sel)[names(pop_sel) == "comments"] <- "Applicant's Comments"
 names(pop_sel)[names(pop_sel) == "top3"] <- "Top 3 & Merit Statement"
 
+
+# Open practice badges (small icons, linked to the respective material)
+badge_dir <- system.file("profile_qmd/assets", package = "RESQUER")
+if (badge_dir == "") badge_dir <- "assets"
+badge_uri <- function(file) {
+  knitr::image_uri(file.path(badge_dir, file))
+}
+badge_defs <- list(
+  list(var = "P_Data_Open", file = "data_small_color.png", label = "Open Data",
+       none = c("NotApplicable", "NotAvailable")),
+  list(var = "P_OpenMaterials", file = "materials_small_color.png", label = "Open Materials",
+       none = c("NotApplicable", "NotAvailable")),
+  list(var = "P_ReproducibleScripts", file = "code_small_color.png", label = "Open Code",
+       none = c("NotApplicable", "NotAvailable")),
+  list(var = "P_Preregistration", file = "preregistered_small_color.png", label = "Preregistration",
+       none = c("NotApplicable", "No"))
+)
+
+# Turn an identifier into a URL (first URL found, or DOI), else NA
+badge_url <- function(x) {
+  x <- trimws(as.character(x))
+  x <- x[!is.na(x) & x != ""]
+  for (xi in x) {
+    m <- regmatches(xi, regexpr("https?://[^[:space:];,<>\"')]+", xi))
+    if (length(m) == 1) return(m)
+    m <- regmatches(xi, regexpr("10\\.[0-9]{4,9}/[^[:space:];,<>\"')]+", xi))
+    if (length(m) == 1) return(paste0("https://doi.org/", m))
+    # scheme-less links such as "osf.io/abc12" or "www.github.com/x/y"
+    m <- regmatches(xi, regexpr("[A-Za-z0-9.-]+\\.[A-Za-z]{2,}/[^[:space:];,<>\"')]*", xi))
+    if (length(m) == 1) return(paste0("https://", m))
+  }
+  NA_character_
+}
+
+badge_html_for_doi <- function(d) {
+  rows <- applicant$indicators[which(applicant$indicators$doi == d), , drop = FALSE]
+  out <- vapply(badge_defs, function(b) {
+    if (!b$var %in% names(rows)) return("")
+    vals <- as.character(rows[[b$var]])
+    if (!any(!is.na(vals) & !vals %in% c(b$none, ""))) return("")
+    id_col <- paste0(b$var, "_Identifier")
+    url <- if (id_col %in% names(rows)) badge_url(rows[[id_col]]) else NA_character_
+    img <- paste0("<img src='", badge_uri(b$file), "' alt='", b$label,
+                  "' title='", b$label, "' style='height:20px; margin-right:2px;'>")
+    if (is.na(url)) img else paste0("<a href='", htmltools::htmlEscape(url, attribute = TRUE),
+                                    "' target='_blank'>", img, "</a>")
+  }, character(1))
+  out <- out[out != ""]
+  if (length(out) == 0) "" else paste0("<span style='white-space:nowrap;'>", paste(out, collapse = ""), "</span>")
+}
+
+pop_sel$`Open Practices` <- vapply(pop_sel$doi, badge_html_for_doi, character(1), USE.NAMES = FALSE)
 
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
 pop_sel$FNPR <- paste0(round(pop_sel$FNPR*100, 1), "%")
