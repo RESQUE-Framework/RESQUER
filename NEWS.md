@@ -1,69 +1,67 @@
-# RESQUER News
+# RESQUER 0.10.14 (2026-10-20)
 
-## RESQUER 0.10.14 (2026-10-20)
-
-### Fixed
+## Fixed
 
 - `preprocess()` and profile reports now handle unavailable RRS, BIP!, and OpenAlex results without aborting rendering.
 - `RRS_radarchart()` now renders the radar chart when publication years are unavailable, omitting only the year histogram.
 
-## RESQUER 0.10.13 (2026-10-20)
+# RESQUER 0.10.13 (2026-10-20)
 
-### Fixed
+## Fixed
 
 - RRS calculations now consistently exclude inapplicable scoring categories, preventing mismatches between category summaries, per-publication scores, and radar charts.
 
-### Changed
+## Changed
 
 - `compute_RRS()` is now documented as the authoritative, reportable RRS calculation; it restricts scoring to eligible publications with DOIs.
 - The minimum required version of `OAmetrics` is now 0.5.4.
 
-## RESQUER 0.10.12 (2026-10-14)
+# RESQUER 0.10.12 (2026-10-14)
 
-### Changed
+## Changed
 
 - The minimum required version of `openalexR` is now 3.1.2 to avoid compatibility issues.
 
-## RESQUER 0.10.11 (2026-10-01)
+# RESQUER 0.10.11 (2026-10-01)
 
-### Fixed
+## Fixed
 
 - Profile and overview reports now exclude outputs without data or scoring indicators from sample and data-type summaries.
 - Relative Rigor Score calculations now handle outputs without scorable indicators or DOIs correctly, avoiding invalid scores and errors in profile radar charts.
 
-## RESQUER 0.10.10 (2026-08-04)
+# RESQUER 0.10.10 (2026-08-04)
 
-### Added
+## Added
 
 - New `check_quarto()` helper that verifies a minimum required Quarto version is installed and errors informatively if not; called at the start of `render_profile()` and `render_overview()`.
 - `DT` added as a suggested package.
 
-### Changed
+## Changed
 
 - `render_profile()` now restores the working directory via `on.exit()`, so it is reset even if rendering fails.
 
-## RESQUER 0.10.9 (2026-07-30)
+# RESQUER 0.10.9 (2026-07-30)
 
-### Changed
+## Changed
 
 - `render_overview()` now defaults to using the *median* FNCS (Field-Normalized Citation Score) instead of the mean, with a new `FNCS_type` argument (`"median"` or `"mean"`) to switch between them.
 
-## RESQUER 0.10.8 (2026-07-07)
+# RESQUER 0.10.8 (2026-07-07)
 
-### Added
+## Added
 
 - Enable multi-study support
 
-## RESQUER 0.10.7 (2026-07-06)
+# RESQUER 0.10.7 (2026-07-06)
 
-### Added
+## Added
 
 - Scientific impact tables now include a new first column (`Top 3 & Merit Statement`).
 - `Top 3` selection (`P_TopPaper_Select`) is displayed with a star icon.
 - Merit statements are now shown directly in the first column as an info popover icon (below the star when both are present).
 - An optional `Applicant's Comments` popover column is shown when any `*_Comment` fields contain content.
 
-### Changed
+## Changed
 
 - Scientific impact tables no longer use striped row styling.
 - Rows for selected top papers are highlighted in pastel yellow.
@@ -74,7 +72,7 @@
 - Preregistration sector lookup now matches category labels more robustly.
 - Several profile labels/texts were harmonized from "papers" to "studies" where multi-study submissions are shown.
 
-### Fixed
+## Fixed
 
 - Popover content for comments and merit statements is now HTML-escaped, preventing broken markup when comments contain quotes or special characters.
 - `sum_MC()` now excludes all `*_Comment` columns and sums only logical indicator columns, improving robustness across indicator sets.
@@ -82,6 +80,6 @@
 - BIP paper counters now deduplicate per DOI, so paper-level counts are no longer inflated by multi-study entries.
 - `high_impact` and `low_impact` tables now both explicitly suppress row names.
 
-### Known issues:
+## Known issues
 
 - In some multi-study situations, the impact tables have duplicates.
