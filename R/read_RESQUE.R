@@ -55,6 +55,10 @@ read_RESQUE <- function(file, update_forms = FALSE, verbose = FALSE) {
     dat$Title <- "NO_TITLE_RETRIEVED"
   }
   dat$Title <- clean_title(dat$Title)
+  # complete partial DOIs (e.g., "10.1177/...") to full https://doi.org/ URLs
+  if (!is.null(dat$DOI)) {
+    dat$DOI <- normalize_dois(dat$DOI)
+  }
   dat$TitleLink <- paste0("[", dat$Title, "](", dat$DOI, ")")
 
   # remove unnecessary column that breaks the structure of dat (nested data frame)

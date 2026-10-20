@@ -130,6 +130,13 @@ preprocess <- function(
     labels = c("not<br>applicable", "No", "Yes")
   )
 
+  # Central fix: downstream code (RRS, profile .qmd) assumes these columns exist
+  applicant$indicators <- add_variables(
+    applicant$indicators,
+    c("Title", "Year"),
+    default = NA
+  )
+
   #------------------------------------------------------------------------
   # clean the dois:
   applicant$indicators$doi <- normalize_dois(applicant$indicators$DOI)

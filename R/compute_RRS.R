@@ -234,7 +234,11 @@ compute_RRS <- function(
     n_papers = sum(!is.na(RRS_by_study$RRS_overall)),
     sector_scores = RRS_by_category,
     radar_dat = radar_dat,
-    publication_years = applicant$rigor_pubs$Year |> as.numeric()
+    publication_years = if ("Year" %in% names(applicant$rigor_pubs)) {
+      as.numeric(applicant$rigor_pubs$Year)
+    } else {
+      numeric()
+    }
   ))
 }
 

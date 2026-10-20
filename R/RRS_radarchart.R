@@ -144,6 +144,9 @@ RRS_radarchart <- function(
   # Year histogram
 
   years <- RRS$publication_years
+  if (is.null(years)) {
+    years <- numeric()
+  }
   years <- years[is.finite(years)]
 
   if (length(years) == 0) {
