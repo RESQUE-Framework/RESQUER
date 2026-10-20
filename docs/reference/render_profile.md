@@ -1,0 +1,49 @@
+# Render an HTML profile of a single applicant
+
+Render an HTML profile of a single applicant
+
+## Usage
+
+``` r
+render_profile(json_path, show_inter = TRUE, output_file = NA, template = NA)
+```
+
+## Arguments
+
+- json_path:
+
+  The path to the applicant's JSON file
+
+- show_inter:
+
+  Show/hide the section on internationality and interdisciplinarity
+
+- output_file:
+
+  The file name (optionally including a path) of the output report. If
+  NA, it uses the last name from the applicant plus the current
+  date-time as filename and stores it in the same folder as the source
+  json file.
+
+- template:
+
+  The path to the .qmd file with the profile. If set to `NA`(default),
+  the package's built-in profile is used.
+
+## Value
+
+The path to the rendered file
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Render single profile
+render_profile("path_to_file/resque_Einstein.json")
+
+# Render all profiles in a folder
+for (f in list.files("path_to_folder", pattern="resque_.*\\.json", full.names = TRUE)) {
+ render_profile(f)
+}
+} # }
+```

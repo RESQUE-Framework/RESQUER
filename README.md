@@ -77,4 +77,7 @@ quarto_serve(system.file("dashboard/dashboard_shiny.qmd", package="RESQUER"))
 
 
 
+## Internal notes:
+
+- The pkgdown website is built locally - do not forget to run `pkgdown::build_site(preview = FALSE)` before pushing a new version.
 
