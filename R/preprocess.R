@@ -510,7 +510,9 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
 
   #----------------------------------------------------------------
-  # Compute Relative Rigor Score RRS
+  # Compute the reportable RRS from eligible publications. Do not use
+  # applicant$scores$overall here: it is the preliminary score across all
+  # submitted outputs, calculated before eligibility filtering.
   #----------------------------------------------------------------
 
   if (nrow(applicant$rigor_pubs) > 0) {

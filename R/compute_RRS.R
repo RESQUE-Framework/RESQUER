@@ -1,6 +1,10 @@
 #' Compute Relative Rigor Score (RRS)
 #'
-#' This function computes a relative rigor score based on the indicators provided from an applicant.
+#' This function computes the reportable Relative Rigor Score (RRS) based on
+#' the indicators provided from an applicant. Unlike the preliminary
+#' `applicant$scores$overall` calculated by [read_RESQUE()], it restricts the
+#' calculation to eligible publications and excludes records without a DOI.
+#' Use the returned `overall_score` for reporting the RRS.
 #'
 #' @param applicant The applicant data that has been imported by the `read_RESQUE()` and preprocessed by the `preprocess()` function.
 #' @param sectors Should sectors be all equally sized ("equal") or weighted by the maximum sum of attainable points in each category ("weighted")?
@@ -22,7 +26,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
   sectors <- match.arg(sectors, choices=c("weighted", "equal"))
 
-  # Which outputs should be scored? At the moment, only publications
+  # Derive the reportable RRS from eligible publications, rather than using
+  # applicant$scores$overall, which is the preliminary score across all outputs.
   score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE, ]
 
   # Remove outputs without any scoring indicators (these have max=0 and relative=NA)
@@ -55,10 +60,19 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
   }
 
   RRS_by_category$rel_score <- RRS_by_category$scores / RRS_by_category$max_points
-  RRS_by_category <- RRS_by_category %>% filter(!is.na(category))
+  RRS_by_category <- RRS_by_category %>%
+    # The JavaScript scorer returns every configured category, including
+    # categories for which no scoring indicator applies to any publication.
+    # Such categories have a total maximum of zero and cannot define a
+    # meaningful relative score or radar-chart sector.
+    filter(!is.na(category), max_points > 0)
 
-
-  effective_categories <- sum(RRS_by_category$max_points > 0)
+  # Keep one authoritative list of categories that can actually contribute to
+  # the RRS. Reusing this list below ensures that the category summary, the
+  # per-publication sector columns, and the radar-chart geometry all describe
+  # exactly the same set of sectors.
+  effective_categories <- nrow(RRS_by_category)
+  scored_categories <- RRS_by_category$category
 
   # each row is one study (take care of multistudy papers); show overall RRS and raw points
   RRS_by_study_overall <- score_list |> select(doi, P_MultiStudy_Selected, scores=score, max_points=max, rel_score=relative)
@@ -86,6 +100,11 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
   RRS_by_study_sector <- data.frame()
   for (i in 1:nrow(score_list)) {
     cat_long <- score_list[i, "categories"][[1]]
+    # Drop categories whose maximum is zero across the complete applicant
+    # record. Without this filter, pivot_wider() would create columns for
+    # categories that were removed from RRS_by_category above, leaving the
+    # sector table and the radar data with incompatible schemas.
+    cat_long <- cat_long |> filter(title %in% scored_categories)
     cat_long$rel_score <- cat_long$score / cat_long$max
     cat_wide <- pivot_wider(cat_long |> select(title, rel_score), names_from=title, values_from=rel_score)
 
@@ -96,16 +115,20 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
     ))
   }
 
-    # fill in missing publications (which have a max score of 0)
-    for (i in 1:nrow(applicant$scores$scores)) {
-      if (!applicant$scores$scores$doi[i] %in% RRS_by_study_sector$doi) {
-        empty_row <- setNames(
-          data.frame(matrix(c(applicant$scores$scores$doi[i], applicant$scores$scores$P_MultiStudy_Selected[i], rep(NA, effective_categories)), nrow = 1)),
-          names(RRS_by_study_sector)
-        )
-        RRS_by_study_sector <- rbind(RRS_by_study_sector, empty_row)
-      }
+  # Fill in missing publications (which have a maximum score of zero).
+  # Derive each placeholder from the existing sector-table schema instead of
+  # calculating its number of columns. This remains correct when configured
+  # categories have no applicable indicators and therefore do not contribute a
+  # sector column.
+  for (i in 1:nrow(applicant$scores$scores)) {
+    if (!applicant$scores$scores$doi[i] %in% RRS_by_study_sector$doi) {
+      empty_row <- RRS_by_study_sector[0, , drop = FALSE]
+      empty_row[1, ] <- NA
+      empty_row$doi <- applicant$scores$scores$doi[i]
+      empty_row$P_MultiStudy_Selected <- applicant$scores$scores$P_MultiStudy_Selected[i]
+      RRS_by_study_sector <- rbind(RRS_by_study_sector, empty_row)
     }
+  }
 
   # merge the sector and the overall scores; bring them into the original order of the publications
   RRS_by_study <- full_join(RRS_by_study_overall %>% select(doi, P_MultiStudy_Selected, RRS_overall = rel_score), RRS_by_study_sector, by=c("doi", "P_MultiStudy_Selected")) %>% janitor::clean_names()

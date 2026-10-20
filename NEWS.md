@@ -1,5 +1,29 @@
 # RESQUER News
 
+## RESQUER 0.10.13 (2026-10-20)
+
+### Fixed
+
+- RRS calculations now consistently exclude inapplicable scoring categories, preventing mismatches between category summaries, per-publication scores, and radar charts.
+
+### Changed
+
+- `compute_RRS()` is now documented as the authoritative, reportable RRS calculation; it restricts scoring to eligible publications with DOIs.
+- The minimum required version of `OAmetrics` is now 0.5.4.
+
+## RESQUER 0.10.12 (2026-10-14)
+
+### Changed
+
+- The minimum required version of `openalexR` is now 3.1.2 to avoid compatibility issues.
+
+## RESQUER 0.10.11 (2026-10-01)
+
+### Fixed
+
+- Profile and overview reports now exclude outputs without data or scoring indicators from sample and data-type summaries.
+- Relative Rigor Score calculations now handle outputs without scorable indicators or DOIs correctly, avoiding invalid scores and errors in profile radar charts.
+
 ## RESQUER 0.10.10 (2026-08-04)
 
 ### Added

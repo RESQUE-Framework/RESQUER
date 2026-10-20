@@ -42,7 +42,10 @@ read_RESQUE <- function(file, update_forms=FALSE, verbose=FALSE) {
   # remove unnecessary column that breaks the structure of dat (nested data frame)
   dat$queryConfig <- NULL
 
-  # compute the scores
+  # Compute preliminary scores for every submitted output. These retain all
+  # output types and are not the reportable Relative Rigor Score; preprocess()
+  # subsequently calls compute_RRS() to select eligible publications and derive
+  # the authoritative RRS.
   scores <- score_all(research_outputs=parse_json(fixed_json, simplifyVector = FALSE))
 
   # Create nice factor labels

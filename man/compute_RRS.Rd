@@ -17,5 +17,9 @@ compute_RRS(applicant, sectors = c("weighted", "equal"), verbose = FALSE)
 A tibble containing the dimension (category), maximum points, and relative score for each category, suitable for creating a radar chart.
 }
 \description{
-This function computes a relative rigor score based on the indicators provided from an applicant.
+This function computes the reportable Relative Rigor Score (RRS) based on
+the indicators provided from an applicant. Unlike the preliminary
+\code{applicant$scores$overall} calculated by \code{\link[=read_RESQUE]{read_RESQUE()}}, it restricts the
+calculation to eligible publications and excludes records without a DOI.
+Use the returned \code{overall_score} for reporting the RRS.
 }
