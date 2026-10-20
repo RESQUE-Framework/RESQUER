@@ -39,8 +39,16 @@
 #' @importFrom scales brewer_pal
 #'
 #' @export
-RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=FALSE, show.n_pub=TRUE, show.years=TRUE, base_size=14, scale="area") {
-
+RRS_radarchart <- function(
+  RRS,
+  overall_score = FALSE,
+  minimal = FALSE,
+  show.legend = FALSE,
+  show.n_pub = TRUE,
+  show.years = TRUE,
+  base_size = 14,
+  scale = "area"
+) {
   # Standardized and categorized rigor scores:
   # TODO: Standarize within category, not over all
   # 0.63 (top 1%), 0.54 (top 10%), 0.50 (top 20%), 0.30 (top 50%)
@@ -51,14 +59,25 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
 
   # transform to scale to area
   RRS$radar_dat$rel_score2 <- RRS$radar_dat$rel_score
-  if (scale=="area") {
+  if (scale == "area") {
     RRS$radar_dat$rel_score2 <- sqrt(RRS$radar_dat$rel_score)
   }
 
-  p1 <- RRS$radar_dat %>% ggplot() +
-    geom_rect(aes(xmin = xstart, xmax = xend, ymin = 0, ymax = rel_score2, fill = dimension), show.legend = show.legend) +
+  p1 <- RRS$radar_dat %>%
+    ggplot() +
+    geom_rect(
+      aes(
+        xmin = xstart,
+        xmax = xend,
+        ymin = 0,
+        ymax = rel_score2,
+        fill = dimension
+      ),
+      show.legend = show.legend
+    ) +
     coord_polar("x", start = 0) +
-    xlab("") + ylab("") +
+    xlab("") +
+    ylab("") +
     scale_x_continuous(labels = NULL, breaks = NULL) +
     scale_y_continuous(labels = NULL, breaks = NULL, limits = c(0, 1.2)) +
     theme_void(base_size = base_size)
@@ -67,23 +86,43 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
 
   if (!minimal) {
     p1 <- p1 +
-      geom_rect(aes(xmin = xstart, xmax = xend, ymin = rel_score2, ymax = 1), fill = "#EFEFEF", color = "#DEDEDE") +
+      geom_rect(
+        aes(xmin = xstart, xmax = xend, ymin = rel_score2, ymax = 1),
+        fill = "#EFEFEF",
+        color = "#DEDEDE"
+      ) +
       guides(fill = guide_legend("Rigor Domain")) +
       scale_fill_brewer(palette = "Set3") +
-      geom_text(aes(x = xmid, y = 1, label = scales::label_wrap(15)(dimension)),
-                vjust = 0, hjust = 0.5, size = base_size / 5)
+      geom_text(
+        aes(x = xmid, y = 1, label = scales::label_wrap(15)(dimension)),
+        vjust = 0,
+        hjust = 0.5,
+        size = base_size / 5
+      )
 
     if (overall_score == TRUE) {
-      subtitle <- paste0(subtitle, "Overall score = ", round(RRS$overall_score * 100), "%. ")
+      subtitle <- paste0(
+        subtitle,
+        "Overall score = ",
+        round(RRS$overall_score * 100),
+        "%. "
+      )
     }
     if (show.n_pub == TRUE) {
-      subtitle <- paste0(subtitle, "Chart is based on ", RRS$n_papers, ifelse(RRS$n_papers == 1, " publication", " publications"), ".")
+      subtitle <- paste0(
+        subtitle,
+        "Chart is based on ",
+        RRS$n_papers,
+        ifelse(RRS$n_papers == 1, " publication", " publications"),
+        "."
+      )
     }
     if (!show.n_pub & !overall_score) {
       p1 <- p1 + theme(plot.margin = unit(c(-2.5, 0, -1, 0), 'cm'))
     }
   } else {
-    p1 <- p1 + guides(fill = "none") +
+    p1 <- p1 +
+      guides(fill = "none") +
       geom_hline(yintercept = 1, col = "grey80") +
       theme(plot.margin = unit(rep(-2.5, 4), 'cm'))
     return(p1)
@@ -96,7 +135,6 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
       plot.title.position = "plot",
       plot.title = element_text(hjust = 0.5, vjust = 0, margin = margin(b = 10))
     )
-
 
   if (show.years == FALSE) {
     return(p1)
@@ -121,7 +159,12 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
   }
 
   year_chart <- ggplot(data.frame(Year = years), aes(x = Year)) +
-    geom_histogram(binwidth = 1, fill = "#4285F4", color = "white", alpha = 0.8) +
+    geom_histogram(
+      binwidth = 1,
+      fill = "#4285F4",
+      color = "white",
+      alpha = 0.8
+    ) +
     scale_x_continuous(breaks = year_breaks) +
     labs(
       title = "Years of publication",
@@ -146,22 +189,21 @@ RRS_radarchart <- function(RRS, overall_score=FALSE, minimal=FALSE, show.legend=
   # Row 3: spacer
   # The heights=c(1,2,1) means the middle row (the histogram) is 2 units tall
   # and each spacer row is 1 unit tall. Adjust to taste.
-  years_plot_centered <- plot_spacer() / year_chart / plot_spacer() +
+  years_plot_centered <- plot_spacer() /
+    year_chart /
+    plot_spacer() +
     plot_layout(heights = c(1, 3, 1))
 
   # Now place p1 (left) and the centered histogram (right) side by side.
   # widths = c(4, 1) controls the relative width of the two columns.
-  combined_plot <- p1 + years_plot_centered +
+  combined_plot <- p1 +
+    years_plot_centered +
     plot_layout(widths = c(4, 1)) +
     plot_annotation(caption = subtitle) &
     theme(plot.caption = element_text(size = 12, hjust = 0.5))
 
   combined_plot
-
 }
-
-
-
 
 # Full Circles at specific sector heights
 #geom_hline(yintercept=0.30, col="grey30") +  # top 50%

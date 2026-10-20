@@ -18,16 +18,23 @@
 #' credit_barchart(credit_dat)
 #' credit_barchart(credit_dat, ordered=TRUE)
 
-credit_barchart <- function(credit_dat, ordered=FALSE, compact=FALSE){
-  credit_dat$Degree <- factor(credit_dat$Degree, levels=rev(c("Lead", "Equal", "Support", "NoRole", "not applicable")), ordered=TRUE)
+credit_barchart <- function(credit_dat, ordered = FALSE, compact = FALSE) {
+  credit_dat$Degree <- factor(
+    credit_dat$Degree,
+    levels = rev(c("Lead", "Equal", "Support", "NoRole", "not applicable")),
+    ordered = TRUE
+  )
 
   # Bring CRediT roles either in alphabetical order, or order by strongest contribution
-  if (ordered==FALSE) {
-    credit_dat$Role <- factor(credit_dat$Role,
-        levels=unique(credit_dat$Role) |> as.character() |> sort() |> rev(), ordered=TRUE)
+  if (ordered == FALSE) {
+    credit_dat$Role <- factor(
+      credit_dat$Role,
+      levels = unique(credit_dat$Role) |> as.character() |> sort() |> rev(),
+      ordered = TRUE
+    )
   } else {
-
-    credit_dat_ordered <- credit_dat |> group_by(Role) |>
+    credit_dat_ordered <- credit_dat |>
+      group_by(Role) |>
       summarise(
         n_Lead = sum(Degree == "Lead"),
         n_Equal = sum(Degree == "Equal"),
@@ -36,12 +43,14 @@ credit_barchart <- function(credit_dat, ordered=FALSE, compact=FALSE){
       ) |>
       arrange(-n_LeadEqual, -n_Support)
 
-    credit_dat$Role <- factor(credit_dat$Role,
-        levels=credit_dat_ordered$Role |> rev(), ordered=TRUE)
+    credit_dat$Role <- factor(
+      credit_dat$Role,
+      levels = credit_dat_ordered$Role |> rev(),
+      ordered = TRUE
+    )
   }
 
   if (compact == TRUE) {
-
     # remove the "not applicable" level - this distorts the plot
     dat <- credit_dat %>% filter(Degree != "not applicable")
 
@@ -54,17 +63,23 @@ credit_barchart <- function(credit_dat, ordered=FALSE, compact=FALSE){
       ylab("# of publications")
   }
 
-   p <- p +
+  p <- p +
     coord_flip() +
-    scale_fill_manual(values = rev(c("grey95", "grey85", "khaki2", "green3", "green4")), breaks = rev(c("not applicable", "NoRole", "Support", "Equal", "Lead"))) +
-    theme_minimal() + xlab("")  +
+    scale_fill_manual(
+      values = rev(c("grey95", "grey85", "khaki2", "green3", "green4")),
+      breaks = rev(c("not applicable", "NoRole", "Support", "Equal", "Lead"))
+    ) +
+    theme_minimal() +
+    xlab("") +
     theme(
       axis.text.y = element_text(size = 14),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank()
     ) +
     # force whole integers on x-axis
-    scale_y_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1))
+    scale_y_continuous(breaks = function(x) {
+      seq(floor(min(x)), ceiling(max(x)), by = 1)
+    })
 
   return(p)
 }

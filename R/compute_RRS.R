@@ -18,21 +18,30 @@
 #' @importFrom stats setNames
 #'
 #' @export
-compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FALSE) {
-
+compute_RRS <- function(
+  applicant,
+  sectors = c("weighted", "equal"),
+  verbose = FALSE
+) {
   if (is.null(applicant$indicators$rigor_pub)) {
-    stop("Applicant data does not contain the 'rigor_pub' field. Please ensure that the applicant has been preprocessed correctly by the `preprocess()` function.")
+    stop(
+      "Applicant data does not contain the 'rigor_pub' field. Please ensure that the applicant has been preprocessed correctly by the `preprocess()` function."
+    )
   }
 
-  sectors <- match.arg(sectors, choices=c("weighted", "equal"))
+  sectors <- match.arg(sectors, choices = c("weighted", "equal"))
 
   # Derive the reportable RRS from eligible publications, rather than using
   # applicant$scores$overall, which is the preliminary score across all outputs.
-  score_list <- applicant$scores$scores[applicant$indicators$rigor_pub == TRUE, ]
+  score_list <- applicant$scores$scores[
+    applicant$indicators$rigor_pub == TRUE,
+  ]
 
   # Remove outputs without any scoring indicators (these have max=0 and relative=NA)
   # and without doi (these are not reproducible)
-  score_list <- score_list[!is.na(score_list$relative) & !is.na(score_list$doi), ]
+  score_list <- score_list[
+    !is.na(score_list$relative) & !is.na(score_list$doi),
+  ]
   n_scorable <- sum(!is.na(score_list$relative))
 
   if (n_scorable == 0) {
@@ -47,19 +56,22 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
     ))
   }
 
-
   RRS_by_category <- data.frame()
   for (cat in 1:nrow(score_list$categories[[1]])) {
     max <- sapply(score_list$categories, function(x) x[cat, "max"])
     score <- sapply(score_list$categories, function(x) x[cat, "score"])
-    RRS_by_category <- rbind(RRS_by_category, data.frame(
-      category = score_list$categories[[1]]$title[cat],
-      max_points = sum(max, na.rm=TRUE),
-      scores = sum(score, na.rm=TRUE)
-    ))
+    RRS_by_category <- rbind(
+      RRS_by_category,
+      data.frame(
+        category = score_list$categories[[1]]$title[cat],
+        max_points = sum(max, na.rm = TRUE),
+        scores = sum(score, na.rm = TRUE)
+      )
+    )
   }
 
-  RRS_by_category$rel_score <- RRS_by_category$scores / RRS_by_category$max_points
+  RRS_by_category$rel_score <- RRS_by_category$scores /
+    RRS_by_category$max_points
   RRS_by_category <- RRS_by_category %>%
     # The JavaScript scorer returns every configured category, including
     # categories for which no scoring indicator applies to any publication.
@@ -75,7 +87,14 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
   scored_categories <- RRS_by_category$category
 
   # each row is one study (take care of multistudy papers); show overall RRS and raw points
-  RRS_by_study_overall <- score_list |> select(doi, P_MultiStudy_Selected, scores=score, max_points=max, rel_score=relative)
+  RRS_by_study_overall <- score_list |>
+    select(
+      doi,
+      P_MultiStudy_Selected,
+      scores = score,
+      max_points = max,
+      rel_score = relative
+    )
 
   # remove rows with 0 max_points (these are publications that have no scoring indicators)
   RRS_by_study_overall <- RRS_by_study_overall %>% filter(max_points > 0)
@@ -83,16 +102,20 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
   # fill in missing publications (which have a max score of 0)
   for (i in 1:nrow(applicant$scores$scores)) {
     if (!applicant$scores$scores$doi[i] %in% RRS_by_study_overall$doi) {
-      RRS_by_study_overall <- rbind(RRS_by_study_overall, data.frame(
-        doi = applicant$scores$scores$doi[i], 
-        P_MultiStudy_Selected = applicant$scores$scores$P_MultiStudy_Selected[i],
-        scores = 0, 
-        max_points = 0, 
-        rel_score = NA)
+      RRS_by_study_overall <- rbind(
+        RRS_by_study_overall,
+        data.frame(
+          doi = applicant$scores$scores$doi[i],
+          P_MultiStudy_Selected = applicant$scores$scores$P_MultiStudy_Selected[
+            i
+          ],
+          scores = 0,
+          max_points = 0,
+          rel_score = NA
+        )
       )
     }
   }
-  
 
   #--------------------------------------------------------------------------------
   # each row is one publication; extract sector scores
@@ -106,13 +129,20 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
     # sector table and the radar data with incompatible schemas.
     cat_long <- cat_long |> filter(title %in% scored_categories)
     cat_long$rel_score <- cat_long$score / cat_long$max
-    cat_wide <- pivot_wider(cat_long |> select(title, rel_score), names_from=title, values_from=rel_score)
+    cat_wide <- pivot_wider(
+      cat_long |> select(title, rel_score),
+      names_from = title,
+      values_from = rel_score
+    )
 
-    RRS_by_study_sector <- rbind(RRS_by_study_sector, data.frame(
-      doi = score_list$doi[i],
-      P_MultiStudy_Selected = score_list$P_MultiStudy_Selected[i],
-      cat_wide
-    ))
+    RRS_by_study_sector <- rbind(
+      RRS_by_study_sector,
+      data.frame(
+        doi = score_list$doi[i],
+        P_MultiStudy_Selected = score_list$P_MultiStudy_Selected[i],
+        cat_wide
+      )
+    )
   }
 
   # Fill in missing publications (which have a maximum score of zero).
@@ -125,17 +155,28 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
       empty_row <- RRS_by_study_sector[0, , drop = FALSE]
       empty_row[1, ] <- NA
       empty_row$doi <- applicant$scores$scores$doi[i]
-      empty_row$P_MultiStudy_Selected <- applicant$scores$scores$P_MultiStudy_Selected[i]
+      empty_row$P_MultiStudy_Selected <- applicant$scores$scores$P_MultiStudy_Selected[
+        i
+      ]
       RRS_by_study_sector <- rbind(RRS_by_study_sector, empty_row)
     }
   }
 
   # merge the sector and the overall scores; bring them into the original order of the publications
-  RRS_by_study <- full_join(RRS_by_study_overall %>% select(doi, P_MultiStudy_Selected, RRS_overall = rel_score), RRS_by_study_sector, by=c("doi", "P_MultiStudy_Selected")) %>% janitor::clean_names()
+  RRS_by_study <- full_join(
+    RRS_by_study_overall %>%
+      select(doi, P_MultiStudy_Selected, RRS_overall = rel_score),
+    RRS_by_study_sector,
+    by = c("doi", "P_MultiStudy_Selected")
+  ) %>%
+    janitor::clean_names()
 
   colnames(RRS_by_study)[2] <- "P_MultiStudy_Selected"
   colnames(RRS_by_study)[3] <- "RRS_overall"
-  colnames(RRS_by_study)[4:ncol(RRS_by_study)] <- paste0("RRS_", colnames(RRS_by_study)[4:ncol(RRS_by_study)])
+  colnames(RRS_by_study)[4:ncol(RRS_by_study)] <- paste0(
+    "RRS_",
+    colnames(RRS_by_study)[4:ncol(RRS_by_study)]
+  )
 
   # bring into original order of studies (doi + study selector)
   order_lookup <- applicant$scores$scores |>
@@ -160,9 +201,8 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
     arrange(.order) |>
     select(-.dup_id, -.order)
 
-
   # overall score averaged across papers (each paper gets same weight)
-  overall_score <- mean(RRS_by_study$RRS_overall, na.rm=TRUE)
+  overall_score <- mean(RRS_by_study$RRS_overall, na.rm = TRUE)
 
   radar_dat <- tibble(
     dimension = factor(RRS_by_category$category),
@@ -172,18 +212,20 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 
   if (sectors == "equal") {
     # Sectors all have the same width
-    radar_dat <- radar_dat %>% mutate(
-      xstart = 0:(effective_categories-1),
-      xend = 1:effective_categories,
-      xmid = (xend-xstart)/2 + xstart
-    )
+    radar_dat <- radar_dat %>%
+      mutate(
+        xstart = 0:(effective_categories - 1),
+        xend = 1:effective_categories,
+        xmid = (xend - xstart) / 2 + xstart
+      )
   } else if (sectors == "weighted") {
     # Sector width proportional to max_points
-    radar_dat <- radar_dat %>% mutate(
-      xstart = c(0, cumsum(max_points)[1:(length(max_points)-1)]),
-      xend = cumsum(max_points),
-      xmid = (xend-xstart)/2 + xstart
-    )
+    radar_dat <- radar_dat %>%
+      mutate(
+        xstart = c(0, cumsum(max_points)[1:(length(max_points) - 1)]),
+        xend = cumsum(max_points),
+        xmid = (xend - xstart) / 2 + xstart
+      )
   }
 
   return(list(
@@ -199,11 +241,6 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 #RRS <- compute_RRS(applicant, sectors="weighted")
 #RRS_radarchart(RRS, overall_score = TRUE)
 
-
-
-
-
-
 #' Display information about the scoring categories
 #'
 #' This function shows a table how many indicators are assigned to each scoring
@@ -217,7 +254,7 @@ compute_RRS <- function(applicant, sectors = c("weighted", "equal"), verbose=FAL
 #' @importFrom stringr str_detect str_starts
 #'
 #' @export
-RRS_category_summary <- function(applicant, selector=c("P_")) {
+RRS_category_summary <- function(applicant, selector = c("P_")) {
   # retrieve categories from applicant meta-data
   cat_def <- applicant$meta$forms$config$score_categories[[1]]
 
@@ -232,17 +269,24 @@ RRS_category_summary <- function(applicant, selector=c("P_")) {
   scoring_indicators <- c()
   for (i in 1:nrow(applicant$meta$forms$pub$elements[[1]])) {
     indicator <- applicant$meta$forms$pub$elements[[1]][i, ]
-    if (!is.na(indicator$score$not_applicable)) scoring_indicators <- c(scoring_indicators, indicator$id)
+    if (!is.na(indicator$score$not_applicable)) {
+      scoring_indicators <- c(scoring_indicators, indicator$id)
+    }
   }
 
   # reduce to indicators that match the selector
-  selector_match <- paste0("^(", paste(selector, collapse="|"), ")")
-  scoring_indicators_matched <- scoring_indicators[grepl(selector_match, scoring_indicators)]
+  selector_match <- paste0("^(", paste(selector, collapse = "|"), ")")
+  scoring_indicators_matched <- scoring_indicators[grepl(
+    selector_match,
+    scoring_indicators
+  )]
 
   # reduce to indicators that match the category cues
 
   # 1. Build a logical matrix: rows = scoring_indicators_matched, cols = cues
-  match_mat <- sapply(cat_def$cue, function(pat) grepl(pat, scoring_indicators_matched, perl = TRUE))
+  match_mat <- sapply(cat_def$cue, function(pat) {
+    grepl(pat, scoring_indicators_matched, perl = TRUE)
+  })
 
   # 2. Count how many categories each element of X matches
   n_matches <- rowSums(match_mat)
@@ -250,8 +294,16 @@ RRS_category_summary <- function(applicant, selector=c("P_")) {
   # 3. Check for elements that match more than one cue
   if (any(n_matches > 1L)) {
     i <- which(n_matches > 1L)
-    stop("Some indicators match to multiple category cues:\n",
-         paste0("  scoring_indicators_matched[", i, "] = ", scoring_indicators_matched[i], collapse = "\n"))
+    stop(
+      "Some indicators match to multiple category cues:\n",
+      paste0(
+        "  scoring_indicators_matched[",
+        i,
+        "] = ",
+        scoring_indicators_matched[i],
+        collapse = "\n"
+      )
+    )
   }
 
   # 4. Map each X to its single matching category (or NA if no match)
@@ -270,9 +322,11 @@ RRS_category_summary <- function(applicant, selector=c("P_")) {
     stringsAsFactors = FALSE
   )
 
-  print("The following indicators are defined in the scoring rules of the
+  print(
+    "The following indicators are defined in the scoring rules of the
         selected indicators (regardless of whether some indicator are missing
-        for this specific applicant):")
+        for this specific applicant):"
+  )
   print(match_table |> group_by(category) |> count())
 
   return(match_table)

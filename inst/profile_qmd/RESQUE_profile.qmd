@@ -89,7 +89,7 @@ if (is.null(params$json_path)) {
 options(openalexR.mailto = "felix.schoenbrodt@psy.lmu.de")
 applicant <- preprocess(applicant=applicant_json, verbose=FALSE)
 
-if (is.na(applicant$meta$ORCID)) {
+if (length(applicant$meta$ORCID) != 1 || is.na(applicant$meta$ORCID)) {
   cat("\n\n::: {.callout-warning title='No ORCID supplied - Cannot compute internationalization and interdisciplinarity indexes'}\n:::\n\n")
 }
 ```
@@ -232,13 +232,16 @@ kable(dat_tM_tab[dat_tM_tab[, 2] > 0, ])
 ```{r teamscience}
 #| results: "asis"
 
-  oalex_team <- applicant$OAlex_papers_unique
+oalex_team <- applicant$OAlex_papers_unique
 
+if (is.data.frame(oalex_team) && nrow(oalex_team) > 0) {
   cat(paste0(nrow(oalex_team), " out of ", length(unique(applicant$indicators$doi[applicant$indicators$type2 == "Publication"])), " submitted publications could be automatically retrieved with OpenAlex.\n"))
-  
   team_tab <- table(oalex_team$team_category) |> as.data.frame()
-  team_tab$perc <- paste0(round(team_tab$Freq*100 / nrow(oalex_team)), "%")
+  team_tab$perc <- paste0(round(team_tab$Freq * 100 / nrow(oalex_team)), "%")
   colnames(team_tab) <- c("Team category", "Frequency", "%")
+} else {
+  team_tab <- data.frame(Message = "No submitted publications could be retrieved from OpenAlex.")
+}
 ```
 
 ```{r TS_showtable}

@@ -3,7 +3,7 @@
 #' @param varnames The variable names that are searched in the df
 #' @param default The default value for newly created columns
 #' @export
-add_variables <- function(df, varnames, default=NA) {
+add_variables <- function(df, varnames, default = NA) {
   for (v in varnames) {
     if (!v %in% colnames(df)) df[, v] <- default
   }
@@ -31,7 +31,7 @@ unCamel0 <- function(x) {
 #' @export
 unCamel <- function(df, cname) {
   if (cname %in% colnames(df)) {
-    x <-  df[, cname] |> unlist()
+    x <- df[, cname] |> unlist()
     df[, cname] <- unCamel0(x)
   } else {
     df[, cname] <- NA
@@ -52,18 +52,21 @@ clean_title <- function(x) {
 #' @param sc Scores object (as provided by `read_RESQUE`)
 #' @param pattern regexp pattern that filters the results. The default selects all indicators
 #' @export
-get_indicators <- function(sc, pattern=".*") {
+get_indicators <- function(sc, pattern = ".*") {
   res <- data.frame()
   for (i in 1:length(sc)) {
     ind <- sc[[i]]$indicators
     if (!is.null(ind) & is.list(ind) & (length(ind) > 0)) {
-      res <- rbind(res, tibble(
-        output = i,
-        indicator = names(ind),
-        value = sapply(ind, "[[", "value"),
-        max = sapply(ind, "[[", "max"),
-        rel_score = value/max
-      ))
+      res <- rbind(
+        res,
+        tibble(
+          output = i,
+          indicator = names(ind),
+          value = sapply(ind, "[[", "value"),
+          max = sapply(ind, "[[", "max"),
+          rel_score = value / max
+        )
+      )
     }
   }
 
@@ -74,23 +77,27 @@ get_indicators <- function(sc, pattern=".*") {
 
 # convert text into numeric, also recognizing German decimal commas
 smart_as_numeric <- function(x) {
-  nums <- vapply(x, function(z) {
-    z <- trimws(z)
-    # if it only has commas → assume comma = decimal
-    if (grepl("^[-0-9,]+$", z) && grepl(",", z) && !grepl("\\.", z)) {
-      z <- sub("^([-+])", "\\1", z)          # preserve sign
-      z <- gsub(",", ".", z, fixed = TRUE)
-      return(as.numeric(z))
-    }
-    # if it has both . and , we assume . is thousands sep, , is decimal
-    if (grepl("[0-9]\\.[0-9]{3}", z) && grepl(",", z)) {
-      z <- gsub("\\.", "", z)                # strip thousands
-      z <- gsub(",", ".", z, fixed = TRUE)  # decimal mark
-      return( as.numeric(z))
-    }
-    # otherwise fall back
-    suppressWarnings(as.numeric(z))
-  }, numeric(1))
+  nums <- vapply(
+    x,
+    function(z) {
+      z <- trimws(z)
+      # if it only has commas → assume comma = decimal
+      if (grepl("^[-0-9,]+$", z) && grepl(",", z) && !grepl("\\.", z)) {
+        z <- sub("^([-+])", "\\1", z) # preserve sign
+        z <- gsub(",", ".", z, fixed = TRUE)
+        return(as.numeric(z))
+      }
+      # if it has both . and , we assume . is thousands sep, , is decimal
+      if (grepl("[0-9]\\.[0-9]{3}", z) && grepl(",", z)) {
+        z <- gsub("\\.", "", z) # strip thousands
+        z <- gsub(",", ".", z, fixed = TRUE) # decimal mark
+        return(as.numeric(z))
+      }
+      # otherwise fall back
+      suppressWarnings(as.numeric(z))
+    },
+    numeric(1)
+  )
 
   unname(nums)
 }
@@ -118,16 +125,15 @@ is.nulla <- function(x) {
 }
 
 
-
 # prefix should be something like `"P_Sample_Location_"`
 sum_MC <- function(pubs, prefix) {
-  i0 <- pubs |> 
+  i0 <- pubs |>
     select(starts_with(prefix), -ends_with("_Comment")) |>
     select(where(is.logical))
 
   res <- list()
   for (j in 1:ncol(i0)) {
-    res[[j]] <- sum(i0[, j], na.rm=TRUE)
+    res[[j]] <- sum(i0[, j], na.rm = TRUE)
     names(res[[j]]) <- str_remove(colnames(i0)[j], str_c("^", prefix))
   }
   return(unlist(res))
@@ -152,7 +158,9 @@ sum_MC <- function(pubs, prefix) {
 #' wiggle(3)           # e.g. 3 (still 0 decimal places)
 #' @export
 wiggle <- function(x, margin = 10) {
-  if (!is.numeric(x) || length(x) == 0) return(x)
+  if (!is.numeric(x) || length(x) == 0) {
+    return(x)
+  }
 
   # Detect decimal places per element in original values
   x_char <- as.character(x)

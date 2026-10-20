@@ -1,4 +1,3 @@
-
 # ====== Fetching information on packs ======
 
 #' Get JSON Object
@@ -18,9 +17,8 @@
 get_json_object <- function(url) {
   response <- httr::GET(url, timeout(20))
   json <- httr::content(response, as = 'text')
-  j = jsonlite::fromJSON(json)
+  j <- jsonlite::fromJSON(json)
 }
-
 
 
 # Get the name of the pack that a research output uses
@@ -39,10 +37,6 @@ get_pack_name <- function(research_output) {
 }
 
 
-
-
-
-
 #' Fix some problems with old exported json files
 #'
 #' @param file Path to RESQUE JSON file
@@ -52,29 +46,45 @@ get_pack_name <- function(research_output) {
 #' @importFrom jsonlite parse_json toJSON
 #' @export
 validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
-
   # Do variable name conversion (from old -> new) on the raw text of the json.
   # This changes them both in the indicator definitions AND in the conditions
   # and scoring rules.
 
-  json_text <- readLines(file, warn=FALSE)
+  json_text <- readLines(file, warn = FALSE)
 
   # Rename old variables to the new variable names
   # Note: Use negative lookahead so that "P_TypeMethod_Empirical(?!Quantitative)"
   # is only matched when it is not followed by "Quantitative"
   json_text <- json_text |>
-    str_replace_all(fixed("P_TypeMethod_Empirical(?!Quantitative)"), "P_TypeMethod_EmpiricalQuantitative") |>
-    str_replace_all(fixed("P_TypeMethod_Simulation"), "P_TypeMethod_Computational") |>
+    str_replace_all(
+      fixed("P_TypeMethod_Empirical(?!Quantitative)"),
+      "P_TypeMethod_EmpiricalQuantitative"
+    ) |>
+    str_replace_all(
+      fixed("P_TypeMethod_Simulation"),
+      "P_TypeMethod_Computational"
+    ) |>
     str_replace_all(fixed("P_CoG_ParcipantSample"), "P_Sample_CoG") |>
-    str_replace_all(fixed("P_Stimuli_Relevance_NAexplanation"), "P_Stimuli_NAExplanation") |>
-    str_replace_all(fixed("P_Sample_RepresentativenessRelevance_NAexplanation"), "P_Sample_RepresentativenessRelevance_NAExplanation") |>
+    str_replace_all(
+      fixed("P_Stimuli_Relevance_NAexplanation"),
+      "P_Stimuli_NAExplanation"
+    ) |>
+    str_replace_all(
+      fixed("P_Sample_RepresentativenessRelevance_NAexplanation"),
+      "P_Sample_RepresentativenessRelevance_NAExplanation"
+    ) |>
     str_replace_all(fixed("P_CoG_StimulusSample"), "P_Stimuli_CoG") |>
     # respect this order of replacing: P_Stimuli_Relevance should be replaced last to avoid double replacement
     str_replace_all(fixed("P_Stimuli_Relevance"), "P_Stimuli") |>
-    str_replace_all(fixed("P_PreregisteredReplication"), "P_Preregistration_Replication") |>
-    str_replace_all(fixed("P_PreregisteredReplication_NAExplanation"), "P_Preregistration_Replication_NAExplanation") |>
+    str_replace_all(
+      fixed("P_PreregisteredReplication"),
+      "P_Preregistration_Replication"
+    ) |>
+    str_replace_all(
+      fixed("P_PreregisteredReplication_NAExplanation"),
+      "P_Preregistration_Replication_NAExplanation"
+    ) |>
     str_replace_all(fixed("P_Sample_Type"), "P_Sample")
-
 
   # for the extraction of the research outputs, use `simplifyVector = FALSE`
   j1 <- jsonlite::parse_json(json_text, simplifyVector = FALSE)
@@ -84,13 +94,16 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
   # reading with `simplifyVector = TRUE` gives a different data frame structure
   # that makes it easier to extract the meta data with the items
   j2 <- jsonlite::parse_json(json_text, simplifyVector = TRUE)
-  meta <- j2[1, , drop=TRUE]
+  meta <- j2[1, , drop = TRUE]
   items <- meta$forms$pub$elements[[1]]
   checkbox_item_ids <- items[items$type == "checkbox", "id"]
 
   # replace the existing scoring and forms information
   if (update_forms == TRUE) {
-    meta_new <- read_json(path=system.file("extdata/forms_0_6_0.json", package="RESQUER"), simplifyVector=FALSE)
+    meta_new <- read_json(
+      path = system.file("extdata/forms_0_6_0.json", package = "RESQUER"),
+      simplifyVector = FALSE
+    )
 
     j1[[1]]$forms <- meta_new$forms
   }
@@ -100,16 +113,25 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
     # Add missing type MetaAnalysis
     if (is.null(research_outputs[[r]]$P_TypeMethod_MetaAnalysis)) {
       research_outputs[[r]]$P_TypeMethod_MetaAnalysis <- FALSE
-      if (verbose==TRUE) print(paste0("Added missing 'P_TypeMethod_MetaAnalysis = FALSE' to research output #", r))
+      if (verbose == TRUE) {
+        print(paste0(
+          "Added missing 'P_TypeMethod_MetaAnalysis = FALSE' to research output #",
+          r
+        ))
+      }
     }
 
     # Add missing type P_TypeMethod_EmpiricalQuantitative
     if (is.null(research_outputs[[r]]$P_TypeMethod_EmpiricalQuantitative)) {
       research_outputs[[r]]$P_TypeMethod_EmpiricalQuantitative <- FALSE
-      if (verbose==TRUE) print(paste0("Added missing 'P_TypeMethod_EmpiricalQuantitative = FALSE' to research output #", r))
+      if (verbose == TRUE) {
+        print(paste0(
+          "Added missing 'P_TypeMethod_EmpiricalQuantitative = FALSE' to research output #",
+          r
+        ))
+      }
     }
   }
-
 
   #TODO: These checks were only present to import old json files that had some missing values. Once all json files are updated, we can remove these checks and just require that all json files have the correct format.
 
@@ -148,8 +170,6 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
   #     if (verbose==TRUE) print(paste0("Research output ", r, ": Condition '", condition, "' does not apply."))
   #   }
 
-
-
   #   # P_Data_Open_FAIR items
   #   # ------------------------------------------
   #   condition <- "P_Data_Open_FAIR"
@@ -178,12 +198,9 @@ validate_json <- function(file, update_forms = FALSE, verbose = TRUE) {
 
   # }  # of r in seq_along
 
-
   # Rebuild the entire json
   j1_new <- c(j1[1], research_outputs)
 
   # this returns the JSON as text data
-  return(jsonlite::toJSON(j1_new, auto_unbox=TRUE, pretty=TRUE))
+  return(jsonlite::toJSON(j1_new, auto_unbox = TRUE, pretty = TRUE))
 }
-
-

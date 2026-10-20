@@ -5,12 +5,17 @@
 get_missing <- function(pub) {
   # select relevant columns (some are prepopulated with values by default, they never contain missings)
   pub_red <- pub |>
-    select(contains("P_"), -contains("P_TypeMethod"), -P_Suitable, -contains("P_CRediT"), -P_TopPaper_Select)
+    select(
+      contains("P_"),
+      -contains("P_TypeMethod"),
+      -P_Suitable,
+      -contains("P_CRediT"),
+      -P_TopPaper_Select
+    )
 
-  is_empty_perc <- function(x) sum(is.na(x) | x == "")/length(x)
+  is_empty_perc <- function(x) sum(is.na(x) | x == "") / length(x)
   apply(pub_red, 1, is_empty_perc)
 }
-
 
 
 #' Preprocess and enrich the raw information from an applicant's JSON
@@ -41,14 +46,21 @@ get_missing <- function(pub) {
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
 # applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 
-
-preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=FALSE) {
-
+preprocess <- function(
+  applicant,
+  get_BIP = TRUE,
+  get_OpenAlex = TRUE,
+  verbose = FALSE
+) {
   # create an empty vector that gets populated with relevant notes
   applicant$preprocessing_notes <- c()
 
   # create missing indicator variables
-  ind_vars <- c("P_PreregisteredReplication", "P_MeritStatement", "P_MultiStudy_Selected")
+  ind_vars <- c(
+    "P_PreregisteredReplication",
+    "P_MeritStatement",
+    "P_MultiStudy_Selected"
+  )
   for (i in ind_vars) {
     if (!i %in% colnames(applicant$indicators)) applicant$indicators[, i] <- NA
   }
@@ -60,21 +72,33 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     applicant$meta$YearPhD <- NA
   }
   if (!is.null(applicant$meta$AcademicAgeBonus)) {
-    applicant$meta$AcademicAgeBonus <- smart_as_numeric(applicant$meta$AcademicAgeBonus)
-    if (is.na(applicant$meta$AcademicAgeBonus)) applicant$meta$AcademicAgeBonus <- 0
+    applicant$meta$AcademicAgeBonus <- smart_as_numeric(
+      applicant$meta$AcademicAgeBonus
+    )
+    if (is.na(applicant$meta$AcademicAgeBonus)) {
+      applicant$meta$AcademicAgeBonus <- 0
+    }
   } else {
     applicant$meta$AcademicAgeBonus <- 0
   }
-  applicant$meta$AcademicAge <- year(Sys.Date()) - applicant$meta$YearPhD - applicant$meta$AcademicAgeBonus
+  applicant$meta$AcademicAge <- year(Sys.Date()) -
+    applicant$meta$YearPhD -
+    applicant$meta$AcademicAgeBonus
 
   # normalize some variables
+  if (is.null(applicant$meta$LastName)) {
+    applicant$meta$LastName <- NA_character_
+  }
+  if (is.null(applicant$meta$ORCID)) {
+    applicant$meta$ORCID <- NA_character_
+  }
   applicant$meta$LastName <- str_trim(applicant$meta$LastName)
   applicant$meta$ORCID <- normalize_ORCIDs(applicant$meta$ORCID)
 
-  if (!is.na(applicant$meta$ORCID)) {
+  if (length(applicant$meta$ORCID) == 1 && !is.na(applicant$meta$ORCID)) {
     # Retrieve OpenAlex Author ID
     if (get_OpenAlex == TRUE) {
-      author_info <- oa_fetch(entity="authors", orcid = applicant$meta$ORCID)
+      author_info <- oa_fetch(entity = "authors", orcid = applicant$meta$ORCID)
       if (is.null(author_info)) {
         applicant$meta$OA_author_id <- NA
       } else {
@@ -89,13 +113,22 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   }
 
   # assign new verbose factor levels
-  applicant$indicators$P_Preregistration2 <- factor(applicant$indicators$P_Preregistration, levels=c("NotApplicable", "No", "Yes", "RegisteredReport"), labels=c("Not<br>Applicable", "Not<br>prereg", "Prereg", "Registered<br>Report"))
+  applicant$indicators$P_Preregistration2 <- factor(
+    applicant$indicators$P_Preregistration,
+    levels = c("NotApplicable", "No", "Yes", "RegisteredReport"),
+    labels = c(
+      "Not<br>Applicable",
+      "Not<br>prereg",
+      "Prereg",
+      "Registered<br>Report"
+    )
+  )
 
-  applicant$indicators$replication <- factor(applicant$indicators$P_PreregisteredReplication, levels=c("NotApplicable", "No", "Yes"), labels=c("not<br>applicable", "No", "Yes"))
-
-
-
-
+  applicant$indicators$replication <- factor(
+    applicant$indicators$P_PreregisteredReplication,
+    levels = c("NotApplicable", "No", "Yes"),
+    labels = c("not<br>applicable", "No", "Yes")
+  )
 
   #------------------------------------------------------------------------
   # clean the dois:
@@ -103,10 +136,22 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
   # give a warning about non-doi entries (should be prevented by Collector app ...)
   doi_url_regex_icase <- "(?i)\\bhttps://doi\\.org/10\\.\\d{4,9}/[-._;()/:A-Z0-9]+\\b"
-  applicant$indicators$valid_doi <- grepl(doi_url_regex_icase, applicant$indicators$doi, perl = TRUE)
+  applicant$indicators$valid_doi <- grepl(
+    doi_url_regex_icase,
+    applicant$indicators$doi,
+    perl = TRUE
+  )
 
   if (any(applicant$indicators$valid_doi == FALSE)) {
-    note <- paste0(sum(applicant$indicators$valid_doi == FALSE), " publication(s) had an invalid doi:\n", paste0(applicant$indicators$doi[!applicant$indicators$valid_doi], collapse="\n"), "\nThey will not show up in the impact table, but the rigor score still is computed.")
+    note <- paste0(
+      sum(applicant$indicators$valid_doi == FALSE),
+      " publication(s) had an invalid doi:\n",
+      paste0(
+        applicant$indicators$doi[!applicant$indicators$valid_doi],
+        collapse = "\n"
+      ),
+      "\nThey will not show up in the impact table, but the rigor score still is computed."
+    )
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
 
@@ -127,18 +172,30 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     # applicant$scores$scored_research_outputs <- length(valid_scores)
   }
 
-  applicant$indicators$doi_links_md <- paste0("[", applicant$indicators$doi, "](", applicant$indicators$doi, ")")
+  applicant$indicators$doi_links_md <- paste0(
+    "[",
+    applicant$indicators$doi,
+    "](",
+    applicant$indicators$doi,
+    ")"
+  )
 
-  applicant$indicators$title_links_html <- paste0("<a href='", applicant$indicators$doi, "'>", applicant$indicators$Title, "</a>")
+  applicant$indicators$title_links_html <- paste0(
+    "<a href='",
+    applicant$indicators$doi,
+    "'>",
+    applicant$indicators$Title,
+    "</a>"
+  )
 
   # add/fix the P_TopPaper_Select column
   if (!is.null(applicant$indicators$P_TopPaper_Select)) {
-    applicant$indicators$P_TopPaper_Select[is.na(applicant$indicators$P_TopPaper_Select)] <- FALSE
+    applicant$indicators$P_TopPaper_Select[is.na(
+      applicant$indicators$P_TopPaper_Select
+    )] <- FALSE
   } else {
     applicant$indicators$P_TopPaper_Select <- FALSE
   }
-
-
 
   # Check % of missing indicators (or even completely empty publications)
   # Later, we exclude publications with too many missings from the analysis
@@ -152,7 +209,10 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   # ------------------------------------
 
   # If there is no preregistration, there cannot be a preregistered replication:
-  applicant$indicators$replication[is.na(applicant$indicators$replication) & applicant$indicators$P_Preregistration2 == "Not preregistered"] <- "No"
+  applicant$indicators$replication[
+    is.na(applicant$indicators$replication) &
+      applicant$indicators$P_Preregistration2 == "Not preregistered"
+  ] <- "No"
 
   # If the data set was "Reuse of someone else's existing data set" or P_Data == "No", we set
   # Open Data to "not applicable" and automatically provide a justification
@@ -160,22 +220,29 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   # P_Data_Source_ReuseOther == "ReuseOther")
 
   data_sources <- c(
-    "P_Data_Source_ReuseOther", "P_Data_Source_NewOwn", "P_Data_Source_ReuseOwn",
-    "P_Data_Source_ReuseCompilation", "P_Data_Source_Simulated")
-  applicant$indicators <- add_variables(applicant$indicators, data_sources, default=FALSE)
+    "P_Data_Source_ReuseOther",
+    "P_Data_Source_NewOwn",
+    "P_Data_Source_ReuseOwn",
+    "P_Data_Source_ReuseCompilation",
+    "P_Data_Source_Simulated"
+  )
+  applicant$indicators <- add_variables(
+    applicant$indicators,
+    data_sources,
+    default = FALSE
+  )
 
   # Set NAs to FALSE
   for (d in data_sources) {
     applicant$indicators[, d] <- NA2FALSE(applicant$indicators[, d])
   }
 
-
   pure_reuse_other <- applicant$indicators$P_Data_Source_ReuseOther == TRUE &
-                      is.na(applicant$indicators$P_Data_Open) &
-                      applicant$indicators$P_Data_Source_NewOwn == FALSE &
-                      applicant$indicators$P_Data_Source_ReuseOwn == FALSE &
-                      applicant$indicators$P_Data_Source_ReuseCompilation == FALSE &
-                      applicant$indicators$P_Data_Source_Simulated == FALSE
+    is.na(applicant$indicators$P_Data_Open) &
+    applicant$indicators$P_Data_Source_NewOwn == FALSE &
+    applicant$indicators$P_Data_Source_ReuseOwn == FALSE &
+    applicant$indicators$P_Data_Source_ReuseCompilation == FALSE &
+    applicant$indicators$P_Data_Source_Simulated == FALSE
 
   stopifnot(length(pure_reuse_other) == nrow(applicant$indicators))
 
@@ -186,10 +253,18 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
     applicant$indicators$P_Data_Open[change_index] <- "NotApplicable"
 
-    if (is.null(applicant$indicators$P_Data_Open_NAExplanation)) applicant$indicators$P_Data_Open_NAExplanation <- ""
-    applicant$indicators$P_Data_Open_NAExplanation[change_index] <- "(automatically added: For reused data sets of other researchers and for 'no data', we automatically set P_Data_Open to 'notApplicable')."
+    if (is.null(applicant$indicators$P_Data_Open_NAExplanation)) {
+      applicant$indicators$P_Data_Open_NAExplanation <- ""
+    }
+    applicant$indicators$P_Data_Open_NAExplanation[
+      change_index
+    ] <- "(automatically added: For reused data sets of other researchers and for 'no data', we automatically set P_Data_Open to 'notApplicable')."
 
-    note <- paste0("For ", length(change_index), " publication(s) with P_Data_Source = 'Reuse of someone else\'s existing data set' or P_Data = 'No', P_Data_Open has been set to 'notApplicable' and a justification has been added.)")
+    note <- paste0(
+      "For ",
+      length(change_index),
+      " publication(s) with P_Data_Source = 'Reuse of someone else\'s existing data set' or P_Data = 'No', P_Data_Open has been set to 'notApplicable' and a justification has been added.)"
+    )
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }
@@ -199,28 +274,55 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
     applicant$indicators$P_ReproducibleScripts[change_index] <- "NotApplicable"
 
-    if (is.null(applicant$indicators$P_ReproducibleScripts_NAExplanation )) applicant$indicators$P_ReproducibleScripts_NAExplanation  <- ""
-    applicant$indicators$P_ReproducibleScripts_NAExplanation[change_index] <- "(automatically added: For 'no data', we automatically set P_ReproducibleScripts to 'notApplicable')."
+    if (is.null(applicant$indicators$P_ReproducibleScripts_NAExplanation)) {
+      applicant$indicators$P_ReproducibleScripts_NAExplanation <- ""
+    }
+    applicant$indicators$P_ReproducibleScripts_NAExplanation[
+      change_index
+    ] <- "(automatically added: For 'no data', we automatically set P_ReproducibleScripts to 'notApplicable')."
 
-    note <- paste0("For ", length(change_index), " publication(s) with P_Data = 'No', P_ReproducibleScripts has been set to 'notApplicable' and a justification has been added.)")
+    note <- paste0(
+      "For ",
+      length(change_index),
+      " publication(s) with P_Data = 'No', P_ReproducibleScripts has been set to 'notApplicable' and a justification has been added.)"
+    )
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }
-
 
   # Set all "notApplicable" claims to "notAvailable" when there is no justification
   # ------------------------------------
 
   # appl = applicant object
-  check_justification <- function(ind, var, justi, notApp="NotApplicable", no="NotAvailable") {
-    if (var %in% colnames(ind) &&
+  check_justification <- function(
+    ind,
+    var,
+    justi,
+    notApp = "NotApplicable",
+    no = "NotAvailable"
+  ) {
+    if (
+      var %in%
+        colnames(ind) &&
         justi %in% colnames(ind) &&
-        any(ind[, var] == notApp, na.rm=TRUE)) {
-      no_justi <- (ind[, var] == notApp) & (is.na(ind[, justi]) | ind[, justi] == "")
+        any(ind[, var] == notApp, na.rm = TRUE)
+    ) {
+      no_justi <- (ind[, var] == notApp) &
+        (is.na(ind[, justi]) | ind[, justi] == "")
       no_justi[is.na(no_justi)] <- FALSE
       if (any(no_justi)) {
         ind[, var][no_justi] <- no
-        note <- paste0("For ", sum(no_justi), " publication(s) without justification, ", var, " has been changed from '", notApp, "' to '", no, "'.")
+        note <- paste0(
+          "For ",
+          sum(no_justi),
+          " publication(s) without justification, ",
+          var,
+          " has been changed from '",
+          notApp,
+          "' to '",
+          no,
+          "'."
+        )
         warning(note)
         applicant$preprocessing_notes <<- c(applicant$preprocessing_notes, note)
       }
@@ -229,50 +331,83 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     return(ind)
   }
 
-
-  applicant$indicators<- check_justification(applicant$indicators,
-      var="P_Sample_RepresentativenessRelevance", justi="P_Sample_RepresentativenessRelevance_NAExplanation",
-      notApp="NotApplicable", no="No")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_Sample_RepresentativenessRelevance",
+    justi = "P_Sample_RepresentativenessRelevance_NAExplanation",
+    notApp = "NotApplicable",
+    no = "No"
+  )
 
   # Note: We don't do this correction for P_Sample_CrossCultural_NAExplanation,
   # because there is no clear "no" answer.
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_Stimuli", justi="P_Stimuli_NAExplanation",
-      notApp="NotApplicable", no="No")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_Stimuli",
+    justi = "P_Stimuli_NAExplanation",
+    notApp = "NotApplicable",
+    no = "No"
+  )
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_Stimuli_Representative", justi="P_Stimuli_Representative_NAExplanation",
-      notApp="NotApplicable", no="NotConsidered")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_Stimuli_Representative",
+    justi = "P_Stimuli_Representative_NAExplanation",
+    notApp = "NotApplicable",
+    no = "NotConsidered"
+  )
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_Data_Open", justi="P_Data_Open_NAExplanation",
-      notApp="NotApplicable", no="NotAvailable")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_Data_Open",
+    justi = "P_Data_Open_NAExplanation",
+    notApp = "NotApplicable",
+    no = "NotAvailable"
+  )
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_ReproducibleScripts", justi="P_ReproducibleScripts_NAExplanation",
-      notApp="NotApplicable", no="NotAvailable")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_ReproducibleScripts",
+    justi = "P_ReproducibleScripts_NAExplanation",
+    notApp = "NotApplicable",
+    no = "NotAvailable"
+  )
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_IndependentVerification", justi="P_IndependentVerification_NAExplanation",
-      notApp="NotApplicable", no="NotAvailable")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_IndependentVerification",
+    justi = "P_IndependentVerification_NAExplanation",
+    notApp = "NotApplicable",
+    no = "NotAvailable"
+  )
 
-  applicant$indicators <- check_justification(ind=applicant$indicators,
-      var="P_OpenMaterials", justi="P_OpenMaterials_NAExplanation",
-      notApp="NotApplicable", no="NotAvailable")
+  applicant$indicators <- check_justification(
+    ind = applicant$indicators,
+    var = "P_OpenMaterials",
+    justi = "P_OpenMaterials_NAExplanation",
+    notApp = "NotApplicable",
+    no = "NotAvailable"
+  )
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_Preregistration", justi="P_Preregistration_NAExplanation",
-      notApp="NotApplicable", no="No")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_Preregistration",
+    justi = "P_Preregistration_NAExplanation",
+    notApp = "NotApplicable",
+    no = "No"
+  )
 
-  applicant$indicators <- check_justification(applicant$indicators,
-      var="P_Preregistration_Replication", justi="P_Preregistration_Replication_NAExplanation",
-      notApp="NotApplicable", no="No")
+  applicant$indicators <- check_justification(
+    applicant$indicators,
+    var = "P_Preregistration_Replication",
+    justi = "P_Preregistration_Replication_NAExplanation",
+    notApp = "NotApplicable",
+    no = "No"
+  )
 
   # Note: We don't do this correction for P_Theorizing_NAExplanation,
   # because there is no clear "no" answer.
-
-
 
   # Check all provided URLs whether they are valid
   # (this does not check the content of the website, only if it exists, and whether a URL has been provided at all)
@@ -298,9 +433,6 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
 
   # TODO: Add for other Identifiers
 
-
-
-
   # CRediT preprocessing
   #--------------------------------------------------------
 
@@ -317,27 +449,33 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     ) %>%
     arrange(-LeadEqual, -Support)
 
-  applicant$credit$Role_ordered <- factor(applicant$credit$Role, levels = rev(rownames(applicant$credit_ordered)))
+  applicant$credit$Role_ordered <- factor(
+    applicant$credit$Role,
+    levels = rev(rownames(applicant$credit_ordered))
+  )
 
   # for the compact display: group factor levels
 
   applicant$credit <- applicant$credit %>%
-    mutate(Role_collapsed = fct_recode(Role,
-       "Analysis" = "Data Curation",
-       "Analysis" = "Formal Analysis",
-       "Analysis" = "Investigation",
-       "Analysis" = "Methodology",
-       "Analysis" = "Software",
-       "Conceptualization" = "Conceptualization",
-       "Writing" = "Visualization",
-       "Writing" = "Writing: Original draft",
-       "Writing" = "Writing: Review & Editing",
-       "Administration" = "Funding Acquisition",
-       "Administration" = "Project Administration",
-       "Administration" = "Resources",
-       "Administration" = "Supervision",
-       "Administration" = "Validation"
-    ))
+    mutate(
+      Role_collapsed = fct_recode(
+        Role,
+        "Analysis" = "Data Curation",
+        "Analysis" = "Formal Analysis",
+        "Analysis" = "Investigation",
+        "Analysis" = "Methodology",
+        "Analysis" = "Software",
+        "Conceptualization" = "Conceptualization",
+        "Writing" = "Visualization",
+        "Writing" = "Writing: Original draft",
+        "Writing" = "Writing: Review & Editing",
+        "Administration" = "Funding Acquisition",
+        "Administration" = "Project Administration",
+        "Administration" = "Resources",
+        "Administration" = "Supervision",
+        "Administration" = "Validation"
+      )
+    )
 
   # The "CRediT involvement" categories
   # ---------------------------------------------------------------------
@@ -346,43 +484,72 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   credit_inv <- applicant$indicators %>% select(contains("CRediT"))
   roles <- colnames(credit_inv) |> str_replace("P_CRediT_", "") |> unCamel0()
   roles[roles == "Writing Review Editing"] <- "Writing: Review & Editing"
-  roles[roles == "Writing Original Draft"]  <- "Writing: Original draft"
+  roles[roles == "Writing Original Draft"] <- "Writing: Original draft"
 
   main_roles <- rep("", nrow(credit_inv))
   for (i in 1:nrow(credit_inv)) {
     leads <- credit_inv[i, ] == "Lead"
     equals <- credit_inv[i, ] == "Equal"
     main_roles[i] <- paste0(
-      ifelse(sum(leads)>0, paste0(
-        "<b>Lead:</b> ",
-        paste0(roles[leads], collapse=", ")), ""),
-      ifelse(sum(equals)>0, paste0(
-        "<br><b>Equal:</b> ",
-        paste0(roles[equals], collapse=", ")), "")
+      ifelse(
+        sum(leads) > 0,
+        paste0(
+          "<b>Lead:</b> ",
+          paste0(roles[leads], collapse = ", ")
+        ),
+        ""
+      ),
+      ifelse(
+        sum(equals) > 0,
+        paste0(
+          "<br><b>Equal:</b> ",
+          paste0(roles[equals], collapse = ", ")
+        ),
+        ""
+      )
     )
   }
 
-  credit_inv$sum_lead <- apply(credit_inv[, 1:14], 1, function(x) sum(x=="Lead"))
-  credit_inv$sum_equal <- apply(credit_inv[, 1:14], 1, function(x) sum(x=="Equal"))
-  credit_inv$sum_leadequal <- apply(credit_inv[, 1:14], 1, function(x) sum(x %in% c("Lead", "Equal")))
-  credit_inv$sum_support <- apply(credit_inv[, 1:14], 1, function(x) sum(x=="Support"))
+  credit_inv$sum_lead <- apply(credit_inv[, 1:14], 1, function(x) {
+    sum(x == "Lead")
+  })
+  credit_inv$sum_equal <- apply(credit_inv[, 1:14], 1, function(x) {
+    sum(x == "Equal")
+  })
+  credit_inv$sum_leadequal <- apply(credit_inv[, 1:14], 1, function(x) {
+    sum(x %in% c("Lead", "Equal"))
+  })
+  credit_inv$sum_support <- apply(credit_inv[, 1:14], 1, function(x) {
+    sum(x == "Support")
+  })
 
   # define the categories
-  credit_inv$CRediT_involvement <- factor(rep("Low", nrow(credit_inv)), levels=c("Low", "Medium", "High", "Very High"), ordered=TRUE)
+  credit_inv$CRediT_involvement <- factor(
+    rep("Low", nrow(credit_inv)),
+    levels = c("Low", "Medium", "High", "Very High"),
+    ordered = TRUE
+  )
   credit_inv$CRediT_involvement[credit_inv$sum_lead >= 3] <- "Very High"
   credit_inv$CRediT_involvement[credit_inv$sum_leadequal >= 5] <- "Very High"
 
   credit_inv$CRediT_involvement[credit_inv$sum_lead %in% c(1, 2)] <- "High"
-  credit_inv$CRediT_involvement[credit_inv$sum_leadequal %in% c(3, 4) & credit_inv$CRediT_involvement != "Very High"] <- "High"
+  credit_inv$CRediT_involvement[
+    credit_inv$sum_leadequal %in%
+      c(3, 4) &
+      credit_inv$CRediT_involvement != "Very High"
+  ] <- "High"
 
-  credit_inv$CRediT_involvement[credit_inv$sum_equal %in% c(1, 2) & credit_inv$sum_lead == 0] <- "Medium"
-  credit_inv$CRediT_involvement[credit_inv$sum_support >= 5 & credit_inv$CRediT_involvement <= "Medium"] <- "Medium"
+  credit_inv$CRediT_involvement[
+    credit_inv$sum_equal %in% c(1, 2) & credit_inv$sum_lead == 0
+  ] <- "Medium"
+  credit_inv$CRediT_involvement[
+    credit_inv$sum_support >= 5 & credit_inv$CRediT_involvement <= "Medium"
+  ] <- "Medium"
 
   applicant$indicators$CRediT_involvement <- credit_inv$CRediT_involvement
   applicant$indicators$CRediT_involvement_roles <- main_roles
 
   rm(credit_tab, credit_inv, main_roles)
-
 
   #----------------------------------------------------------------
   # Select publications suitable for the RRS computation in object `rigor_pubs`.
@@ -394,8 +561,12 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   applicant$indicators <- applicant$indicators |>
     mutate(
       # exclude fully empty publication records without indicator values (or only trivial information)
-      rigor_pub = type2 == "Publication" & P_Suitable == "Yes" & ind_missing < .95,
-      impact_pub = type2 == "Publication" &  valid_doi == TRUE & (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
+      rigor_pub = type2 == "Publication" &
+        P_Suitable == "Yes" &
+        ind_missing < .95,
+      impact_pub = type2 == "Publication" &
+        valid_doi == TRUE &
+        (P_Suitable == "Yes" & ind_missing < .95 | P_Suitable == "No")
     )
 
   # TODO: Semi-hotfix: As P_IndependentVerification might often be removed as an indicator,
@@ -404,44 +575,75 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   if (!"P_IndependentVerification" %in% colnames(applicant$indicators)) {
     applicant$indicators$P_IndependentVerification <- NA
   }
+  if (
+    !"P_IndependentVerification_Identifier" %in% colnames(applicant$indicators)
+  ) {
+    applicant$indicators$P_IndependentVerification_Identifier <- NA_character_
+  }
 
-  applicant$rigor_pubs  <- applicant$indicators |> filter(rigor_pub == TRUE)
+  applicant$rigor_pubs <- applicant$indicators |> filter(rigor_pub == TRUE)
   applicant$impact_pubs <- applicant$indicators |> filter(impact_pub == TRUE)
 
-
   if (sum(!applicant$indicators$rigor_pub) > 0) {
-    note <- paste0(sum(!applicant$indicators$rigor_pub), " publication(s) were removed from the rigor score computations because no indicators were provided.")
+    note <- paste0(
+      sum(!applicant$indicators$rigor_pub),
+      " publication(s) were removed from the rigor score computations because no indicators were provided."
+    )
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }
 
   if (sum(!applicant$indicators$impact_pub) > 0) {
-    note <- paste0(sum(!applicant$indicators$impact_pub), " publication(s) were removed from the impact table because (a) no indicators were provided and no manual processing was requested, or (b) no valid doi was provided.")
+    note <- paste0(
+      sum(!applicant$indicators$impact_pub),
+      " publication(s) were removed from the impact table because (a) no indicators were provided and no manual processing was requested, or (b) no valid doi was provided."
+    )
     warning(note)
     applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
   }
-
 
   #----------------------------------------------------------------
   # Call BIP! API for impact measures
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0 & get_BIP == TRUE) {
-    applicant$BIP <- get_BIP(dois=applicant$impact_pubs$doi, verbose=verbose)
+    applicant$BIP <- get_BIP(
+      dois = applicant$impact_pubs$doi,
+      verbose = verbose
+    )
+
+    if (is.null(applicant$BIP)) {
+      applicant$BIP <- data.frame(
+        doi = character(),
+        three_year_cc = numeric(),
+        cc = numeric(),
+        pop_class = factor(levels = paste0("C", 1:5))
+      )
+    }
 
     # Attention: Due to multi-study papers, a single paper can show up multiple times.
     # Here we compute the papers, not the studies.
 
     BIP_unique_papers <- applicant$BIP[!duplicated(applicant$BIP$doi), ]
 
-    applicant$BIP_n_papers <- sum(BIP_unique_papers$pop_class <= "C5", na.rm=TRUE)
-    applicant$BIP_n_papers_top10 <- sum(BIP_unique_papers$pop_class <= "C4", na.rm=TRUE)
+    applicant$BIP_n_papers <- sum(
+      BIP_unique_papers$pop_class <= "C5",
+      na.rm = TRUE
+    )
+    applicant$BIP_n_papers_top10 <- sum(
+      BIP_unique_papers$pop_class <= "C4",
+      na.rm = TRUE
+    )
   } else {
-    applicant$BIP <- NA
+    applicant$BIP <- data.frame(
+      doi = character(),
+      three_year_cc = numeric(),
+      cc = numeric(),
+      pop_class = factor(levels = paste0("C", 1:5))
+    )
     applicant$BIP_n_papers <- NA
     applicant$BIP_n_papers_top10 <- NA
   }
-
 
   #----------------------------------------------------------------
   # Retrieve submitted works from OpenAlex
@@ -449,16 +651,34 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   #----------------------------------------------------------------
 
   if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
-    OAlex_papers <- oa_fetch(entity = "works", doi = applicant$impact_pubs$doi, verbose=verbose)
+    OAlex_papers <- oa_fetch(
+      entity = "works",
+      doi = applicant$impact_pubs$doi,
+      verbose = verbose
+    )
 
-    if (verbose==TRUE) print(paste0(nrow(OAlex_papers), " out of ", length(unique(applicant$impact_pubs$doi)), " submitted publications could be automatically retrieved with openAlex."))
+    if (is.null(OAlex_papers)) {
+      OAlex_papers <- data.frame(doi = character())
+      note <- "OpenAlex returned no data; impact-derived indexes were not computed."
+      warning(note)
+      applicant$preprocessing_notes <- c(applicant$preprocessing_notes, note)
+    }
 
-    if (is.null(OAlex_papers)) {stop("Error: Could not retrieve data from OpenAlex.")}
+    if (verbose == TRUE) {
+      print(paste0(
+        nrow(OAlex_papers),
+        " out of ",
+        length(unique(applicant$impact_pubs$doi)),
+        " submitted publications could be automatically retrieved with openAlex."
+      ))
+    }
 
     if (nrow(OAlex_papers) < length(unique(applicant$impact_pubs$doi))) {
       note <- paste0(
         '## The following papers could *not* be retrieved by openAlex:\n\n',
-        applicant$impact_pubs[!applicant$impact_pubs$doi %in% OAlex_papers$doi, ] %>%
+        applicant$impact_pubs[
+          !applicant$impact_pubs$doi %in% OAlex_papers$doi,
+        ] %>%
           select(Title, Year, DOI, P_TypePublication)
       )
       warning(note)
@@ -466,9 +686,22 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     }
 
     # Work on a unique-paper object (one row per DOI)
-    OAlex_papers <- OAlex_papers[!duplicated(OAlex_papers$doi), ]
-    OAlex_papers$n_authors <- get_n_authors(OAlex_papers)
-    OAlex_papers$team_category <- cut(OAlex_papers$n_authors, breaks=c(0, 1, 5, 15, Inf), labels=c("Single authored", "Small team (<= 5 co-authors)", "Large team (6-15 co-authors)", "Big Team (>= 16 co-authors)"))
+    OAlex_papers <- OAlex_papers[!duplicated(OAlex_papers$doi), , drop = FALSE]
+    if (nrow(OAlex_papers) > 0) {
+      OAlex_papers$n_authors <- get_n_authors(OAlex_papers)
+      OAlex_papers$team_category <- cut(
+        OAlex_papers$n_authors,
+        breaks = c(0, 1, 5, 15, Inf),
+        labels = c(
+          "Single authored",
+          "Small team (<= 5 co-authors)",
+          "Large team (6-15 co-authors)",
+          "Big Team (>= 16 co-authors)"
+        )
+      )
+    } else {
+      OAlex_papers$team_category <- factor()
+    }
 
     # Store unique object and expand to impact_pubs order/multiplicity (e.g., multi-study duplicates)
     applicant$OAlex_papers_unique <- OAlex_papers
@@ -477,37 +710,63 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
       left_join(OAlex_papers, by = "doi")
     rm(OAlex_papers)
   } else {
-    applicant$OAlex_papers <- NA
-    applicant$OAlex_papers_unique <- NA
+    applicant$OAlex_papers <- data.frame(doi = character())
+    applicant$OAlex_papers_unique <- data.frame(
+      doi = character(),
+      team_category = factor()
+    )
   }
 
   #----------------------------------------------------------------
   # Get FNCS
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
-    c_counts_psy <- readRDS(file=system.file("ref_set_psy/c_counts_psy_2001_2025.RDS", package="RESQUER"))
-    fncs <- FNCS(dois=applicant$OAlex_papers$doi, ref_set=c_counts_psy, verbose=verbose)
+  if (nrow(applicant$OAlex_papers_unique) > 0) {
+    c_counts_psy <- readRDS(
+      file = system.file(
+        "ref_set_psy/c_counts_psy_2001_2025.RDS",
+        package = "RESQUER"
+      )
+    )
+    fncs <- FNCS(
+      dois = applicant$OAlex_papers$doi,
+      ref_set = c_counts_psy,
+      verbose = verbose
+    )
     applicant$FNCS <- fncs
   } else {
-    applicant$FNCS <- NA
+    applicant$FNCS <- data.frame(
+      doi = character(),
+      FNCS = numeric(),
+      FNPR = numeric()
+    )
   }
 
   #----------------------------------------------------------------
   # Get TOP factor of the publication venues
   #----------------------------------------------------------------
 
-  if (nrow(applicant$impact_pubs) > 0 & get_OpenAlex == TRUE) {
-    TOP <- read.csv(system.file("extdata", "top-factor.csv", package="RESQUER"))
+  if (
+    nrow(applicant$OAlex_papers_unique) > 0 &&
+      "issn_l" %in% names(applicant$OAlex_papers)
+  ) {
+    TOP <- read.csv(system.file(
+      "extdata",
+      "top-factor.csv",
+      package = "RESQUER"
+    ))
 
     applicant$TOP_journals <- TOP %>%
-      select(issn=Issn, Journal, Total) %>%
+      select(issn = Issn, Journal, Total) %>%
       filter(issn %in% applicant$OAlex_papers$issn_l)
     rm(TOP)
   } else {
-    applicant$TOP_journals <- NA
+    applicant$TOP_journals <- data.frame(
+      issn = character(),
+      Journal = character(),
+      Total = numeric()
+    )
   }
-
 
   #----------------------------------------------------------------
   # Compute the reportable RRS from eligible publications. Do not use
@@ -516,14 +775,25 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   #----------------------------------------------------------------
 
   if (nrow(applicant$rigor_pubs) > 0) {
-    applicant$RRS <- compute_RRS(applicant, verbose=verbose)
+    applicant$RRS <- compute_RRS(applicant, verbose = verbose)
 
     # merge RRS scores into the other objects
     if (!is.na(applicant$RRS$overall_score)) {
-
-      applicant$indicators <- left_join(applicant$indicators, applicant$RRS$paper_scores, by=c("doi", "P_MultiStudy_Selected"))
-      applicant$rigor_pubs <- left_join(applicant$rigor_pubs, applicant$RRS$paper_scores, by=c("doi", "P_MultiStudy_Selected"))
-      applicant$impact_pubs <- left_join(applicant$impact_pubs, applicant$RRS$paper_scores, by=c("doi", "P_MultiStudy_Selected"))
+      applicant$indicators <- left_join(
+        applicant$indicators,
+        applicant$RRS$paper_scores,
+        by = c("doi", "P_MultiStudy_Selected")
+      )
+      applicant$rigor_pubs <- left_join(
+        applicant$rigor_pubs,
+        applicant$RRS$paper_scores,
+        by = c("doi", "P_MultiStudy_Selected")
+      )
+      applicant$impact_pubs <- left_join(
+        applicant$impact_pubs,
+        applicant$RRS$paper_scores,
+        by = c("doi", "P_MultiStudy_Selected")
+      )
     } else {
       applicant$RRS <- NA
       applicant$indicators$RRS_overall <- NA
@@ -532,14 +802,26 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     }
   } else {
     applicant$RRS <- NA
+    applicant$indicators$RRS_overall <- NA_real_
+    applicant$rigor_pubs$RRS_overall <- NA_real_
+    applicant$impact_pubs$RRS_overall <- NA_real_
   }
 
   #----------------------------------------------------------------
   # Get internationalization and interdisciplinarity scores
   #----------------------------------------------------------------
 
-  if (!is.null(applicant$meta$OA_author_id) & all(!is.na(applicant$meta$OA_author_id)) & (nrow(applicant$impact_pubs) > 0)) {
-    nw <- get_network(works=applicant$OAlex_papers, author.id=applicant$meta$OA_author_id, min_coauthorships = 1, verbose=FALSE)
+  if (
+    !is.null(applicant$meta$OA_author_id) &
+      all(!is.na(applicant$meta$OA_author_id)) &
+      (nrow(applicant$OAlex_papers_unique) > 0)
+  ) {
+    nw <- get_network(
+      works = applicant$OAlex_papers,
+      author.id = applicant$meta$OA_author_id,
+      min_coauthorships = 1,
+      verbose = FALSE
+    )
 
     applicant$internationalization <- list(
       international_evenness = nw$international_evenness,
@@ -547,8 +829,14 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
       internationalization_string = nw$internationalization_string,
       n_coauthors_international = nw$n_coauthors_international,
       n_coauthors_same_country = nw$n_coauthors_same_country,
-      perc_international = (nw$n_coauthors_international*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round(),
-      perc_same_country = (nw$n_coauthors_same_country*100/(nw$n_coauthors_international+nw$n_coauthors_same_country)) |> round()
+      perc_international = (nw$n_coauthors_international *
+        100 /
+        (nw$n_coauthors_international + nw$n_coauthors_same_country)) |>
+        round(),
+      perc_same_country = (nw$n_coauthors_same_country *
+        100 /
+        (nw$n_coauthors_international + nw$n_coauthors_same_country)) |>
+        round()
     )
 
     applicant$interdisciplinarity <- list(
@@ -558,7 +846,6 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
       topics_tab = nw$topics_tab,
       interdisc_string = nw$interdisc_string
     )
-
   } else {
     applicant$internationalization <- list(
       international_evenness = NA,
@@ -568,7 +855,6 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
       n_coauthors_same_country = NA,
       perc_international = NA,
       perc_same_country = NA
-
     )
     applicant$interdisciplinarity <- list(
       interdisc_evenness = NA,
@@ -579,8 +865,6 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
     )
   }
 
-
-
   #----------------------------------------------------------------
   # prepare all data for the open science sparkpie charts
   # TODO: How to deal with arbitrary scoring categories that are defined in
@@ -588,41 +872,104 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   #----------------------------------------------------------------
 
   OpenDataPie <- data.frame(
-    notApplicable = sum(applicant$rigor_pubs$P_Data_Open == "NotApplicable", na.rm=TRUE),
-    No = sum(applicant$rigor_pubs$P_Data_Open == "NotAvailable", na.rm=TRUE),
-    Aggregate = sum(applicant$rigor_pubs$P_Data_Open == "YesAggregate", na.rm=TRUE),
-    Partial = sum(applicant$rigor_pubs$P_Data_Open == "YesParts", na.rm=TRUE),
-    Yes = sum(applicant$rigor_pubs$P_Data_Open == "YesEntire", na.rm=TRUE)
+    notApplicable = sum(
+      applicant$rigor_pubs$P_Data_Open == "NotApplicable",
+      na.rm = TRUE
+    ),
+    No = sum(applicant$rigor_pubs$P_Data_Open == "NotAvailable", na.rm = TRUE),
+    Aggregate = sum(
+      applicant$rigor_pubs$P_Data_Open == "YesAggregate",
+      na.rm = TRUE
+    ),
+    Partial = sum(applicant$rigor_pubs$P_Data_Open == "YesParts", na.rm = TRUE),
+    Yes = sum(applicant$rigor_pubs$P_Data_Open == "YesEntire", na.rm = TRUE)
   )
 
   OpenMaterialPie <- data.frame(
-    notApplicable = sum(applicant$rigor_pubs$P_OpenMaterials == "NotApplicable", na.rm=TRUE),
-    No = sum(applicant$rigor_pubs$P_OpenMaterials == "NotAvailable", na.rm=TRUE),
-    Partial = sum(applicant$rigor_pubs$P_OpenMaterials %in% c("YesParts", "Minimal"), na.rm=TRUE),
-    Yes = sum(applicant$rigor_pubs$P_OpenMaterials %in% c("YesEntire", "Rich"), na.rm=TRUE)
+    notApplicable = sum(
+      applicant$rigor_pubs$P_OpenMaterials == "NotApplicable",
+      na.rm = TRUE
+    ),
+    No = sum(
+      applicant$rigor_pubs$P_OpenMaterials == "NotAvailable",
+      na.rm = TRUE
+    ),
+    Partial = sum(
+      applicant$rigor_pubs$P_OpenMaterials %in% c("YesParts", "Minimal"),
+      na.rm = TRUE
+    ),
+    Yes = sum(
+      applicant$rigor_pubs$P_OpenMaterials %in% c("YesEntire", "Rich"),
+      na.rm = TRUE
+    )
   )
 
   OpenCodePie <- data.frame(
-    notApplicable = sum(applicant$rigor_pubs$P_ReproducibleScripts == "NotApplicable", na.rm=TRUE),
-    No = sum(applicant$rigor_pubs$P_ReproducibleScripts == "NotAvailable", na.rm=TRUE),
-    Partial = sum(applicant$rigor_pubs$P_ReproducibleScripts == "YesParts", na.rm=TRUE),
-    Yes = sum(applicant$rigor_pubs$P_ReproducibleScripts == "YesEntire", na.rm=TRUE)
+    notApplicable = sum(
+      applicant$rigor_pubs$P_ReproducibleScripts == "NotApplicable",
+      na.rm = TRUE
+    ),
+    No = sum(
+      applicant$rigor_pubs$P_ReproducibleScripts == "NotAvailable",
+      na.rm = TRUE
+    ),
+    Partial = sum(
+      applicant$rigor_pubs$P_ReproducibleScripts == "YesParts",
+      na.rm = TRUE
+    ),
+    Yes = sum(
+      applicant$rigor_pubs$P_ReproducibleScripts == "YesEntire",
+      na.rm = TRUE
+    )
   )
 
   # Correction: If applicants claim an independent verification, but provide no link,
   # this is set to "No".
   # TODO: Needs to be done for OD and OM as well.
-  applicant$rigor_pubs$P_IndependentVerification[applicant$rigor_pubs$P_IndependentVerification %in% c("WorkflowReproducible", "MainResultsReproducible", "AnalysisReplication") & applicant$rigor_pubs$P_IndependentVerification_Identifier == ""] <- "NotAvailable"
+  applicant$rigor_pubs$P_IndependentVerification[
+    applicant$rigor_pubs$P_IndependentVerification %in%
+      c(
+        "WorkflowReproducible",
+        "MainResultsReproducible",
+        "AnalysisReplication"
+      ) &
+      applicant$rigor_pubs$P_IndependentVerification_Identifier == ""
+  ] <- "NotAvailable"
 
-  ReproPie <-  data.frame(
-    notApplicable = sum(applicant$rigor_pubs$P_IndependentVerification == "NotApplicable", na.rm=TRUE),
-    No = sum(applicant$rigor_pubs$P_IndependentVerification == "No", na.rm=TRUE),
-    Workflow = sum(applicant$rigor_pubs$P_IndependentVerification == "WorkflowReproducible", na.rm=TRUE),
-    Results = sum(applicant$rigor_pubs$P_IndependentVerification %in% c("MainResultsReproducible", "AllResultsReproducible"), na.rm=TRUE),
-    Replication = sum(applicant$rigor_pubs$P_IndependentVerification == "AnalysisReplication", na.rm=TRUE)
+  ReproPie <- data.frame(
+    notApplicable = sum(
+      applicant$rigor_pubs$P_IndependentVerification == "NotApplicable",
+      na.rm = TRUE
+    ),
+    No = sum(
+      applicant$rigor_pubs$P_IndependentVerification == "No",
+      na.rm = TRUE
+    ),
+    Workflow = sum(
+      applicant$rigor_pubs$P_IndependentVerification == "WorkflowReproducible",
+      na.rm = TRUE
+    ),
+    Results = sum(
+      applicant$rigor_pubs$P_IndependentVerification %in%
+        c("MainResultsReproducible", "AllResultsReproducible"),
+      na.rm = TRUE
+    ),
+    Replication = sum(
+      applicant$rigor_pubs$P_IndependentVerification == "AnalysisReplication",
+      na.rm = TRUE
+    )
   )
 
-  applicant$rigor_pubs$P_Preregistration2 <- factor(applicant$rigor_pubs$P_Preregistration, levels=c("NotApplicable", "No", "Yes", "RegisteredReport"), labels=c("Not Applicable", "Not preregistered", "Preregistration", "Registered Report"))
+  applicant$rigor_pubs$P_Preregistration2 <- factor(
+    applicant$rigor_pubs$P_Preregistration,
+    levels = c("NotApplicable", "No", "Yes", "RegisteredReport"),
+    labels = c(
+      "Not Applicable",
+      "Not preregistered",
+      "Preregistration",
+      "Registered Report"
+    )
+  )
 
   PreregPie <- table(applicant$rigor_pubs$P_Preregistration2)
 
@@ -638,10 +985,26 @@ preprocess <- function(applicant, get_BIP = TRUE, get_OpenAlex = TRUE, verbose=F
   # Some meta-data
   #----------------------------------------------------------------
 
-  applicant$meta$date_exported <- as.POSIXct(applicant$meta$date_exported / 1000, origin = "1970-01-01", tz = "UTC")
-  applicant$meta$date_added <- as.POSIXct(applicant$meta$date_added / 1000, origin = "1970-01-01", tz = "UTC")
-  applicant$meta$date_created <- as.POSIXct(applicant$meta$date_created / 1000, origin = "1970-01-01", tz = "UTC")
-  applicant$meta$date_modified <- as.POSIXct(applicant$meta$date_modified / 1000, origin = "1970-01-01", tz = "UTC")
+  applicant$meta$date_exported <- as.POSIXct(
+    applicant$meta$date_exported / 1000,
+    origin = "1970-01-01",
+    tz = "UTC"
+  )
+  applicant$meta$date_added <- as.POSIXct(
+    applicant$meta$date_added / 1000,
+    origin = "1970-01-01",
+    tz = "UTC"
+  )
+  applicant$meta$date_created <- as.POSIXct(
+    applicant$meta$date_created / 1000,
+    origin = "1970-01-01",
+    tz = "UTC"
+  )
+  applicant$meta$date_modified <- as.POSIXct(
+    applicant$meta$date_modified / 1000,
+    origin = "1970-01-01",
+    tz = "UTC"
+  )
   applicant$meta$date_analysis <- format(Sys.time(), tz = "UTC", usetz = TRUE)
 
   return(applicant)

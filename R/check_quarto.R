@@ -3,7 +3,9 @@ check_quarto <- function(required = "1.8.0") {
 
   if (!nzchar(quarto)) {
     stop(
-      "Quarto >= ", required, " is required but was not found.",
+      "Quarto >= ",
+      required,
+      " is required but was not found.",
       call. = FALSE
     )
   }
@@ -31,8 +33,11 @@ check_quarto <- function(required = "1.8.0") {
 
   if (installed < package_version(required)) {
     stop(
-      "Quarto >= ", required, " is required; found Quarto ",
-      installed, ".",
+      "Quarto >= ",
+      required,
+      " is required; found Quarto ",
+      installed,
+      ".",
       call. = FALSE
     )
   }

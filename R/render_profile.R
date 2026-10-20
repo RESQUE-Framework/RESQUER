@@ -13,31 +13,47 @@
 #' \dontrun{
 #' # Render single profile
 #' render_profile("path_to_file/resque_Einstein.json")
-#' 
+#'
 #' # Render all profiles in a folder
 #' for (f in list.files("path_to_folder", pattern="resque_.*\\.json", full.names = TRUE)) {
 #'  render_profile(f)
 #' }
 #' }
 
-render_profile <- function(json_path, show_inter=TRUE, output_file = NA, template = NA) {
-
+render_profile <- function(
+  json_path,
+  show_inter = TRUE,
+  output_file = NA,
+  template = NA
+) {
   check_quarto("1.8.0")
 
   # Path to the qmd template
   if (is.na(template)) {
-    template <- system.file("profile_qmd", "RESQUE_profile.qmd", package = "RESQUER")
+    template <- system.file(
+      "profile_qmd",
+      "RESQUE_profile.qmd",
+      package = "RESQUER"
+    )
   }
 
   old_wd <- getwd()
   full_json_path <- normalizePath(json_path)
   temp_dir <- paste0(tempdir(), "/RESQUEPROFILE")
-  if (!dir.exists(temp_dir)) {dir.create(temp_dir, recursive = TRUE)}
+  if (!dir.exists(temp_dir)) {
+    dir.create(temp_dir, recursive = TRUE)
+  }
 
   # copy entire template folder (including subfolders) to temp_dir
   template_dir <- dirname(template)
-  copied <- file.copy(list.files(template_dir, full.names = TRUE), temp_dir, recursive = TRUE)
-  if (!all(copied)) warning("Some files failed to copy to temp_dir")
+  copied <- file.copy(
+    list.files(template_dir, full.names = TRUE),
+    temp_dir,
+    recursive = TRUE
+  )
+  if (!all(copied)) {
+    warning("Some files failed to copy to temp_dir")
+  }
 
   # get name of applicant:
   js <- read_json(json_path, simplifyVector = TRUE)
@@ -45,30 +61,41 @@ render_profile <- function(json_path, show_inter=TRUE, output_file = NA, templat
   FullName <- paste(js[1, "FirstName"], js[1, "LastName"])
   print(paste0("Creating profile report for ", FullName))
   if (is.na(output_file)) {
-    output_file <- paste0(dirname(full_json_path), "/", LastName, "_report.html")
+    output_file <- paste0(
+      dirname(full_json_path),
+      "/",
+      LastName,
+      "_report.html"
+    )
   }
 
   setwd(temp_dir)
   on.exit(setwd(old_wd), add = TRUE)
   # Render the Rmd file
-  quarto::quarto_render(input = basename(template),
-                    output_file = basename(output_file),
-                    output_format = "html",
-                    execute_dir = temp_dir,
-                    execute_params = list(
-                      FullName = FullName,
-                      json_path = full_json_path,
-                      show_inter = show_inter
-                    )
-                  )
+  quarto::quarto_render(
+    input = basename(template),
+    output_file = basename(output_file),
+    output_format = "html",
+    execute_dir = temp_dir,
+    execute_params = list(
+      FullName = FullName,
+      json_path = full_json_path,
+      show_inter = show_inter
+    )
+  )
 
   # Ensure the output directory exists
-  if (!dir.exists(dirname(output_file))) {dir.create(dirname(output_file), recursive = TRUE)}
+  if (!dir.exists(dirname(output_file))) {
+    dir.create(dirname(output_file), recursive = TRUE)
+  }
 
   # Copy the rendered file to the desired output directory
-  file.copy(paste0(temp_dir, "/", basename(output_file)), output_file, overwrite=TRUE)
+  file.copy(
+    paste0(temp_dir, "/", basename(output_file)),
+    output_file,
+    overwrite = TRUE
+  )
 
   # Return the path to the final output file
   return(output_file)
 }
-

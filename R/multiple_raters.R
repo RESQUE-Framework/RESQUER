@@ -72,53 +72,87 @@
 #' }
 #'
 #' @importFrom digest digest
-get_jsons <- function(path, recursive=TRUE, replace_form=NULL, get_OpenAlex=FALSE, get_BIP=FALSE, anonymize_raters=FALSE, verbose=TRUE) {
-
-  json_files <- list.files(path, pattern="*.json", full.names=TRUE, recursive=recursive)
+get_jsons <- function(
+  path,
+  recursive = TRUE,
+  replace_form = NULL,
+  get_OpenAlex = FALSE,
+  get_BIP = FALSE,
+  anonymize_raters = FALSE,
+  verbose = TRUE
+) {
+  json_files <- list.files(
+    path,
+    pattern = "*.json",
+    full.names = TRUE,
+    recursive = recursive
+  )
 
   # Optional: Replace the packs/scoring information with with an external file
   # (e.g. if the scoring rules have been updated)
   if (!is.null(replace_form)) {
-    if (verbose) print("External scoring data loaded - testing for valid structure ...")
+    if (verbose) {
+      print("External scoring data loaded - testing for valid structure ...")
+    }
     test_forms_json_structure(replace_form)
     do_replace <- TRUE
   } else {
     do_replace <- FALSE
   }
 
-
   # read all json files and preprocess them
   applicant_list <- list()
   for (i in 1:length(json_files)) {
-    print(paste0("Preprocessing file ", i, "/", length(json_files), ": ", json_files[i]))
+    print(paste0(
+      "Preprocessing file ",
+      i,
+      "/",
+      length(json_files),
+      ": ",
+      json_files[i]
+    ))
 
     if (do_replace) {
-      R <- read_RESQUE(file=update_forms(json_files[i], newform=replace_form), verbose=FALSE)
+      R <- read_RESQUE(
+        file = update_forms(json_files[i], newform = replace_form),
+        verbose = FALSE
+      )
     } else {
-      R <- read_RESQUE(file=json_files[i], verbose=FALSE)
+      R <- read_RESQUE(file = json_files[i], verbose = FALSE)
     }
 
-    applicant_list[[i]] <- preprocess(applicant=R, verbose=verbose, get_BIP=get_BIP, get_OpenAlex=get_OpenAlex)
-    applicant_list[[i]]$meta$pid <- digest::digest(applicant_list[[i]]$meta$ORCID, algo="crc32")
+    applicant_list[[i]] <- preprocess(
+      applicant = R,
+      verbose = verbose,
+      get_BIP = get_BIP,
+      get_OpenAlex = get_OpenAlex
+    )
+    applicant_list[[i]]$meta$pid <- digest::digest(
+      applicant_list[[i]]$meta$ORCID,
+      algo = "crc32"
+    )
   }
 
   # if requested: Anonymize raters (replace rater names with R1, R2, R3, etc)
   if (anonymize_raters == TRUE) {
-    raterNames <- sapply(applicant_list, function(x) x$meta$ExternalRaterName) |> unique() |> sort()
+    raterNames <- sapply(applicant_list, function(x) {
+      x$meta$ExternalRaterName
+    }) |>
+      unique() |>
+      sort()
     newRaterNames <- paste0("R", seq_along(raterNames))
     names(newRaterNames) <- raterNames
 
     for (i in seq_along(applicant_list)) {
-      applicant_list[[i]]$meta$ExternalRaterName <- newRaterNames[applicant_list[[i]]$meta$ExternalRaterName]
+      applicant_list[[i]]$meta$ExternalRaterName <- newRaterNames[
+        applicant_list[[i]]$meta$ExternalRaterName
+      ]
       names(applicant_list[[i]]$meta$ExternalRaterName) <- NULL
     }
   }
 
   return(applicant_list)
 }
-
-
-
 
 
 #' Create a wide rater–indicator table across many RESQUE applicants
@@ -194,32 +228,42 @@ get_jsons <- function(path, recursive=TRUE, replace_form=NULL, get_OpenAlex=FALS
 #'   subset(wide, !is_consistent & scoring_relevant)
 #' }
 
-many_raters <- function(path, selector=c("P_"), verbose=TRUE, ...) {
+many_raters <- function(path, selector = c("P_"), verbose = TRUE, ...) {
   applicant_list <- get_jsons(path, ...)
   #applicant_list <- get_jsons(path, replace_form, recursive=TRUE, get_OpenAlex=FALSE, get_BIP=FALSE, anonymize_raters=TRUE, verbose=TRUE)
 
-  all_indicators <- extract_indicators(applicant_list, selector=selector)
+  all_indicators <- extract_indicators(applicant_list, selector = selector)
   all_indicators <- all_indicators |> arrange(ORCID, ExternalRaterName)
 
-  long <- all_indicators |> pivot_longer(
-    cols = starts_with(selector), names_to = "Indicator", values_to = "Rating",
-    values_transform = list(Rating = as.character))
+  long <- all_indicators |>
+    pivot_longer(
+      cols = starts_with(selector),
+      names_to = "Indicator",
+      values_to = "Rating",
+      values_transform = list(Rating = as.character)
+    )
 
   # change all NAs to the character "_NA_" (to distinguish them from "") in the Excel file
   long$Rating[is.na(long$Rating)] <- "_NA_"
 
   wide <- long |>
     pivot_wider(
-      id_cols=c(ORCID, doi, Title, Indicator),
-      names_from = ExternalRaterName, values_from = Rating) |>
+      id_cols = c(ORCID, doi, Title, Indicator),
+      names_from = ExternalRaterName,
+      values_from = Rating
+    ) |>
     arrange(doi, Indicator)
 
   # flag inconsistent ratings
-  wide$is_consistent <- wide |> select(matches("^R\\d+")) |>
-    apply(1, function(x) {length(unique(x)) == 1})
+  wide$is_consistent <- wide |>
+    select(matches("^R\\d+")) |>
+    apply(1, function(x) {
+      length(unique(x)) == 1
+    })
 
   # add flag whether the indicator is relevant for scoring
-  scoring_relevant_cols <- applicant_list[[1]]$meta$forms$pub$scoring |> colnames()
+  scoring_relevant_cols <- applicant_list[[1]]$meta$forms$pub$scoring |>
+    colnames()
   wide$scoring_relevant <- wide$Indicator %in% scoring_relevant_cols
 
   # prepopulate the consensus rating (if all raters agree)
@@ -228,11 +272,37 @@ many_raters <- function(path, selector=c("P_"), verbose=TRUE, ...) {
 
   # give a summary print
   if (verbose) {
-    print(paste0("The ", length(applicant_list), " imported json files contained ", length(unique(wide$doi)), " papers from ", length(unique(wide$ORCID)), " first authors."))
+    print(paste0(
+      "The ",
+      length(applicant_list),
+      " imported json files contained ",
+      length(unique(wide$doi)),
+      " papers from ",
+      length(unique(wide$ORCID)),
+      " first authors."
+    ))
 
-    print(paste0("Of the ", nrow(wide), " assessed indicators, ", sum(wide$is_consistent), " were consistent (", (sum(wide$is_consistent)*100/nrow(wide)) |> round(), "%), ", sum(!wide$is_consistent), " were inconsistent (", (sum(!wide$is_consistent)*100/nrow(wide)) |> round(), "%)."))
+    print(paste0(
+      "Of the ",
+      nrow(wide),
+      " assessed indicators, ",
+      sum(wide$is_consistent),
+      " were consistent (",
+      (sum(wide$is_consistent) * 100 / nrow(wide)) |> round(),
+      "%), ",
+      sum(!wide$is_consistent),
+      " were inconsistent (",
+      (sum(!wide$is_consistent) * 100 / nrow(wide)) |> round(),
+      "%)."
+    ))
 
-    print(paste0("Of the ", sum(!wide$is_consistent), " inconsistent indicators, ", sum(!wide$is_consistent & wide$scoring_relevant), " were relevant for scoring."))
+    print(paste0(
+      "Of the ",
+      sum(!wide$is_consistent),
+      " inconsistent indicators, ",
+      sum(!wide$is_consistent & wide$scoring_relevant),
+      " were relevant for scoring."
+    ))
   }
 
   return(wide)

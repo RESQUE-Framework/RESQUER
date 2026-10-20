@@ -59,8 +59,26 @@
 #' @importFrom stringr str_detect
 #'
 #' @export
-get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
-  tab_RRS <- data.frame(applicant=applicant$meta$LastName)
+get_RRS_tablerow <- function(applicant, add_scores = FALSE) {
+  tab_RRS <- data.frame(applicant = applicant$meta$LastName)
+
+  if (!is.list(applicant$RRS)) {
+    tab_RRS[, "Relative Rigor Score"] <- "<span style='color:gray;'>N/A</span>"
+    tab_RRS[, "Open Data"] <- "<span style='color:gray;'>N/A</span>"
+    tab_RRS[, "Open Material"] <- "<span style='color:gray;'>N/A</span>"
+    tab_RRS[, "Preregistration"] <- "<span style='color:gray;'>N/A</span>"
+    tab_RRS[, "Reproducible Code"] <- "<span style='color:gray;'>N/A</span>"
+
+    if (add_scores == TRUE) {
+      tab_RRS$RRS_overall <- NA_real_
+      tab_RRS$RRS_OD <- NA_real_
+      tab_RRS$RRS_OM <- NA_real_
+      tab_RRS$RRS_OC <- NA_real_
+      tab_RRS$RRS_PreReg <- NA_real_
+    }
+
+    return(tab_RRS)
+  }
 
   RRS_overall <- applicant$RRS$overall_score
 
@@ -68,23 +86,30 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
   RRS_OD <- applicant$RRS$sector_scores %>%
     filter(category == "Open Data") %>%
     pull(rel_score) %>%
-    { if (length(.) == 0) NA else . }
+    {
+      if (length(.) == 0) NA else .
+    }
 
-  RRS_OM = applicant$RRS$sector_scores %>%
+  RRS_OM <- applicant$RRS$sector_scores %>%
     filter(category == "Open Materials") %>%
     pull(rel_score) %>%
-    { if (length(.) == 0) NA else . }
+    {
+      if (length(.) == 0) NA else .
+    }
 
-  RRS_PreReg = applicant$RRS$sector_scores %>%
+  RRS_PreReg <- applicant$RRS$sector_scores %>%
     filter(grepl("Preregistration", category)) %>%
     pull(rel_score) %>%
-    { if (length(.) == 0) NA else . }
+    {
+      if (length(.) == 0) NA else .
+    }
 
-  RRS_OC = applicant$RRS$sector_scores %>%
+  RRS_OC <- applicant$RRS$sector_scores %>%
     filter(str_detect(category, "Reproducible Code")) %>%
     pull(rel_score) %>%
-    { if (length(.) == 0) NA else . }
-
+    {
+      if (length(.) == 0) NA else .
+    }
 
   #TODO: generalize to any number of quality sectors - add additional
   # sectors beyond these standard sectors.
@@ -106,7 +131,9 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
   #     outer_width = 60)
 
   tab_RRS[1, "Relative Rigor Score"] <- circle_simple(
-    value = RRS_overall[1], outer_width = 60)
+    value = RRS_overall[1],
+    outer_width = 60
+  )
 
   # tab_RRS[1, "Relative Rigor Score"] |> htmltools::HTML() |> htmltools::html_print()
 
@@ -117,11 +144,19 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
   if (!is.na(RRS_OD)) {
     # Here we have three "green" squares: Yes, Partial and Aggregate
     tab_RRS[, "Open Data"] <- paste(
-      applicant$OS_pie$OpenData[c("Yes", "Aggregate", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(
-        colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7"),
-        max_value = max(c(10, sum(applicant$OS_pie$OpenData)))
-      ),
-      sapply(RRS_OD, ministack, height=14)
+      applicant$OS_pie$OpenData[c(
+        "Yes",
+        "Aggregate",
+        "Partial",
+        "No",
+        "notApplicable"
+      )] |>
+        unlist() |>
+        waffle_html(
+          colors = c("#1da412", "#1da412", "#1da412", "#c51819", "#C7C7C7"),
+          max_value = max(c(10, sum(applicant$OS_pie$OpenData)))
+        ),
+      sapply(RRS_OD, ministack, height = 14)
     )
   } else {
     tab_RRS[, "Open Data"] <- "<span style='color:gray;'>N/A</span>"
@@ -129,10 +164,17 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
 
   if (!is.na(RRS_OM)) {
     tab_RRS[, "Open Material"] <- paste(
-      applicant$OS_pie$OpenMaterial[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(
-        max_value = max(c(10, sum(applicant$OS_pie$OpenMaterial)))
-      ),
-      sapply(RRS_OM, ministack, height=14)
+      applicant$OS_pie$OpenMaterial[c(
+        "Yes",
+        "Partial",
+        "No",
+        "notApplicable"
+      )] |>
+        unlist() |>
+        waffle_html(
+          max_value = max(c(10, sum(applicant$OS_pie$OpenMaterial)))
+        ),
+      sapply(RRS_OM, ministack, height = 14)
     )
   } else {
     tab_RRS[, "Open Material"] <- "<span style='color:gray;'>N/A</span>"
@@ -140,18 +182,23 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
 
   if (!is.na(RRS_PreReg)) {
     tab_RRS[, "Preregistration"] <- paste(
-      applicant$OS_pie$Prereg[c("Registered Report", "Preregistration", "Not preregistered", "Not Applicable")] |> unlist() |> waffle_html(
-        max_value = max(c(10, sum(applicant$OS_pie$Prereg)))
-      ),
-      sapply(RRS_PreReg, ministack, height=14)
+      applicant$OS_pie$Prereg[c(
+        "Registered Report",
+        "Preregistration",
+        "Not preregistered",
+        "Not Applicable"
+      )] |>
+        unlist() |>
+        waffle_html(
+          max_value = max(c(10, sum(applicant$OS_pie$Prereg)))
+        ),
+      sapply(RRS_PreReg, ministack, height = 14)
     )
   } else {
     tab_RRS[, "Preregistration"] <- "<span style='color:gray;'>N/A</span>"
   }
 
-
   if (!is.na(RRS_OC)) {
-
     # refine the heading, depending on whether "verification" was part of the indicators
     if (all(is.na(applicant$rigor_pubs$P_IndependentVerification))) {
       code_heading <- "Reproducible Code"
@@ -160,10 +207,12 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
     }
 
     tab_RRS[, code_heading] <- paste(
-      applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |> unlist() |> waffle_html(
-        max_value = max(c(10, sum(applicant$OS_pie$OpenCode)))
-      ),
-      sapply(RRS_OC, ministack, height=14)
+      applicant$OS_pie$OpenCode[c("Yes", "Partial", "No", "notApplicable")] |>
+        unlist() |>
+        waffle_html(
+          max_value = max(c(10, sum(applicant$OS_pie$OpenCode)))
+        ),
+      sapply(RRS_OC, ministack, height = 14)
     )
   } else {
     tab_RRS[, "Reproducible Code"] <- "<span style='color:gray;'>N/A</span>"
@@ -180,8 +229,8 @@ get_RRS_tablerow <- function(applicant, add_scores=FALSE) {
   return(tab_RRS)
 }
 
-if (1==0) {
-library(DT)
+if (1 == 0) {
+  library(DT)
 
   applicant <- list(
     meta = list(applicant = "Doe"),
@@ -194,21 +243,33 @@ library(DT)
       )
     ),
     OS_pie = list(
-      OpenData = c(Yes = 5, Aggregate = 2, Partial = 1, No = 1, notApplicable = 1),
+      OpenData = c(
+        Yes = 5,
+        Aggregate = 2,
+        Partial = 1,
+        No = 1,
+        notApplicable = 1
+      ),
       #OpenMaterial = c(Yes = 3, Partial = 2, No = 3, notApplicable = 2),
-      Prereg = c("Registered Report" = 2, Preregistration = 3,
-                 "Not preregistered" = 3, "Not Applicable" = 2),
+      Prereg = c(
+        "Registered Report" = 2,
+        Preregistration = 3,
+        "Not preregistered" = 3,
+        "Not Applicable" = 2
+      ),
       OpenCode = c(Yes = 6, Partial = 2, No = 1, notApplicable = 1)
     )
   )
 
-get_RRS_tablerow(applicant, add_scores = TRUE) |> datatable(
-  escape=FALSE,
-  rownames=FALSE,
-  width = '100%',
-  options = list(
-    ordering = FALSE,
-    dom = 't',
-    scrollX = FALSE)
-  )
+  get_RRS_tablerow(applicant, add_scores = TRUE) |>
+    datatable(
+      escape = FALSE,
+      rownames = FALSE,
+      width = '100%',
+      options = list(
+        ordering = FALSE,
+        dom = 't',
+        scrollX = FALSE
+      )
+    )
 }

@@ -54,17 +54,15 @@
 #' @importFrom testthat test_that expect_error expect_true
 
 test_forms_json_structure <- function(path) {
-
   testthat::test_that(paste("Structure of forms JSON:", path), {
-
     # ---- 1) Valid JSON ----
     json <- NULL
     testthat::expect_error(
       json <- jsonlite::fromJSON(
         path,
-        simplifyVector   = FALSE,
+        simplifyVector = FALSE,
         simplifyDataFrame = FALSE,
-        simplifyMatrix   = FALSE
+        simplifyMatrix = FALSE
       ),
       NA,
       info = "File must contain valid JSON."
@@ -136,16 +134,24 @@ test_forms_json_structure <- function(path) {
       )
 
       testthat::expect_true(
-        all(c("title", "versions", "date", "scoring", "config", "elements") %in% names(form)),
+        all(
+          c("title", "versions", "date", "scoring", "config", "elements") %in%
+            names(form)
+        ),
         info = paste0(
-          "Form '", name,
+          "Form '",
+          name,
           "' must contain 'title', 'versions', 'date', 'scoring', 'config', and 'elements'."
         )
       )
 
       testthat::expect_true(
         is.list(form$elements) && length(form$elements) > 0,
-        info = paste0("Form '", name, "' must have a non-empty 'elements' array.")
+        info = paste0(
+          "Form '",
+          name,
+          "' must have a non-empty 'elements' array."
+        )
       )
     }
 
@@ -157,7 +163,10 @@ test_forms_json_structure <- function(path) {
         testthat::expect_true(
           all(c("id", "type") %in% names(el)),
           info = paste0(
-            "Element ", i, " of form '", name,
+            "Element ",
+            i,
+            " of form '",
+            name,
             "' must contain at least 'id' and 'type'."
           )
         )
@@ -171,7 +180,8 @@ test_forms_json_structure <- function(path) {
       testthat::expect_true(
         is.list(cat_i),
         info = paste0(
-          "score_categories entry ", i,
+          "score_categories entry ",
+          i,
           " should be an object (JSON object -> list)."
         )
       )
@@ -179,7 +189,8 @@ test_forms_json_structure <- function(path) {
       testthat::expect_true(
         "title" %in% names(cat_i),
         info = paste0(
-          "score_categories entry ", i,
+          "score_categories entry ",
+          i,
           " should contain a 'title' field."
         )
       )

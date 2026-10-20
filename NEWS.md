@@ -1,5 +1,12 @@
 # RESQUER News
 
+## RESQUER 0.10.14 (2026-10-20)
+
+### Fixed
+
+- `preprocess()` and profile reports now handle unavailable RRS, BIP!, and OpenAlex results without aborting rendering.
+- `RRS_radarchart()` now renders the radar chart when publication years are unavailable, omitting only the year histogram.
+
 ## RESQUER 0.10.13 (2026-10-20)
 
 ### Fixed

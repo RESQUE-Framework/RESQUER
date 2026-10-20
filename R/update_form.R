@@ -39,9 +39,7 @@
 #'
 #' @importFrom jsonlite fromJSON toJSON
 
-
-update_forms <- function(path, newform, test=FALSE) {
-
+update_forms <- function(path, newform, test = FALSE) {
   if (test) {
     test_forms_json_structure(newform)
   }
