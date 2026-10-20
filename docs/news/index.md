@@ -1,5 +1,35 @@
 # Changelog
 
+## RESQUER 0.10.16 (2026-10-20)
+
+### Added
+
+- The profile report publication table has a new “Open Practices” column
+  with small badges for open data, open materials, open code, and
+  preregistration. Badges link to the respective material when an
+  identifier is available.
+
+### Changed
+
+- The profile report layout is wider (sidebar 250px, body 1000px, margin
+  300px).
+
+## RESQUER 0.10.15 (2026-10-20)
+
+### Fixed
+
+- [`preprocess()`](https://resque-framework.github.io/RESQUER/reference/preprocess.md)
+  now ensures that `Title` and `Year` columns always exist in the
+  indicators data, so downstream RRS code and profile reports no longer
+  fail when they are missing.
+- [`compute_RRS()`](https://resque-framework.github.io/RESQUER/reference/compute_RRS.md)
+  and
+  [`RRS_radarchart()`](https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.md)
+  handle missing or `NULL` publication years without error.
+- [`read_RESQUE()`](https://resque-framework.github.io/RESQUER/reference/read_RESQUE.md)
+  now completes partial DOIs (e.g., `10.1177/...`) to full
+  `https://doi.org/` URLs, so title links work.
+
 ## RESQUER 0.10.14 (2026-10-20)
 
 ### Fixed
@@ -7,8 +37,10 @@
 - [`preprocess()`](https://resque-framework.github.io/RESQUER/reference/preprocess.md)
   and profile reports now handle unavailable RRS, BIP!, and OpenAlex
   results without aborting rendering.
-- [`RRS_radarchart()`](https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.md)
-  now renders the radar chart when publication years are unavailable,
+- [`compute_RRS()`](https://resque-framework.github.io/RESQUER/reference/compute_RRS.md)
+  and
+  [`RRS_radarchart()`](https://resque-framework.github.io/RESQUER/reference/RRS_radarchart.md)
+  now render the radar chart when publication years are unavailable,
   omitting only the year histogram.
 
 ## RESQUER 0.10.13 (2026-10-20)

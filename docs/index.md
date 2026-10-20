@@ -61,3 +61,8 @@ file.
     # `outfile` also contains the path to the rendered overview file.
     folder_path = "/path/to/json/folder"
     outfile <- render_overview(folder_path)
+
+## Internal notes:
+
+- The pkgdown website is built locally - do not forget to run
+  `pkgdown::build_site(preview = FALSE)` before pushing a new version.

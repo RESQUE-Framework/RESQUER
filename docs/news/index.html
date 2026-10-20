@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.16</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,13 +34,36 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.16" id="resquer-01016-2026-10-20">RESQUER 0.10.16 (2026-10-20)<a class="anchor" aria-label="anchor" href="#resquer-01016-2026-10-20"></a></h2>
+<div class="section level3">
+<h3 id="added-0-10-16">Added<a class="anchor" aria-label="anchor" href="#added-0-10-16"></a></h3>
+<ul><li>The profile report publication table has a new “Open Practices” column with small badges for open data, open materials, open code, and preregistration. Badges link to the respective material when an identifier is available.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-0-10-16">Changed<a class="anchor" aria-label="anchor" href="#changed-0-10-16"></a></h3>
+<ul><li>The profile report layout is wider (sidebar 250px, body 1000px, margin 300px).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.15" id="resquer-01015-2026-10-20">RESQUER 0.10.15 (2026-10-20)<a class="anchor" aria-label="anchor" href="#resquer-01015-2026-10-20"></a></h2>
+<div class="section level3">
+<h3 id="fixed-0-10-15">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-10-15"></a></h3>
+<ul><li>
+<code><a href="../reference/preprocess.html">preprocess()</a></code> now ensures that <code>Title</code> and <code>Year</code> columns always exist in the indicators data, so downstream RRS code and profile reports no longer fail when they are missing.</li>
+<li>
+<code><a href="../reference/compute_RRS.html">compute_RRS()</a></code> and <code><a href="../reference/RRS_radarchart.html">RRS_radarchart()</a></code> handle missing or <code>NULL</code> publication years without error.</li>
+<li>
+<code><a href="../reference/read_RESQUE.html">read_RESQUE()</a></code> now completes partial DOIs (e.g., <code>10.1177/...</code>) to full <code>https://doi.org/</code> URLs, so title links work.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.10.14" id="resquer-01014-2026-10-20">RESQUER 0.10.14 (2026-10-20)<a class="anchor" aria-label="anchor" href="#resquer-01014-2026-10-20"></a></h2>
 <div class="section level3">
 <h3 id="fixed-0-10-14">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-10-14"></a></h3>
 <ul><li>
 <code><a href="../reference/preprocess.html">preprocess()</a></code> and profile reports now handle unavailable RRS, BIP!, and OpenAlex results without aborting rendering.</li>
 <li>
-<code><a href="../reference/RRS_radarchart.html">RRS_radarchart()</a></code> now renders the radar chart when publication years are unavailable, omitting only the year histogram.</li>
+<code><a href="../reference/compute_RRS.html">compute_RRS()</a></code> and <code><a href="../reference/RRS_radarchart.html">RRS_radarchart()</a></code> now render the radar chart when publication years are unavailable, omitting only the year histogram.</li>
 </ul></div>
 </div>
     <div class="section level2">
