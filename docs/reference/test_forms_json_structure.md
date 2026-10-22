@@ -21,7 +21,7 @@ test_forms_json_structure(path)
 
 This function is called for its side effect of running testthat
 expectations. It returns the result of the
-[`testthat::test_that()`](https://rdrr.io/pkg/testthat/man/test_that.html)
+[`testthat::test_that()`](https://testthat.r-lib.org/reference/test_that.html)
 call (invisibly).
 
 ## Details

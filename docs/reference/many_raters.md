@@ -26,8 +26,9 @@ many_raters(path, selector = c("P_"), verbose = TRUE, ...)
   columns to be extracted (e.g. `"P_"`). Passed to
   [`extract_indicators`](https://resque-framework.github.io/RESQUER/reference/extract_indicators.md)
   and used in
-  [`pivot_longer`](https://rdrr.io/pkg/tidyr/man/pivot_longer.html) via
-  [`starts_with`](https://rdrr.io/pkg/tidyselect/man/starts_with.html).
+  [`pivot_longer`](https://tidyr.tidyverse.org/reference/pivot_longer.html)
+  via
+  [`starts_with`](https://tidyselect.r-lib.org/reference/starts_with.html).
   Defaults to `c("P_")`.
 
 - verbose:
