@@ -34,7 +34,6 @@ get_missing <- function(pub) {
 #' @importFrom stringr str_replace_all str_trim
 #' @importFrom magrittr %>%
 #' @importFrom jsonlite fromJSON
-#' @importFrom curl curl_fetch_memory
 #' @importFrom openalexR oa_fetch
 #' @importFrom utils URLencode
 #' @importFrom lubridate year

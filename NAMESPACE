@@ -53,7 +53,6 @@ importFrom(OAmetrics,
   normalize_ORCIDs,
   normalize_dois
 )
-importFrom(curl,curl_fetch_memory)
 importFrom(digest,digest)
 importFrom(dplyr,
   "%>%",

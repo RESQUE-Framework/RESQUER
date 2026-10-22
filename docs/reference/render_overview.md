@@ -46,7 +46,8 @@ render_overview(
 
   The computations (e.g., citation statistics) are cached in the file
   `applicant_data.RData` (stored in the same folder as the jsons). If
-  `clear_cache = TRUE`, the file is deleted and recomputed.
+  `clear_cache = TRUE`, the cached file is ignored, all results are
+  recomputed, and the file is overwritten.
 
 - FNCS_type:
 

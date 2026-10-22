@@ -50,12 +50,18 @@ _test*
 inst/doc
 
 *.code-workspace
+*.Rproj
 
 _archive/*
 .positai
 
 # AI agent guidance (may contain sensitive applicant-related details)
 AGENTS.md
+# safety net in case a plain pkgdown::build_site() renders it (use _build_site.R)
+AGENTS.html
+
+# local script to build the pkgdown site without AGENTS.md
+_build_site.R
 
 # macOS Finder metadata
 .DS_Store

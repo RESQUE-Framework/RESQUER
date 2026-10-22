@@ -65,4 +65,6 @@ file.
 ## Internal notes:
 
 - The pkgdown website is built locally - do not forget to run
-  `pkgdown::build_site(preview = FALSE)` before pushing a new version.
+  `source("_build_site.R")` before pushing a new version (it wraps
+  `pkgdown::build_site(preview = FALSE)` and keeps local-only files off
+  the site).

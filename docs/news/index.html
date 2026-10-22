@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">RESQUER</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.10.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,81 @@
       <small>Source: <a href="https://github.com/RESQUE-Framework/RESQUER/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.22" id="resquer-01022-2026-10-22">RESQUER 0.10.22 (2026-10-22)<a class="anchor" aria-label="anchor" href="#resquer-01022-2026-10-22"></a></h2>
+<div class="section level3">
+<h3 id="added-0-10-22">Added<a class="anchor" aria-label="anchor" href="#added-0-10-22"></a></h3>
+<ul><li>New demo profile <code>inst/extdata/demo_profiles/resque_Schoenbrodt_2026-03.json</code> in the current scheme (meta 0.3.0, pub 0.9.0; 10 publications). The profile templates fall back to it when no JSON path is given.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixed-0-10-22">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-10-22"></a></h3>
+<ul><li>Profile templates (<code>RESQUE_profile.qmd</code>, <code>RESQUE_profile_section_test.qmd</code>) rendered directly without a <code>json_path</code>: an empty path is now treated like a missing one, and the demo profile is used.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-0-10-22">Changed<a class="anchor" aria-label="anchor" href="#changed-0-10-22"></a></h3>
+<ul><li>
+<code>inst/ref_set_psy/get_new_refset.R</code> (script to rebuild the psychology reference set) can now resume after a crash. Intermediate results are no longer written to <code>~/refset_temp</code>. They go to a folder with a fixed name in the system temp directory, e.g. <code>RESQUER_refset_C15744967_article_n100000_seed42</code>; the name encodes the sampling parameters. The script downloads one year at a time and skips years whose <code>refset_&lt;year&gt;.RDS</code> already exists and can be read. A re-run after a crash therefore continues with the first missing year, and the sample is identical to that of a single run. <code>options(RESQUER.refset_dir = ...)</code> sets another location.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="removed-0-10-22">Removed<a class="anchor" aria-label="anchor" href="#removed-0-10-22"></a></h3>
+<ul><li>Removed hardcoded local file paths in comments and debugging code.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.21" id="resquer-01021-2026-10-21">RESQUER 0.10.21 (2026-10-21)<a class="anchor" aria-label="anchor" href="#resquer-01021-2026-10-21"></a></h2>
+<div class="section level3">
+<h3 id="removed-0-10-21">Removed<a class="anchor" aria-label="anchor" href="#removed-0-10-21"></a></h3>
+<ul><li>The deprecated, unfinished Shiny dashboard (<code>inst/dashboard/dashboard_shiny.qmd</code>, <code>custom.scss</code>), its (commented-out) launch instructions in the README, and the archived publication-table code that only the dashboard used (<code>_archive/preprocessing_archive.R</code>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.20" id="resquer-01020-2026-10-21">RESQUER 0.10.20 (2026-10-21)<a class="anchor" aria-label="anchor" href="#resquer-01020-2026-10-21"></a></h2>
+<div class="section level3">
+<h3 id="fixed-0-10-20">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-10-20"></a></h3>
+<ul><li>Profile report, “Rare samples used in studies”: the sample size is now read from <code>P_Methods_PowerAnalysis_SampleSize</code> (the field of the current scheme) instead of the obsolete <code>P_SampleSize</code>, which made the report always show “not provided”. Line breaks in the entry are collapsed; a missing or whitespace-only entry is shown as “not provided”.</li>
+<li>Profile report: rendering no longer aborts in the impact table when no BIP! data are available (e.g. <code>preprocess(get_BIP = FALSE)</code>). The unused FNPR column was formatted before being dropped, which failed on an empty table.</li>
+<li>Profile report, “Location of Data Collection”: the filter on studies with data (<code>P_Data == "Yes"</code>) made a inconsistent selection. Whenever some studies had no data (or a missing <code>P_Data</code>), location categories could silently disappear from the chart (e.g. “Naturalistic”).</li>
+<li>
+<code>render_overview(clear_cache = TRUE)</code> now takes effect: the cached <code>applicant_data.RData</code> in the JSON folder is ignored, all applicants are recomputed, and the cache file is overwritten. Previously the argument was passed to the template but never used, so an existing (possibly stale) cache was always reused.</li>
+<li>
+<code><a href="../reference/RRS_category_summary.html">RRS_category_summary()</a></code> now finds the score categories in <code>forms$pub$config</code> as well as in <code>forms$config</code> (same precedence as the scorer). Previously it stopped with an error for exports that store the categories in <code>forms$pub$config</code>.</li>
+<li>
+<code><a href="../reference/preprocess.html">preprocess()</a></code>: the derived <code>replication</code> column (preregistered replication) is now built from the current field <code>P_Preregistration_Replication</code> instead of the legacy name <code>P_PreregisteredReplication</code>, after the “not applicable” justification checks; studies without preregistration get <code>No</code>. Previously the column was always <code>NA</code>. It is not shown in the reports, so nothing changed. As a side effect, the share of missing indicators (<code>ind_missing</code>) no longer counts the empty legacy placeholder column; eligibility for the rigor score is unchanged for all test cases.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.19" id="resquer-01019-2026-10-21">RESQUER 0.10.19 (2026-10-21)<a class="anchor" aria-label="anchor" href="#resquer-01019-2026-10-21"></a></h2>
+<div class="section level3">
+<h3 id="added-0-10-19">Added<a class="anchor" aria-label="anchor" href="#added-0-10-19"></a></h3>
+<ul><li>Profile report: new light-grey, struck-through badge images (<code>inst/profile_qmd/assets/*_small_grey_strike.png</code>) for open data, open materials, open code, and preregistration.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-0-10-19">Changed<a class="anchor" aria-label="anchor" href="#changed-0-10-19"></a></h3>
+<ul><li>Profile report, “Open Practices” column: a practice answered as not available (<code>NotAvailable</code>/<code>No</code>) now shows the grey struck-through badge; “not applicable” (or no answer) shows no badge. Badges are smaller (20px high).</li>
+<li>Profile report layout: body width increased to 1100px (sidebar 250px, margin 300px).</li>
+<li>Badge images are now the same size (71 x 78 px); the green open-code badge was cropped and rescaled so it no longer appears smaller than the others.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.18" id="resquer-01018-2026-10-21">RESQUER 0.10.18 (2026-10-21)<a class="anchor" aria-label="anchor" href="#resquer-01018-2026-10-21"></a></h2>
+<div class="section level3">
+<h3 id="fixed-0-10-18">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-10-18"></a></h3>
+<ul><li>
+<code><a href="../reference/preprocess.html">preprocess()</a></code>: the “not verified” count of the independent-verification pie data (<code>OS_pie$Repro$No</code>) now counts both the current answer code <code>NotAvailable</code> and the older code <code>No</code>; previously <code>NotAvailable</code> was never counted. Expect <code>OS_pie$Repro</code> to differ from earlier regression baselines.</li>
+<li>
+<code><a href="../reference/preprocess.html">preprocess()</a></code>: claims of independent verification without a link are now also set to <code>NotAvailable</code> for <code>AllResultsReproducible</code>, and when the identifier is missing (<code>NA</code>) or blank (whitespace only). Scores are not affected.</li>
+<li>Scorer (<code>inst/js/score2.js</code>): <code><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists()</a></code> in scoring rules now treats whitespace-only strings as missing. A whitespace-only identifier no longer earns points, and a whitespace-only “not applicable” explanation (<code>*_NAExplanation</code>, ZK2 justification) no longer removes the item from the maximum. Scores of the test-suite JSONs are unchanged (none contains such values).</li>
+<li>
+<code><a href="../reference/preprocess.html">preprocess()</a></code>: “not applicable” answers now follow the same justification rule as the scorer. A whitespace-only <code>*_NAExplanation</code>, or an explanation field that is absent from the whole file, no longer counts as a justification; the answer is then shown as <code>NotAvailable</code>/<code>No</code> with a preprocessing note. Scores are not affected.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.10.17" id="resquer-01017-2026-10-21">RESQUER 0.10.17 (2026-10-21)<a class="anchor" aria-label="anchor" href="#resquer-01017-2026-10-21"></a></h2>
+<div class="section level3">
+<h3 id="changed-0-10-17">Changed<a class="anchor" aria-label="anchor" href="#changed-0-10-17"></a></h3>
+<ul><li>Removed the unused internal helpers <code>%and%</code>, <code>%or%</code>, <code>not()</code> and <code><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists()</a></code> (<code>R/operators.R</code>), leftovers of the former R scorer. The package-internal <code><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists()</a></code> masked <code><a href="https://rdrr.io/r/base/exists.html" class="external-link">base::exists()</a></code> inside the package namespace.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.10.16" id="resquer-01016-2026-10-20">RESQUER 0.10.16 (2026-10-20)<a class="anchor" aria-label="anchor" href="#resquer-01016-2026-10-20"></a></h2>
 <div class="section level3">
