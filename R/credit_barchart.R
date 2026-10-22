@@ -67,7 +67,11 @@ credit_barchart <- function(credit_dat, ordered = FALSE, compact = FALSE) {
     coord_flip() +
     scale_fill_manual(
       values = rev(c("grey95", "grey85", "khaki2", "green3", "green4")),
-      breaks = rev(c("not applicable", "NoRole", "Support", "Equal", "Lead"))
+      breaks = rev(c("not applicable", "NoRole", "Support", "Equal", "Lead")),
+      labels = c(
+        "not applicable" = "Not Applicable", "NoRole" = "No Role",
+        "Support" = "Support", "Equal" = "Equal", "Lead" = "Lead"
+      )
     ) +
     theme_minimal() +
     xlab("") +

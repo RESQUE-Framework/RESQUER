@@ -42,9 +42,6 @@ get_missing <- function(pub) {
 #' @importFrom OAmetrics normalize_dois normalize_ORCIDs get_BIP FNCS get_network get_n_authors
 #' @export
 
-# For testing:
-# applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
-# applicant <- read_RESQUE(system.file("extdata/demo_profiles/resque_Gaertner.json", package="RESQUER"))
 
 preprocess <- function(
   applicant,
@@ -57,7 +54,7 @@ preprocess <- function(
 
   # create missing indicator variables
   ind_vars <- c(
-    "P_PreregisteredReplication",
+    "P_Preregistration_Replication",
     "P_MeritStatement",
     "P_MultiStudy_Selected"
   )
@@ -122,12 +119,6 @@ preprocess <- function(
       "Prereg",
       "Registered<br>Report"
     )
-  )
-
-  applicant$indicators$replication <- factor(
-    applicant$indicators$P_PreregisteredReplication,
-    levels = c("NotApplicable", "No", "Yes"),
-    labels = c("not<br>applicable", "No", "Yes")
   )
 
   # Central fix: downstream code (RRS, profile .qmd) assumes these columns exist
@@ -214,12 +205,6 @@ preprocess <- function(
 
   # Fix some logical dependencies:
   # ------------------------------------
-
-  # If there is no preregistration, there cannot be a preregistered replication:
-  applicant$indicators$replication[
-    is.na(applicant$indicators$replication) &
-      applicant$indicators$P_Preregistration2 == "Not preregistered"
-  ] <- "No"
 
   # If the data set was "Reuse of someone else's existing data set" or P_Data == "No", we set
   # Open Data to "not applicable" and automatically provide a justification
@@ -311,11 +296,17 @@ preprocess <- function(
     if (
       var %in%
         colnames(ind) &&
-        justi %in% colnames(ind) &&
         any(ind[, var] == notApp, na.rm = TRUE)
     ) {
+      # Same rule as exists() in the JS scorer: a missing column, NA, or a
+      # blank (whitespace-only) string does not count as a justification.
+      justi_values <- if (justi %in% colnames(ind)) {
+        ind[, justi]
+      } else {
+        rep(NA_character_, nrow(ind))
+      }
       no_justi <- (ind[, var] == notApp) &
-        (is.na(ind[, justi]) | ind[, justi] == "")
+        (is.na(justi_values) | trimws(justi_values) == "")
       no_justi[is.na(no_justi)] <- FALSE
       if (any(no_justi)) {
         ind[, var][no_justi] <- no
@@ -412,6 +403,20 @@ preprocess <- function(
     notApp = "NotApplicable",
     no = "No"
   )
+
+  # Preregistered replication (built after the justification corrections above,
+  # so that it reflects them). The item is only asked for preregistered studies.
+  applicant$indicators$replication <- factor(
+    applicant$indicators$P_Preregistration_Replication,
+    levels = c("NotApplicable", "No", "Yes"),
+    labels = c("not<br>applicable", "No", "Yes")
+  )
+
+  # If there is no preregistration, there cannot be a preregistered replication:
+  applicant$indicators$replication[
+    is.na(applicant$indicators$replication) &
+      applicant$indicators$P_Preregistration %in% "No"
+  ] <- "No"
 
   # Note: We don't do this correction for P_Theorizing_NAExplanation,
   # because there is no clear "no" answer.
@@ -930,17 +935,20 @@ preprocess <- function(
     )
   )
 
-  # Correction: If applicants claim an independent verification, but provide no link,
-  # this is set to "No".
+  # Correction: If applicants claim an independent verification, but provide no link
+  # (missing, NA, or blank identifier), this is set to "NotAvailable".
   # TODO: Needs to be done for OD and OM as well.
+  verification_claimed <- applicant$rigor_pubs$P_IndependentVerification %in%
+    c(
+      "WorkflowReproducible",
+      "MainResultsReproducible",
+      "AllResultsReproducible",
+      "AnalysisReplication"
+    )
+  verification_id <- applicant$rigor_pubs$P_IndependentVerification_Identifier
+  verification_no_link <- is.na(verification_id) | trimws(verification_id) == ""
   applicant$rigor_pubs$P_IndependentVerification[
-    applicant$rigor_pubs$P_IndependentVerification %in%
-      c(
-        "WorkflowReproducible",
-        "MainResultsReproducible",
-        "AnalysisReplication"
-      ) &
-      applicant$rigor_pubs$P_IndependentVerification_Identifier == ""
+    verification_claimed & verification_no_link
   ] <- "NotAvailable"
 
   ReproPie <- data.frame(
@@ -948,8 +956,9 @@ preprocess <- function(
       applicant$rigor_pubs$P_IndependentVerification == "NotApplicable",
       na.rm = TRUE
     ),
+    # "No" is the answer code of older schemes, "NotAvailable" of current ones
     No = sum(
-      applicant$rigor_pubs$P_IndependentVerification == "No",
+      applicant$rigor_pubs$P_IndependentVerification %in% c("No", "NotAvailable"),
       na.rm = TRUE
     ),
     Workflow = sum(

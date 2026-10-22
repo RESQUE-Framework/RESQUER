@@ -49,11 +49,6 @@ RRS_radarchart <- function(
   base_size = 14,
   scale = "area"
 ) {
-  # Standardized and categorized rigor scores:
-  # TODO: Standarize within category, not over all
-  # 0.63 (top 1%), 0.54 (top 10%), 0.50 (top 20%), 0.30 (top 50%)
-  # radar_applicant$indicators$norm_rigor <- cut(radar_applicant$indicators$rel_score, breaks=c(0, 0.30, .50, .54, 1),
-  #  labels=c("low50", "top50", "top20", "top10"))
 
   # p1: Radar chart
 

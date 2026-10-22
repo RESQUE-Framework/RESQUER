@@ -7,6 +7,7 @@ format:
 toc: true
 params:
   FullName: "Max Mustermann Demoprofile"
+  json_path: ""
 ---
 
 
@@ -46,7 +47,7 @@ table, th, td {
 ```{r}
 #| results: "asis"
 
-if (is.null(params$json_path)) {
+if (is.null(params$json_path) || params$json_path == "") {
   cat("\n\n::: {.callout-warning}\nNo data supplied - using demo profile\n:::\n\n")
 }
 ```
@@ -67,11 +68,12 @@ library(tibble)
 library(OAmetrics)
 library(sparkline)
 
-if (is.null(params$json_path)) {
-  applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
+if (is.null(params$json_path) || params$json_path == "") {
+  json_file <- system.file("extdata/demo_profiles/resque_Schoenbrodt_2026-03.json", package="RESQUER")
 } else {
-  applicant_json <- read_RESQUE(file=params$json_path)
+  json_file <- params$json_path
 }
+applicant_json <- read_RESQUE(file=json_file)
 
 applicant <- preprocess(applicant=applicant_json)
 

@@ -20,7 +20,7 @@ get_directory <- function(path) {
 # @param show_inter Show/hide the section on internationality and interdisciplinarity
 #' @param output_file The file name (optionally including a path) of the output report. If NA, it uses the folder name plus the current date-time as filename and stores it in the same folder as the source json files.
 #' @param template The path to the .qmd file with the profile. If set to `NA`(default), the package's built-in profile is used.
-#' @param clear_cache The computations (e.g., citation statistics) are cached in the file `applicant_data.RData` (stored in the same folder as the jsons). If `clear_cache = TRUE`, the file is deleted and recomputed.
+#' @param clear_cache The computations (e.g., citation statistics) are cached in the file `applicant_data.RData` (stored in the same folder as the jsons). If `clear_cache = TRUE`, the cached file is ignored, all results are recomputed, and the file is overwritten.
 #' @param anonymous If `TRUE`, all candidate names are replaced by A, B, C, ...
 #' @param randomize If `TRUE`, numeric scores are randomly perturbed by ±10% for demo/anonymization purposes.
 #' @param FNCS_type The type of FNCS average to use (one of "median", "mean")
@@ -38,7 +38,6 @@ render_overview <- function(
   clear_cache = FALSE,
   FNCS_type = "median"
 ) {
-  # for debugging:
 
   check_quarto("1.8.0")
 

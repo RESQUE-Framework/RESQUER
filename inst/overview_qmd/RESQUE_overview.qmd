@@ -18,6 +18,7 @@ format:
       margin-width: 100px
       gutter-width: 1.5rem
 params:
+  json_folder: ''
   anonymous: true
   clear_cache: false
   verbose: false
@@ -28,7 +29,6 @@ params:
 
 ```{r setup0}
 #| include: false
-
 
 library(knitr)
 library(kableExtra)
@@ -120,27 +120,30 @@ Theory_norms <- c(.1, .2)
 #| results: "asis"
 
 
-#params$anonymous = FALSE
-
-if (is.null(params$json_folder)) {
+if (is.null(params$json_folder) || params$json_folder == "") {
   # TODO: Load demo profiles if no folder with jsons is provided
-  #applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
+  stop("No folder provided.")
 } else {
+  
+  if (length(list.files(params$json_folder, pattern = "\\.json$", ignore.case = TRUE)) == 0) {
+    stop("No JSON files found in folder '", params$json_folder, "'. Aborting.", call. = FALSE)
+  }
   
   cache_file <- paste0(params$json_folder, "/applicant_data.RData")
   
-  # Check if a cached, pre-computed file exists
-  if (file.exists(cache_file)) {
+  # Use a cached, pre-computed file if it exists, unless clear_cache = TRUE.
+  # With clear_cache = TRUE everything is recomputed and the cache file is
+  # overwritten by save() below.
+  if (file.exists(cache_file) && !isTRUE(params$clear_cache)) {
     use_cache <- TRUE
     load(cache_file)
   } else {
     use_cache <- FALSE
     # Read all jsons in that folder
-    json_files <- list.files(params$json_folder, pattern="*.json", full.names=TRUE)
+    json_files <- list.files(params$json_folder, pattern="\\.json$", ignore.case=TRUE, full.names=TRUE)
     
     applicant_list <- list()
     
-    options(openalexR.mailto = "felix.schoenbrodt@psy.lmu.de")
     for (i in 1:length(json_files)) {
         if (params$verbose == TRUE) print(paste0("Reading file #", i, ": ", json_files[i]))
         R <- read_RESQUE(file=json_files[i], verbose=FALSE)
@@ -415,7 +418,7 @@ if (params$FNCS_type == "median") {
   FNCS_colname <- "Median FNCS"
 }
 
-FNCS_quantiles <- quantile(tab_impact$avg_FNCS, probs = c(0.25, 0.75))
+FNCS_quantiles <- quantile(tab_impact$avg_FNCS, probs = c(0.25, 0.75), na.rm = TRUE)
 
 if (params$randomize == TRUE) {
   tab_impact$avg_FNCS <- wiggle(tab_impact$avg_FNCS)

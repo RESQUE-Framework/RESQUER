@@ -16,17 +16,12 @@ filters:
     at: pre-quarto
 params:
   FullName: "Max Mustermann Demoprofile"
+  json_path: ''
   show_inter: true
 ---
 
 ```{r setup0}
 #| include: false
-
-# params <- list(
-#   FullName = "Test Test",
-#   show_inter = FALSE
-# )
-
 
 library(knitr)
 library(kableExtra)
@@ -60,7 +55,7 @@ LIGHTGREY <- "#e8e8e8"
 ```{r demo_warning}
 #| results: "asis"
 
-if (is.null(params$json_path)) {
+if (is.null(params$json_path) || params$json_path == "") {
   cat("\n\n::: {.callout-warning}\nNo data supplied - using demo profile\n:::\n\n")
 }
 ```
@@ -83,14 +78,14 @@ library(tibble)
 library(OAmetrics)
 library(DT)
 
-if (is.null(params$json_path)) {
-  applicant_json <- read_RESQUE(file=system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER"))
+if (is.null(params$json_path) || params$json_path == "") {
+  json_file <- system.file("extdata/demo_profiles/resque_Schoenbrodt_2026-03.json", package="RESQUER")
 } else {
-  applicant_raw_json <- readLines(params$json_path, warn=FALSE)
-  applicant_json <- read_RESQUE(file=params$json_path, verbose=FALSE)
+  json_file <- params$json_path
 }
+applicant_raw_json <- readLines(json_file, warn=FALSE)
+applicant_json <- read_RESQUE(file=json_file, verbose=FALSE)
 
-options(openalexR.mailto = "felix.schoenbrodt@psy.lmu.de")
 applicant <- preprocess(applicant=applicant_json, verbose=FALSE)
 
 if (length(applicant$meta$ORCID) != 1 || is.na(applicant$meta$ORCID)) {
@@ -372,11 +367,20 @@ ggplot(heatmap_data, aes(x = Sample_CrossCultural, y = Sample_Type, fill = n)) +
 if (any(!is.na(applicant$rigor_pubs$P_Sample_RareOther))) {
   res <- "**Rare samples used in studies:**\n\n"
   
+  # The achieved sample size is only asked after an a-priori power analysis
+  # (P_Methods_PowerAnalysis == "Yes"); the field may be absent in a file.
+  sample_sizes <- applicant$rigor_pubs$P_Methods_PowerAnalysis_SampleSize
+  if (is.null(sample_sizes)) {
+    sample_sizes <- rep(NA_character_, nrow(applicant$rigor_pubs))
+  }
+
   rare_sample_positions <- which(!is.na(applicant$rigor_pubs$P_Sample_RareOther))
   for (i in rare_sample_positions) {
     res <- paste0(res, "- ", applicant$rigor_pubs$P_Sample_RareOther[i], "\n")
-    if (!is.nulla(applicant$rigor_pubs$P_SampleSize[i])) {
-      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_replace_all(applicant$rigor_pubs$P_SampleSize[i], "\\n", " "), "</span>\n")
+    sample_size <- sample_sizes[i]
+    # missing, NA, or whitespace-only counts as "not provided" (same rule as the scorer)
+    if (!is.na(sample_size) && trimws(sample_size) != "") {
+      res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: ", str_squish(sample_size), "</span>\n")
     } else {
       res <- paste0(res, "  - <span style='font-size:80%;'>*Sample Size*: not provided</span>\n")
     }
@@ -425,7 +429,8 @@ if (!is.null(applicant$rigor_pubs$P_DesignExperimental_Effort)) {
 #| out-height: auto
 # show sample location as heatmap
 if (any(str_detect(colnames(applicant$rigor_pubs), "P_Sample_Location_"))) {
-  Sample_Location <- RESQUER:::sum_MC(pubs = applicant$rigor_pubs[applicant$rigor_pubs$P_Data == "Yes"], prefix = "P_Sample_Location_")
+  # Filter rows (studies with data); %in% treats NA as "not Yes"
+  Sample_Location <- RESQUER:::sum_MC(pubs = applicant$rigor_pubs[applicant$rigor_pubs$P_Data %in% "Yes", , drop = FALSE], prefix = "P_Sample_Location_")
   
   location_data <- data.frame(
     label = rownames(as.data.frame(Sample_Location)),
@@ -517,9 +522,9 @@ Based on ", nrow(applicant$indicators), " submitted publications, this is the se
   
   credit_barchart(applicant$credit, ordered=FALSE) |> print()
   
-  cat("\n\n## Compact CRediT profile\n")
+  #cat("\n\n## Compact CRediT profile\n")
   
-  credit_barchart(credit_dat=applicant$credit, ordered=FALSE, compact=TRUE)  |> print()
+  #credit_barchart(credit_dat=applicant$credit, ordered=FALSE, compact=TRUE)  |> print()
   
   cat("\n:::")
   
@@ -967,14 +972,14 @@ badge_uri <- function(file) {
   knitr::image_uri(file.path(badge_dir, file))
 }
 badge_defs <- list(
-  list(var = "P_Data_Open", file = "data_small_color.png", label = "Open Data",
-       none = c("NotApplicable", "NotAvailable")),
-  list(var = "P_OpenMaterials", file = "materials_small_color.png", label = "Open Materials",
-       none = c("NotApplicable", "NotAvailable")),
-  list(var = "P_ReproducibleScripts", file = "code_small_color.png", label = "Open Code",
-       none = c("NotApplicable", "NotAvailable")),
-  list(var = "P_Preregistration", file = "preregistered_small_color.png", label = "Preregistration",
-       none = c("NotApplicable", "No"))
+  list(var = "P_Data_Open", file = "data_small_color.png", file_off = "data_small_grey_strike.png", label = "Open Data",
+       none = c("NotApplicable", "NotAvailable", "No")),
+  list(var = "P_OpenMaterials", file = "materials_small_color.png", file_off = "materials_small_grey_strike.png", label = "Open Materials",
+       none = c("NotApplicable", "NotAvailable", "No")),
+  list(var = "P_ReproducibleScripts", file = "code_small_color.png", file_off = "code_small_grey_strike.png", label = "Open Code",
+       none = c("NotApplicable", "NotAvailable", "No")),
+  list(var = "P_Preregistration", file = "preregistered_small_color.png", file_off = "preregistered_small_grey_strike.png", label = "Preregistration",
+       none = c("NotApplicable", "NotAvailable", "No"))
 )
 
 # Turn an identifier into a URL (first URL found, or DOI), else NA
@@ -998,11 +1003,17 @@ badge_html_for_doi <- function(d) {
   out <- vapply(badge_defs, function(b) {
     if (!b$var %in% names(rows)) return("")
     vals <- as.character(rows[[b$var]])
-    if (!any(!is.na(vals) & !vals %in% c(b$none, ""))) return("")
+    vals <- vals[!is.na(vals) & vals != ""]
+    # Present -> colour badge; only "not available" -> struck-through grey badge;
+    # not applicable / no answer -> no badge
+    present <- any(!vals %in% b$none)
+    if (!present && !any(vals %in% c("NotAvailable", "No"))) return("")
+    file <- if (present) b$file else b$file_off
+    label <- if (present) b$label else paste(b$label, "(not available)")
     id_col <- paste0(b$var, "_Identifier")
-    url <- if (id_col %in% names(rows)) badge_url(rows[[id_col]]) else NA_character_
-    img <- paste0("<img src='", badge_uri(b$file), "' alt='", b$label,
-                  "' title='", b$label, "' style='height:20px; margin-right:2px;'>")
+    url <- if (present && id_col %in% names(rows)) badge_url(rows[[id_col]]) else NA_character_
+    img <- paste0("<img src='", badge_uri(file), "' alt='", label,
+                  "' title='", label, "' style='height:20px; margin-right:2px;'>")
     if (is.na(url)) img else paste0("<a href='", htmltools::htmlEscape(url, attribute = TRUE),
                                     "' target='_blank'>", img, "</a>")
   }, character(1))
@@ -1013,9 +1024,11 @@ badge_html_for_doi <- function(d) {
 pop_sel$`Open Practices` <- vapply(pop_sel$doi, badge_html_for_doi, character(1), USE.NAMES = FALSE)
 
 pop_sel$FNCS <- round(pop_sel$FNCS, 1)
-pop_sel$FNPR <- paste0(round(pop_sel$FNPR*100, 1), "%")
 pop_sel$doi <- NULL
-pop_sel$FNPR <- NULL # removed, because it is not always congruent with the popularity category; could be confusing
+# FNPR is not shown, because it is not always congruent with the popularity
+# category (could be confusing). It is dropped without formatting it first:
+# paste0() on a 0-row table (e.g. no BIP data) would return "%" and abort rendering.
+pop_sel$FNPR <- NULL
 
 # add some emojis:
 pop_sel$Title[pop_sel$Popularity == "Top 0.01%"] <- paste0("🚀", pop_sel$Title[which(pop_sel$Popularity == "Top 0.01%")])

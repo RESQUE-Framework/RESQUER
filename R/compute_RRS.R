@@ -259,14 +259,18 @@ compute_RRS <- function(
 #'
 #' @export
 RRS_category_summary <- function(applicant, selector = c("P_")) {
-  # retrieve categories from applicant meta-data
-  cat_def <- applicant$meta$forms$config$score_categories[[1]]
-
-  # Select indicators that actually have scores attached.
-  # We do this by looking for the "score" node in the forms.
-  indicators_with_scores <- names(applicant$meta$forms$pub$scoring)
-
-  x <- applicant$meta$forms$pub$elements[[1]]$options
+  # retrieve categories from applicant meta-data, with the same precedence as
+  # the JS scorer (inst/js/score2.js): forms$pub$config first, then forms$config
+  cat_def <- applicant$meta$forms$pub$config$score_categories[[1]]
+  if (is.null(cat_def) || NROW(cat_def) == 0) {
+    cat_def <- applicant$meta$forms$config$score_categories[[1]]
+  }
+  if (is.null(cat_def) || NROW(cat_def) == 0) {
+    stop(
+      "No score categories found in the forms ",
+      "(neither forms$pub$config$score_categories nor forms$config$score_categories)."
+    )
+  }
 
   # go through all elements; find out which indicators are used for scoring.
   # (whenever the field "not_applicable" in the "score" element is defined, it is used for scoring)

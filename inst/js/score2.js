@@ -78,7 +78,10 @@ const score = (r, meta, categoriesOverride = []) => {
             return true;
         }
 
-        const exists = id => !!id && id !== "";
+        // A value exists if it is truthy and, for strings, not blank
+        // (whitespace-only identifiers or explanations count as missing).
+        const exists = value => !!value &&
+            !(typeof value === "string" && value.trim() === "");
 
         const c = insertValuesIntoCondition(preprocessCondition(condition), context)
 

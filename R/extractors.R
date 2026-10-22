@@ -4,7 +4,6 @@
 ## extract_indicators() returns a wide format, where each column is one indicator
 ## All other functions return a long-format data frame.
 
-# for testing:
 
 # ------------------------------------------------------------------------
 #' Extract Indicators from Applicant List

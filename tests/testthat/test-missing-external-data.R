@@ -1,7 +1,7 @@
 test_that("preprocess creates empty tables when external data are unavailable", {
   applicant <- read_RESQUE(
     system.file(
-      "extdata/demo_profiles/resque_Schoenbrodt.json",
+      "extdata/demo_profiles/resque_Schoenbrodt_2026-03.json",
       package = "RESQUER"
     )
   )
@@ -22,7 +22,7 @@ test_that("preprocess creates empty tables when external data are unavailable", 
 test_that("preprocess handles an empty BIP response", {
   applicant <- read_RESQUE(
     system.file(
-      "extdata/demo_profiles/resque_Schoenbrodt.json",
+      "extdata/demo_profiles/resque_Schoenbrodt_2026-03.json",
       package = "RESQUER"
     )
   )
@@ -42,7 +42,7 @@ test_that("preprocess handles an empty BIP response", {
 test_that("preprocess continues when OpenAlex returns no works", {
   applicant <- read_RESQUE(
     system.file(
-      "extdata/demo_profiles/resque_Schoenbrodt.json",
+      "extdata/demo_profiles/resque_Schoenbrodt_2026-03.json",
       package = "RESQUER"
     )
   )

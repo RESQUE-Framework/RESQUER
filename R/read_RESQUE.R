@@ -1,7 +1,3 @@
-# For testing:
-# file <- system.file("extdata/demo_profiles/resque_Schoenbrodt.json", package="RESQUER")
-# applicant <- read_RESQUE(file)
-
 #' Read a single RESQUE JSON file and do basic preprocessing
 #' (elaborated preprocessing happens in `preprocess()`).
 #' TODO: Why is some preprocessing here, and some in the other function?

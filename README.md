@@ -60,22 +60,6 @@ folder_path = "/path/to/json/folder"
 outfile <- render_overview(folder_path)
 ```
 
-<!-- 
-
-## How to preview the interactive dashboard (Shiny App): THIS IS A WORK IN PROGRESS AND PROBABLY NOT WORKING
-
-For the interactive dashboard, you need [Quarto](https://quarto.org/docs/get-started/) installed on your system.
-
-Launch the dashboard with the three included demo profiles:
-
-```
-library(quarto)
-library(RESQUER)
-quarto_serve(system.file("dashboard/dashboard_shiny.qmd", package="RESQUER"))
-```
- -->
-
-
 
 ## Internal notes:
 

@@ -25,7 +25,7 @@ render_overview(
 
 \item{randomize}{If \code{TRUE}, numeric scores are randomly perturbed by ±10\% for demo/anonymization purposes.}
 
-\item{clear_cache}{The computations (e.g., citation statistics) are cached in the file \code{applicant_data.RData} (stored in the same folder as the jsons). If \code{clear_cache = TRUE}, the file is deleted and recomputed.}
+\item{clear_cache}{The computations (e.g., citation statistics) are cached in the file \code{applicant_data.RData} (stored in the same folder as the jsons). If \code{clear_cache = TRUE}, the cached file is ignored, all results are recomputed, and the file is overwritten.}
 
 \item{FNCS_type}{The type of FNCS average to use (one of "median", "mean")}
 }

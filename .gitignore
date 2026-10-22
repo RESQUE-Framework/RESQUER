@@ -49,9 +49,13 @@ rsconnect/
 _test*
 inst/doc
 
-inst/dashboard/dashboard_shiny_files
-
 *.code-workspace
 
 _archive/*
 .positai
+
+# AI agent guidance (may contain sensitive applicant-related details)
+AGENTS.md
+
+# macOS Finder metadata
+.DS_Store

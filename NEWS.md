@@ -1,3 +1,65 @@
+# RESQUER 0.10.22 (2026-10-22)
+
+## Added
+
+- New demo profile `inst/extdata/demo_profiles/resque_Schoenbrodt_2026-03.json` in the current scheme (meta 0.3.0, pub 0.9.0; 10 publications). The profile templates fall back to it when no JSON path is given.
+
+## Fixed
+
+- Profile templates (`RESQUE_profile.qmd`, `RESQUE_profile_section_test.qmd`) rendered directly without a `json_path`: an empty path is now treated like a missing one, and the demo profile is used.
+
+## Changed
+
+- `inst/ref_set_psy/get_new_refset.R` (script to rebuild the psychology reference set) can now resume after a crash. Intermediate results are no longer written to `~/refset_temp`. They go to a folder with a fixed name in the system temp directory, e.g. `RESQUER_refset_C15744967_article_n100000_seed42`; the name encodes the sampling parameters. The script downloads one year at a time and skips years whose `refset_<year>.RDS` already exists and can be read. A re-run after a crash therefore continues with the first missing year, and the sample is identical to that of a single run. `options(RESQUER.refset_dir = ...)` sets another location.
+
+## Removed
+
+- Removed hardcoded local file paths in comments and debugging code.
+
+# RESQUER 0.10.21 (2026-10-21)
+
+## Removed
+
+- The deprecated, unfinished Shiny dashboard (`inst/dashboard/dashboard_shiny.qmd`, `custom.scss`), its (commented-out) launch instructions in the README, and the archived publication-table code that only the dashboard used (`_archive/preprocessing_archive.R`).
+
+# RESQUER 0.10.20 (2026-10-21)
+
+## Fixed
+
+- Profile report, "Rare samples used in studies": the sample size is now read from `P_Methods_PowerAnalysis_SampleSize` (the field of the current scheme) instead of the obsolete `P_SampleSize`, which made the report always show "not provided". Line breaks in the entry are collapsed; a missing or whitespace-only entry is shown as "not provided".
+- Profile report: rendering no longer aborts in the impact table when no BIP! data are available (e.g. `preprocess(get_BIP = FALSE)`). The unused FNPR column was formatted before being dropped, which failed on an empty table.
+- Profile report, "Location of Data Collection": the filter on studies with data (`P_Data == "Yes"`) made a inconsistent selection. Whenever some studies had no data (or a missing `P_Data`), location categories could silently disappear from the chart (e.g. "Naturalistic").
+- `render_overview(clear_cache = TRUE)` now takes effect: the cached `applicant_data.RData` in the JSON folder is ignored, all applicants are recomputed, and the cache file is overwritten. Previously the argument was passed to the template but never used, so an existing (possibly stale) cache was always reused.
+- `RRS_category_summary()` now finds the score categories in `forms$pub$config` as well as in `forms$config` (same precedence as the scorer). Previously it stopped with an error for exports that store the categories in `forms$pub$config`.
+- `preprocess()`: the derived `replication` column (preregistered replication) is now built from the current field `P_Preregistration_Replication` instead of the legacy name `P_PreregisteredReplication`, after the "not applicable" justification checks; studies without preregistration get `No`. Previously the column was always `NA`. It is not shown in the reports, so nothing changed. As a side effect, the share of missing indicators (`ind_missing`) no longer counts the empty legacy placeholder column; eligibility for the rigor score is unchanged for all test cases.
+
+# RESQUER 0.10.19 (2026-10-21)
+
+## Added
+
+- Profile report: new light-grey, struck-through badge images (`inst/profile_qmd/assets/*_small_grey_strike.png`) for open data, open materials, open code, and preregistration.
+
+## Changed
+
+- Profile report, "Open Practices" column: a practice answered as not available (`NotAvailable`/`No`) now shows the grey struck-through badge; "not applicable" (or no answer) shows no badge. Badges are smaller (20px high).
+- Profile report layout: body width increased to 1100px (sidebar 250px, margin 300px).
+- Badge images are now the same size (71 x 78 px); the green open-code badge was cropped and rescaled so it no longer appears smaller than the others.
+
+# RESQUER 0.10.18 (2026-10-21)
+
+## Fixed
+
+- `preprocess()`: the "not verified" count of the independent-verification pie data (`OS_pie$Repro$No`) now counts both the current answer code `NotAvailable` and the older code `No`; previously `NotAvailable` was never counted. Expect `OS_pie$Repro` to differ from earlier regression baselines.
+- `preprocess()`: claims of independent verification without a link are now also set to `NotAvailable` for `AllResultsReproducible`, and when the identifier is missing (`NA`) or blank (whitespace only). Scores are not affected.
+- Scorer (`inst/js/score2.js`): `exists()` in scoring rules now treats whitespace-only strings as missing. A whitespace-only identifier no longer earns points, and a whitespace-only "not applicable" explanation (`*_NAExplanation`, ZK2 justification) no longer removes the item from the maximum. Scores of the test-suite JSONs are unchanged (none contains such values).
+- `preprocess()`: "not applicable" answers now follow the same justification rule as the scorer. A whitespace-only `*_NAExplanation`, or an explanation field that is absent from the whole file, no longer counts as a justification; the answer is then shown as `NotAvailable`/`No` with a preprocessing note. Scores are not affected.
+
+# RESQUER 0.10.17 (2026-10-21)
+
+## Changed
+
+- Removed the unused internal helpers `%and%`, `%or%`, `not()` and `exists()` (`R/operators.R`), leftovers of the former R scorer. The package-internal `exists()` masked `base::exists()` inside the package namespace.
+
 # RESQUER 0.10.16 (2026-10-20)
 
 ## Added
